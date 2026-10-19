@@ -1,0 +1,23 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+        VITE_DEMO_MODE: ${VITE_DEMO_MODE:-false}
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    environment:
+      # Browser uses same-origin HTTP. Nginx resolves the Docker service address.
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+      VITE_DEMO_MODE: ${VITE_DEMO_MODE:-false}
+      BACKEND_URL: ${BACKEND_URL:-http://organic-backend:8088}
+      NGINX_ENVSUBST_FILTER: ^BACKEND_URL$
+    restart: unless-stopped
+    networks:
+      - shared
+
+networks:
+  shared:
+    name: my-shared-network
+    external: true

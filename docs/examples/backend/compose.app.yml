@@ -1,0 +1,57 @@
+# Overlay for organic_backend/docker-compose.yml; do not run this file alone.
+# Copy into the backend root. Existing DB services/volumes remain unchanged.
+services:
+  postgres_db:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8088"
+    environment:
+      SERVER_PORT: 8088
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/${BACKEND_DB_NAME:?Set BACKEND_DB_NAME in backend .env}
+      SPRING_DATASOURCE_USERNAME: ${BACKEND_DB_USER:?Set BACKEND_DB_USER in backend .env}
+      SPRING_DATASOURCE_PASSWORD: ${BACKEND_DB_PASSWORD:?Set BACKEND_DB_PASSWORD in backend .env}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      # Existing RedisConfig reads spring.data.redis.post (legacy typo).
+      SPRING_DATA_REDIS_POST: 6379
+      APP_SEED_ENABLED: ${APP_SEED_ENABLED:-true}
+    volumes:
+      - type: bind
+        source: ./config/local.properties
+        target: /app/config/local.properties
+        read_only: true
+        bind:
+          create_host_path: false
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      default: {}
+      shared:
+        aliases:
+          - organic-backend
+
+networks:
+  default: {}
+  shared:
+    external: true
+    name: my-shared-network

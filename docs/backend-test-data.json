@@ -1,0 +1,173 @@
+{
+  "note": "Du lieu test lay tu API backend local; khong phai du lieu san xuat.",
+  "categories": [
+    {
+      "id": "466e4dbb-44be-40c3-8d1e-feab32a621d7",
+      "categoryCode": "DEMO-CAT-NUT",
+      "categoryName": "Các loại hạt",
+      "description": "Hạt dinh dưỡng đóng gói.",
+      "status": "active",
+      "parentId": "70b08584-7a52-47ee-a645-e32b17aff44a",
+      "parentName": "Thực phẩm organic"
+    },
+    {
+      "id": "ccb409e4-7a56-4788-9ade-07a2546d1c44",
+      "categoryCode": "DEMO-CAT-GRAIN",
+      "categoryName": "Gạo và ngũ cốc",
+      "description": "Gạo lứt, yến mạch và các loại ngũ cốc.",
+      "status": "active",
+      "parentId": "70b08584-7a52-47ee-a645-e32b17aff44a",
+      "parentName": "Thực phẩm organic"
+    },
+    {
+      "id": "798e2abe-2baf-4e73-9f70-02a70066091b",
+      "categoryCode": "DEMO-CAT-VEGETABLE",
+      "categoryName": "Rau củ hữu cơ",
+      "description": "Rau lá và củ dùng cho bữa ăn hằng ngày.",
+      "status": "active",
+      "parentId": "70b08584-7a52-47ee-a645-e32b17aff44a",
+      "parentName": "Thực phẩm organic"
+    },
+    {
+      "id": "6691a48e-b087-4ff3-9f9a-60a03521fc2e",
+      "categoryCode": "RAU-HUU-CO",
+      "categoryName": "Rau hữu cơ",
+      "description": "Các loại rau ăn lá và rau củ",
+      "status": "active",
+      "parentId": null,
+      "parentName": null
+    },
+    {
+      "id": "70b08584-7a52-47ee-a645-e32b17aff44a",
+      "categoryCode": "DEMO-CAT-FOOD",
+      "categoryName": "Thực phẩm organic",
+      "description": "Danh mục gốc cho thực phẩm hữu cơ — dữ liệu mẫu.",
+      "status": "active",
+      "parentId": null,
+      "parentName": null
+    },
+    {
+      "id": "75074fb6-2e13-4cee-8bb0-e954abef34f3",
+      "categoryCode": "DEMO-CAT-FRUIT",
+      "categoryName": "Trái cây hữu cơ",
+      "description": "Trái cây tươi theo mùa.",
+      "status": "active",
+      "parentId": "70b08584-7a52-47ee-a645-e32b17aff44a",
+      "parentName": "Thực phẩm organic"
+    }
+  ],
+  "products": [
+    {
+      "id": "ec420474-b853-4693-88fa-7ef5aae1c96b",
+      "productCode": "DEMO-SP008",
+      "productName": "Hạnh nhân hữu cơ",
+      "slug": "demo-hanh-nhan-huu-co",
+      "categoryId": "466e4dbb-44be-40c3-8d1e-feab32a621d7",
+      "categoryName": "Các loại hạt",
+      "brandId": "db191fe3-53dc-44d6-8491-9ebd8e696baa",
+      "brandName": "Hạt Mộc",
+      "status": "active",
+      "organicClaimStatus": "verified",
+      "minPrice": 95000.0,
+      "imageUrl": "https://placehold.co/800x600/edf6e9/2d5a27/png?text=H%E1%BA%A1nh+nh%C3%A2n+h%E1%BB%AFu+c%C6%A1"
+    },
+    {
+      "id": "589a4593-e933-4248-a8a6-a1111ee4933c",
+      "productCode": "DEMO-SP007",
+      "productName": "Yến mạch hữu cơ",
+      "slug": "demo-yen-mach-huu-co",
+      "categoryId": "ccb409e4-7a56-4788-9ade-07a2546d1c44",
+      "categoryName": "Gạo và ngũ cốc",
+      "brandId": "db191fe3-53dc-44d6-8491-9ebd8e696baa",
+      "brandName": "Hạt Mộc",
+      "status": "active",
+      "organicClaimStatus": "verified",
+      "minPrice": 60000.0,
+      "imageUrl": "https://placehold.co/800x600/edf6e9/2d5a27/png?text=Y%E1%BA%BFn+m%E1%BA%A1ch+h%E1%BB%AFu+c%C6%A1"
+    },
+    {
+      "id": "38463bb5-fb7f-4ab8-8cae-1265389d067b",
+      "productCode": "DEMO-SP006",
+      "productName": "Gạo lứt hữu cơ",
+      "slug": "demo-gao-lut-huu-co",
+      "categoryId": "ccb409e4-7a56-4788-9ade-07a2546d1c44",
+      "categoryName": "Gạo và ngũ cốc",
+      "brandId": "db191fe3-53dc-44d6-8491-9ebd8e696baa",
+      "brandName": "Hạt Mộc",
+      "status": "active",
+      "organicClaimStatus": "verified",
+      "minPrice": 45000.0,
+      "imageUrl": "https://placehold.co/800x600/edf6e9/2d5a27/png?text=G%E1%BA%A1o+l%E1%BB%A9t+h%E1%BB%AFu+c%C6%A1"
+    },
+    {
+      "id": "15c4c33c-5488-4a3d-90e8-1c98fcdc853e",
+      "productCode": "DEMO-SP005",
+      "productName": "Chuối hữu cơ",
+      "slug": "demo-chuoi-huu-co",
+      "categoryId": "75074fb6-2e13-4cee-8bb0-e954abef34f3",
+      "categoryName": "Trái cây hữu cơ",
+      "brandId": "b79b4f70-6a13-4e85-8dba-6316864e6169",
+      "brandName": "Vườn Lành",
+      "status": "active",
+      "organicClaimStatus": "verified",
+      "minPrice": 25000.0,
+      "imageUrl": "https://placehold.co/800x600/edf6e9/2d5a27/png?text=Chu%E1%BB%91i+h%E1%BB%AFu+c%C6%A1"
+    },
+    {
+      "id": "09b4284a-e578-46c4-8c6e-eef39bc75539",
+      "productCode": "DEMO-SP004",
+      "productName": "Táo hữu cơ",
+      "slug": "demo-tao-huu-co",
+      "categoryId": "75074fb6-2e13-4cee-8bb0-e954abef34f3",
+      "categoryName": "Trái cây hữu cơ",
+      "brandId": "b79b4f70-6a13-4e85-8dba-6316864e6169",
+      "brandName": "Vườn Lành",
+      "status": "active",
+      "organicClaimStatus": "verified",
+      "minPrice": 65000.0,
+      "imageUrl": "https://placehold.co/800x600/edf6e9/2d5a27/png?text=T%C3%A1o+h%E1%BB%AFu+c%C6%A1"
+    },
+    {
+      "id": "83ab425e-2b93-455f-82e5-dfe05ffdb3c3",
+      "productCode": "DEMO-SP003",
+      "productName": "Cà chua hữu cơ",
+      "slug": "demo-ca-chua-huu-co",
+      "categoryId": "798e2abe-2baf-4e73-9f70-02a70066091b",
+      "categoryName": "Rau củ hữu cơ",
+      "brandId": "d778e9af-00b7-4c98-962a-dff95a620daf",
+      "brandName": "Nông Trại Xanh",
+      "status": "active",
+      "organicClaimStatus": "verified",
+      "minPrice": 35000.0,
+      "imageUrl": "https://placehold.co/800x600/edf6e9/2d5a27/png?text=C%C3%A0+chua+h%E1%BB%AFu+c%C6%A1"
+    },
+    {
+      "id": "5e986707-e164-498c-af63-c55451bb1376",
+      "productCode": "DEMO-SP002",
+      "productName": "Cà rốt hữu cơ",
+      "slug": "demo-ca-rot-huu-co",
+      "categoryId": "798e2abe-2baf-4e73-9f70-02a70066091b",
+      "categoryName": "Rau củ hữu cơ",
+      "brandId": "d778e9af-00b7-4c98-962a-dff95a620daf",
+      "brandName": "Nông Trại Xanh",
+      "status": "active",
+      "organicClaimStatus": "verified",
+      "minPrice": 28000.0,
+      "imageUrl": "https://placehold.co/800x600/edf6e9/2d5a27/png?text=C%C3%A0+r%E1%BB%91t+h%E1%BB%AFu+c%C6%A1"
+    },
+    {
+      "id": "307111ff-4a4c-40cb-8381-fdd6261371fe",
+      "productCode": "DEMO-SP001",
+      "productName": "Cải bó xôi hữu cơ",
+      "slug": "demo-cai-bo-xoi-huu-co",
+      "categoryId": "798e2abe-2baf-4e73-9f70-02a70066091b",
+      "categoryName": "Rau củ hữu cơ",
+      "brandId": "d778e9af-00b7-4c98-962a-dff95a620daf",
+      "brandName": "Nông Trại Xanh",
+      "status": "active",
+      "organicClaimStatus": "verified",
+      "minPrice": 32000.0,
+      "imageUrl": "https://placehold.co/800x600/edf6e9/2d5a27/png?text=C%E1%BA%A3i+b%C3%B3+x%C3%B4i+h%E1%BB%AFu+c%C6%A1"
+    }
+  ]
+}
