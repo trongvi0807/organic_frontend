@@ -28,7 +28,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${BACKEND_DB_PASSWORD:?Set BACKEND_DB_PASSWORD in backend .env}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-      # Existing RedisConfig reads spring.data.redis.post (legacy typo).
+      # Compatibility for older backend revisions; current code prefers PORT.
       SPRING_DATA_REDIS_POST: 6379
       APP_SEED_ENABLED: ${APP_SEED_ENABLED:-true}
     volumes:

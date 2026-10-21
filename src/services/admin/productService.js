@@ -1,9 +1,10 @@
 import api, { DEMO_MODE, unwrap } from '../api';
 import { demoList, demoPage, demoSave, demoDelete } from '../demoStore';
+import { normalizePage } from '@/lib/apiData';
 
 // Product metadata is separate from price/stock in the existing backend.
 export const productService = {
-  async list(params) { return DEMO_MODE ? demoPage('products', params) : unwrap(await api.get('/admin/products', { params })); },
+  async list(params) { return DEMO_MODE ? demoPage('products', params) : normalizePage(unwrap(await api.get('/admin/products', { params }))); },
   async get(id) { return DEMO_MODE ? demoList('products').find((item) => item.id === id) : unwrap(await api.get(`/admin/products/${id}`)); },
   async save(id, values) {
     if (DEMO_MODE) return demoSave('products', id, values);

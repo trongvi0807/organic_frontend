@@ -3,5 +3,6 @@ dist
 .git
 .env*
 test-results
+test-support
 docs/screenshots
 *.log

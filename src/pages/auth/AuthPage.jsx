@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Leaf, ShieldCheck, Mail, LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Logo } from '@/components/common/Logo';
@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/auth/authService';
 import { DEMO_MODE } from '@/services/api';
 import { errorMessage } from '@/lib/utils';
+import { loginPath } from '@/lib/permissions';
 
 export default function AuthPage({ mode = 'login' }) {
   const register = mode === 'register';
@@ -18,12 +19,11 @@ export default function AuthPage({ mode = 'login' }) {
   const [email, setEmail] = useState('');
   const [verify, setVerify] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const { login, user, isAdmin } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   useEffect(() => { setError(''); setVerify(false); }, [mode]);
   useEffect(() => { if (!cooldown) return; const timer = setTimeout(() => setCooldown((value) => value - 1), 1000); return () => clearTimeout(timer); }, [cooldown]);
-  if (user) return <div className="auth-already"><Logo /><h1>Bạn đã đăng nhập.</h1><Link className="hero-cta" to={isAdmin ? '/admin/products' : '/'}>Tiếp tục <ArrowRight size={16} /></Link><Link to="/dang-xuat">Đăng xuất</Link></div>;
+  if (user) return <Navigate to={loginPath(user)} replace />;
   async function submit(event) {
     event.preventDefault(); setError(''); setBusy(true);
     const values = Object.fromEntries(new FormData(event.currentTarget));
@@ -35,8 +35,7 @@ export default function AuthPage({ mode = 'login' }) {
       } else {
         const signedIn = await login({ ...values, rememberMe: values.rememberMe === 'on' });
         toast.success(`Chào mừng ${signedIn.fullName || signedIn.username}!`);
-        const from = location.state?.from;
-        navigate(from?.startsWith('/') && !from.startsWith('//') ? from : signedIn.roles?.some((role) => ['ADMIN', 'ROLE_ADMIN'].includes(role)) ? '/admin/products' : '/', { replace: true });
+        navigate(loginPath(signedIn), { replace: true });
       }
     } catch (err) { setError(errorMessage(err)); }
     finally { setBusy(false); }

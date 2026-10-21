@@ -160,13 +160,13 @@ spring.datasource.url=jdbc:postgresql://localhost:5434/my_postgres_db
 spring.datasource.username=admin
 spring.datasource.password=REPLACE_WITH_EXISTING_POSTGRES_PASSWORD
 spring.data.redis.host=localhost
-spring.data.redis.post=6379
+spring.data.redis.port=6379
 jwt.secret-key=REPLACE_WITH_VALID_LOCAL_JWT_SECRET
 ```
 
 Đây là mẫu các khóa, không phải nội dung để ghi đè nguyên file đang dùng. Thay tên database/user nếu Compose của nhóm khác ví dụ; thay hai giá trị `REPLACE_...` bằng thông tin thật của môi trường phát triển.
 
-**Riêng mã nguồn hiện tại:** `RedisConfig.java` đọc `spring.data.redis.post` (chữ `post`), nên phải giữ khóa này cho đến khi nhóm sửa đồng bộ thành `port`.
+**Cập nhật 20/10/2026:** `RedisConfig.java` đã ưu tiên `spring.data.redis.port` và hỗ trợ `spring.data.redis.post` cũ làm dự phòng. Cấu hình mới dùng `port` như ví dụ trên.
 
 JWT backend hiện dùng HS512. Thành viên mới có thể nhận khóa phát triển của nhóm hoặc tạo khóa riêng cho máy local, tối thiểu 64 byte. Ví dụ tạo chuỗi ngẫu nhiên trong PowerShell:
 
@@ -576,7 +576,7 @@ docker compose --env-file .env -f docker-compose.yml -f compose.app.yml stop
 | Không tìm thấy `jwt.secret-key` | Tạo/kiểm tra `config/local.properties`, kiểm tra working directory là thư mục backend |
 | Sai mật khẩu PostgreSQL | Đối chiếu database thực tế; biến mới trong Compose không đặt lại mật khẩu volume cũ |
 | Spring Boot Docker gọi DB bị từ chối | Dùng `postgres_db:5432`, không dùng `localhost:5434` |
-| Backend lỗi Redis | Kiểm tra service Redis và khóa `spring.data.redis.post` trong mã hiện tại |
+| Backend lỗi Redis | Kiểm tra service Redis và khóa `spring.data.redis.port`; backend mới vẫn hỗ trợ khóa `post` cũ |
 | Cổng 8088 bị chiếm | Không chạy đồng thời Spring Boot IntelliJ và container backend trên cùng cổng |
 | UI có sản phẩm nhưng không thấy request API | Kiểm tra `VITE_DEMO_MODE=false`; restart Vite hoặc recreate container |
 | Đổi `.env.local` chưa có hiệu lực | Dừng/chạy lại Vite; kiểm tra không bị biến môi trường terminal ghi đè |

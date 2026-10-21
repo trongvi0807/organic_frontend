@@ -16,5 +16,5 @@ export function useResource(loader, dependencies = []) {
     // Callers pass primitive query parameters so stale requests never overwrite current results.
   }, [...dependencies, revision]);
   const reload = useCallback(() => setRevision((value) => value + 1), []);
-  return { data, loading, error, reload };
+  return { data, loading, error, reload, setData };
 }

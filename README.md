@@ -2,6 +2,10 @@
 
 Tài liệu bàn giao nhóm: [Hướng dẫn cấu hình và chạy dự án](docs/HUONG_DAN_CAU_HINH_VA_CHAY_DU_AN.md) · [Kịch bản meeting 30 phút](docs/KICH_BAN_MEETING.md).
 
+API mới ngày 20/10/2026: [Home, khách hàng, nhà cung cấp, xuất xứ, chứng nhận và truy xuất](docs/TICH_HOP_API_MOI.md), gồm phân quyền, trình tự demo và cách kiểm tra với backend thật.
+
+Giao diện mới: [Design system organic, scroll reveal và hiệu ứng modal](docs/UI_ORGANIC.md).
+
 Website thương mại điện tử organic, ưu tiên giao diện desktop. React + Vite, Tailwind CSS v4, React Router, Axios, Radix UI (Dialog), hệ component theo cách tổ chức shadcn/ui, Lucide và Sonner. JavaScript/JSX, alias `@/` trỏ đến `src/`.
 
 Thiết kế tham khảo tinh thần tự nhiên của [Pukka Herbs](https://www.pukkaherbs.com/uk/en) và cách tổ chức danh mục của [Organica](https://organica.vn/). Nhận diện “Mộc” và bố cục được xây mới. Hai ảnh cấu trúc thư mục/giao diện được nhắc trong yêu cầu chưa có trong hội thoại, nên chưa thể đối chiếu chính xác từng thư mục và chi tiết ảnh mẫu.
@@ -42,28 +46,31 @@ public/
 src/
   assets/                   # Tài nguyên import và ghi chú nguồn ảnh
   components/
-    admin/CatalogForm.jsx
+    admin/                  # CatalogForm, RecordForm, RecordDetails, chứng nhận
+    customers/ProfilePanel.jsx
     common/                 # Logo, pagination, loading/error/empty state
     products/               # Card và chi tiết sản phẩm
     ui/                     # Button, field, Radix Dialog
-  constants/demo.js
-  contexts/                 # AuthProvider, ShopProvider
+  constants/                # Demo, schema các module quản lý
+  contexts/                 # AuthProvider, ShopProvider, HomeProvider
   hooks/                    # useResource, useDebouncedValue
   layouts/                  # StoreLayout, AdminLayout
   lib/                      # Tiện ích, storage
   pages/
-    admin/ManagementPage.jsx # Dùng chung cho hai trang quản trị
+    admin/                  # Catalog, hồ sơ, truy xuất, biên tập Home
     auth/                   # Login, register/OTP, logout
     client/                 # Home, catalog, account
     NotFoundPage.jsx
-  routes/                   # Router và bảo vệ quyền Admin
+  routes/                   # Router và bảo vệ theo vai trò
   services/
     api.js                  # Axios instance, Bearer token, xử lý 401
     auth/authService.js
     admin/
       productService.js
       categoryService.js
-    client/catalogService.js
+      managementService.js
+      homeAdminService.js
+    client/                 # Catalog, Home public, hồ sơ cá nhân
     demoStore.js
   styles/globals.css
   App.jsx
@@ -84,17 +91,23 @@ docker-compose.yml
 | `/dang-nhap` | Đăng nhập, hiện/ẩn mật khẩu, ghi nhớ đăng nhập |
 | `/dang-ky` | Đăng ký đúng DTO backend, xác thực OTP và gửi lại mã |
 | `/dang-xuat` | Xác nhận đăng xuất, gọi API và xóa phiên tại trình duyệt |
-| `/tai-khoan` | Thông tin tài khoản và đăng xuất |
+| `/tai-khoan` | Hồ sơ cá nhân, ảnh đại diện và địa chỉ của CUSTOMER |
 | `/admin/products` | Thống kê, tìm/lọc, phân trang, thêm/sửa/ngừng bán, xuất CSV |
 | `/admin/categories` | Thống kê, tìm/lọc, phân trang, thêm/sửa/xóa, xuất CSV |
+| `/admin/home` | Nội dung Home, banner, FAQ, sản phẩm nổi bật và cache |
+| `/admin/customers` | Hồ sơ khách hàng, liên kết tài khoản, avatar, địa chỉ |
+| `/admin/suppliers` | Nhà cung cấp và thông tin liên hệ |
+| `/admin/origins` | Xuất xứ, vùng sản xuất và nhà cung cấp liên kết |
+| `/admin/certifications` | Chứng nhận, tài liệu, duyệt và lưu trữ/khôi phục |
+| `/admin/traceability` | Gắn/gỡ xuất xứ và chứng nhận của sản phẩm |
 
-Các trang Admin yêu cầu role `ADMIN` hoặc `ROLE_ADMIN`. Phân quyền frontend hỗ trợ điều hướng; backend vẫn kiểm tra quyền thực tế. Khi API trả 401, phiên local được xóa và trang bảo vệ chuyển về đăng nhập. Token được giữ trong sessionStorage; `rememberMe` được gửi cho backend để backend quyết định thời hạn token.
+Sản phẩm, danh mục và biên tập Home yêu cầu `ADMIN`; hồ sơ khách hàng dành cho `ADMIN`/`SALES_STAFF`. `WAREHOUSE_STAFF` được quản lý nhà cung cấp, xuất xứ, chứng nhận và liên kết truy xuất; duyệt/lưu trữ chỉ dành cho ADMIN. Sales có quyền xem các module nguồn gốc. Hỗ trợ cả tiền tố `ROLE_`; xem ma trận chi tiết trong tài liệu tích hợp. Backend vẫn kiểm tra quyền thực tế. Khi API riêng tư trả 401, phiên local được xóa và trang bảo vệ chuyển về đăng nhập. Token được giữ trong sessionStorage; `rememberMe` được gửi cho backend để quyết định thời hạn token.
 
 Giỏ hàng và yêu thích hoạt động tại trình duyệt. Chưa có thanh toán/đặt đơn vì backend hiện chưa có API đơn hàng. Modal dùng Radix để quản lý focus, bàn phím và Escape.
 
 ## 4. Kết nối backend hiện có
 
-Đã đối chiếu controller và DTO trong `../organic_backend`: backend Spring Boot chạy cổng **8088**, trả `{ statusCode, name, message, data }`; phân trang trong `data` có `items`, `page`, `size`, `totalElements`, `totalPages`, `hasNext`.
+Đã đối chiếu controller và DTO trong `../organic_backend`: backend Spring Boot chạy cổng **8088**, trả `{ statusCode, name, message, data }`; phân trang hỗ trợ `content` và `items`, cùng `page`, `size`, `totalElements`, `totalPages`, `hasNext`.
 
 Đổi `.env.local`:
 
@@ -104,9 +117,9 @@ VITE_DEMO_MODE=false
 DEV_API_TARGET=http://localhost:8088
 ```
 
-Khởi động lại `pnpm dev`. Vite proxy `/api` đến backend, giúp frontend dùng cùng origin và tránh phải thêm CORS khi phát triển. Axios tự đính kèm `Authorization: Bearer <accessToken>`.
+Khởi động lại `pnpm dev`. Vite proxy `/api` đến backend, giúp frontend dùng cùng origin và tránh phải thêm CORS khi phát triển. Axios riêng tư đính kèm `Authorization: Bearer <accessToken>`; Home và catalog dùng transport public không gửi token.
 
-Các endpoint đang sử dụng:
+Các endpoint catalog/auth đã có (API mới liệt kê trong tài liệu tích hợp):
 
 ```text
 POST /api/v1/auth/login
@@ -129,7 +142,7 @@ PUT/DELETE     /api/v1/admin/categories/{id}
 
 - `ProductRequest` chỉ chứa thông tin sản phẩm, danh mục, thương hiệu, trạng thái và chứng nhận. Giá nằm trong `variants`; ảnh nằm trong `images`. Biểu mẫu thật bảo toàn thương hiệu/chứng nhận khi sửa và chưa cung cấp trình biên tập biến thể/ảnh. Muốn có giá/ảnh cho sản phẩm mới, dùng các API biến thể/ảnh của backend hoặc mở rộng biểu mẫu này.
 - `ProductSummaryResponse` chưa có tồn kho/quy cách. Frontend không tự tạo số tồn kho trong chế độ API thật; hiển thị thông tin chưa được cung cấp trong chi tiết. Dữ liệu demo có tồn kho để minh họa Product Card.
-- Trạng thái hữu cơ `verified` yêu cầu chứng nhận `verified` còn hiệu lực ở backend. Lỗi xác thực được hiển thị ngay trong biểu mẫu.
+- Nhãn hữu cơ công khai trên Home dựa vào `organicVerified` backend trả về; chứng nhận quản trị dùng `currentlyValid` và truy xuất dùng `effectiveOrganicStatus`. Không suy luận từ khai báo hữu cơ cũ. Sửa metadata/tài liệu chứng nhận sẽ đưa về chờ duyệt.
 - Chưa tự làm mới access token; phiên hết hạn chuyển về đăng nhập. Backend có endpoint refresh-token để mở rộng sau.
 
 ## 5. Docker và network dùng chung
@@ -207,6 +220,6 @@ docker compose config --quiet
 docker compose build
 ```
 
-Test kiểm tra phân trang/lọc, bảo toàn dữ liệu khi sửa, ngừng bán, ràng buộc xóa danh mục và DTO Axios. Ảnh từ Unsplash được lưu trong `public/images`; font Be Vietnam Pro/Lora tải từ Google Fonts, có fallback sans-serif/Georgia khi offline.
+28 test kiểm tra phân trang/lọc, bảo toàn liên kết khi sửa, phân quyền helper, public transport, payload hồ sơ/chứng nhận, upload FormData và DTO Axios. Xem [kết quả và giới hạn kiểm thử](docs/VERIFICATION.md). Ảnh từ Unsplash được lưu trong `public/images`; font Be Vietnam Pro/Lora tải từ Google Fonts, có fallback sans-serif/Georgia khi offline.
 
 Tài liệu stack: [Vite](https://vite.dev/guide/), [Tailwind + Vite](https://tailwindcss.com/docs/installation/using-vite).

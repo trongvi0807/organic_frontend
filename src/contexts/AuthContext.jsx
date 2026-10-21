@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { authService } from '@/services/auth/authService';
 import { getSession, setSession } from '@/services/api';
+import { hasRole, STAFF_ROLES } from '@/lib/permissions';
 
 const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
@@ -21,7 +22,14 @@ export function AuthProvider({ children }) {
     finally { setSession(null); updateSession(null); }
   }
   const user = session?.user;
-  const isAdmin = user?.roles?.some((role) => role === 'ADMIN' || role === 'ROLE_ADMIN') || false;
-  return <AuthContext.Provider value={{ user, isAdmin, login, logout }}>{children}</AuthContext.Provider>;
+  const isAdmin = hasRole(user, 'ADMIN');
+  function updateProfile(profile) {
+    updateSession((old) => {
+      if (!old) return old;
+      const next = { ...old, user: { ...old.user, fullName: profile.fullName, email: profile.email, phoneNumber: profile.phoneNumber, avatarUrl: profile.avatarUrl } };
+      setSession(next); return next;
+    });
+  }
+  return <AuthContext.Provider value={{ user, isAdmin, isStaff: hasRole(user, ...STAFF_ROLES), login, logout, updateProfile }}>{children}</AuthContext.Provider>;
 }
 export const useAuth = () => useContext(AuthContext);
