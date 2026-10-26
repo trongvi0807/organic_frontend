@@ -12,7 +12,7 @@ import { firebaseConfig } from '@/constants/firebase';
 beforeEach(() => {
   vi.clearAllMocks(); const storage = new Map();
   vi.stubGlobal('localStorage', { getItem: (k) => storage.get(k), setItem: (k, v) => storage.set(k, v) });
-  vi.stubGlobal('window', { isSecureContext: true, Notification: {}, PushManager: {}, __MOC_CONFIG__: {} });
+  vi.stubGlobal('window', { isSecureContext: true, Notification: {}, PushManager: {}, __MOC_CONFIG__: { VITE_FIREBASE_API_KEY: 'qa-web-config-only' } });
   vi.stubGlobal('navigator', { serviceWorker: { register: vi.fn(async () => ({ active: {} })) } });
   vi.stubGlobal('Notification', { permission: 'granted', requestPermission: vi.fn(async () => 'granted') });
   getSession.mockReturnValue({ accessToken: 'session-1' });

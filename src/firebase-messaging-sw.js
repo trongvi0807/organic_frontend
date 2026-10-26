@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw';
-import { firebaseConfig } from './constants/firebase';
+import { firebaseConfig, firebaseConfigured } from './constants/firebase';
 import { notificationTarget } from './lib/notificationTarget';
 
 // Register before Firebase's listener so custom click routing wins.
@@ -18,7 +18,9 @@ self.addEventListener('notificationclick', (event) => {
   })());
 });
 self.importScripts('/runtime-config.js');
-const messaging = getMessaging(initializeApp(firebaseConfig(self.__MOC_CONFIG__ || {}, import.meta.env)));
+const config = firebaseConfig(self.__MOC_CONFIG__ || {}, import.meta.env);
+if (firebaseConfigured(config)) {
+const messaging = getMessaging(initializeApp(config));
 onBackgroundMessage(messaging, async (payload) => {
   // FCM automatically displays notification payloads; do not display twice.
   if (!payload.notification) await self.registration.showNotification('Mộc · Thông báo kho', {
@@ -29,3 +31,4 @@ onBackgroundMessage(messaging, async (payload) => {
   const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   windows.forEach((client) => client.postMessage({ type: 'moc:notification', data: payload.data }));
 });
+}

@@ -1,6 +1,6 @@
-// Public Firebase web credentials supplied for this application. No Admin SDK keys here.
+// Firebase web config. Supply the API key through ignored .env.local or deployment runtime config.
 export const firebaseDefaults = {
-  apiKey: 'REMOVED_FIREBASE_API_KEY',
+  apiKey: '',
   authDomain: 'backend-organic.firebaseapp.com',
   projectId: 'backend-organic',
   storageBucket: 'backend-organic.firebasestorage.app',
@@ -14,4 +14,7 @@ export function firebaseConfig(runtime = {}, env = {}) {
     const name = `VITE_FIREBASE_${key.replace(/[A-Z]/g, (letter) => `_${letter}`).toUpperCase()}`;
     return [key, runtime[name] || env[name] || fallback];
   }));
+}
+export function firebaseConfigured(config) {
+  return ['apiKey', 'projectId', 'messagingSenderId', 'appId'].every((key) => typeof config[key] === 'string' && config[key].trim());
 }

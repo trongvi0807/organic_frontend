@@ -1,6 +1,6 @@
 import { notificationService } from './admin/notificationService';
 import { getSession } from './api';
-import { firebaseConfig, defaultVapidKey } from '@/constants/firebase';
+import { firebaseConfig, firebaseConfigured, defaultVapidKey } from '@/constants/firebase';
 import { readStorage, writeStorage } from '@/lib/storage';
 
 const TOKEN_KEY = 'moc.push.device';
@@ -16,14 +16,17 @@ export function pushAvailability() {
   if (!window.isSecureContext) return 'Thông báo đẩy cần HTTPS hoặc localhost.';
   if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) return 'Trình duyệt này chưa hỗ trợ thông báo đẩy.';
   if (Notification.permission === 'denied') return 'Quyền thông báo đã bị chặn. Mở cài đặt trang web của trình duyệt để cho phép.';
+  if (!firebaseConfigured(firebaseConfig(window.__MOC_CONFIG__ || {}, import.meta.env))) return 'Thông báo đẩy chưa được cửa hàng cấu hình. Bạn vẫn có thể xem thông báo trong hệ thống.';
   return '';
 }
 async function client() {
   if (!clientPromise) clientPromise = (async () => {
+    const runtime = window.__MOC_CONFIG__ || {};
+    const config = firebaseConfig(runtime, import.meta.env);
+    if (!firebaseConfigured(config)) throw new Error('Thông báo đẩy chưa được cửa hàng cấu hình.');
     const [{ initializeApp, getApps }, sdk] = await Promise.all([import('firebase/app'), import('firebase/messaging')]);
     if (!await sdk.isSupported()) throw new Error('Trình duyệt không hỗ trợ Firebase Messaging hoặc bộ nhớ IndexedDB đang bị chặn.');
-    const runtime = window.__MOC_CONFIG__ || {};
-    const app = getApps().find((item) => item.name === 'moc-push') || initializeApp(firebaseConfig(runtime, import.meta.env), 'moc-push');
+    const app = getApps().find((item) => item.name === 'moc-push') || initializeApp(config, 'moc-push');
     return { sdk, messaging: sdk.getMessaging(app), vapidKey: runtime.VITE_FIREBASE_VAPID_KEY || import.meta.env.VITE_FIREBASE_VAPID_KEY || defaultVapidKey };
   })().catch((err) => { clientPromise = null; throw err; });
   return clientPromise;
