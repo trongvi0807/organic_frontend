@@ -1,7 +1,8 @@
-import api, { DEMO_MODE, unwrap } from '../api';
+import api, { DEMO_MODE, unwrap, refreshSession } from '../api';
 import { DEMO_ACCOUNTS } from '@/constants/demo';
 
 export const authService = {
+  refresh: refreshSession,
   async login(values) {
     if (!DEMO_MODE) return unwrap(await api.post('/auth/login', values));
     const account = DEMO_ACCOUNTS.find((user) => user.username === values.username && user.password === values.password);

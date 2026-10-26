@@ -13,9 +13,18 @@ export async function allPages(list, params = {}) {
 }
 export function normalizeHomeProduct(item) {
   const price = item.defaultPrice ?? item.minPrice;
-  return { ...item, productName: item.name, minPrice: price, unit: item.defaultVariantName,
+  return { ...item, productName: item.name ?? item.productName, minPrice: price, unit: item.defaultVariantName ?? item.unit,
+    organicVerified: item.organicVerified ?? item.organicClaimStatus === 'verified',
     compareAtPrice: price != null && item.compareAtPrice > price ? item.compareAtPrice : null,
     badge: item.featured ? 'Nổi bật' : undefined };
+}
+// Compatibility for an older catalog DTO which omits both the variant and compare-at price.
+// A complete current catalog response remains authoritative, including a removed discount.
+export function withHomePricing(product, home) {
+  if (product.defaultVariantId != null || product.defaultPrice != null) return product;
+  const card = [...(home?.featuredProducts || []), ...(home?.newProducts || []), ...(home?.certifiedProducts || [])].find((p) => p.id === product.id);
+  return card ? { ...product, minPrice: card.minPrice, compareAtPrice: card.compareAtPrice, unit: card.unit,
+    defaultVariantId: card.defaultVariantId, defaultPrice: card.defaultPrice, defaultVariantName: card.defaultVariantName } : product;
 }
 export function internalHref(value, fallback = '/san-pham') {
   if (typeof value !== 'string' || !/^\/(?!\/)[^\s\\]*$/.test(value)) return fallback;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizePage, normalizeHomeProduct, internalHref, validateUpload } from './apiData';
+import { normalizePage, normalizeHomeProduct, withHomePricing, internalHref, validateUpload } from './apiData';
 import { dashboardPath, mayRead, mayEdit, hasRole } from './permissions';
 import { modules } from '@/constants/management';
 
@@ -25,6 +25,14 @@ describe('Backend DTO compatibility', () => {
     for (const path of ['//evil.example', '/\\evil.example', 'javascript:alert(1)', 'https://evil.example', '/with space']) expect(internalHref(path)).toBe('/san-pham');
     expect(internalHref('/products?category=abc')).toBe('/san-pham?category=abc');
     expect(internalHref('/tai-khoan')).toBe('/tai-khoan');
+  });
+  it('shows the same sale price, original price and variant on Home and Catalog with an older backend DTO', () => {
+    const card=normalizeHomeProduct({id:'p',name:'Rau',defaultPrice:28000,compareAtPrice:32000,defaultVariantId:'v',defaultVariantName:'Gói 500g'});
+    const merged=withHomePricing({id:'p',productName:'Rau',minPrice:28000}, {featuredProducts:[card]});
+    expect(merged).toMatchObject({minPrice:28000,compareAtPrice:32000,unit:'Gói 500g',defaultVariantId:'v'});
+    const noSale=normalizeHomeProduct({id:'p',productName:'Rau',defaultPrice:28000,compareAtPrice:null,defaultVariantId:'v'});
+    expect(withHomePricing(noSale,{featuredProducts:[card]}).compareAtPrice).toBeNull();
+    expect(withHomePricing({id:'other',minPrice:10000},{featuredProducts:[card]})).not.toHaveProperty('compareAtPrice');
   });
   it('validates avatar/document types and the 5 MB limit before upload', () => {
     expect(() => validateUpload(new File(['pdf'], 'proof.pdf', { type: 'application/pdf' }))).toThrow('JPEG');

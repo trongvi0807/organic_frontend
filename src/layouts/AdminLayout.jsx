@@ -5,6 +5,8 @@ import { Logo } from '@/components/common/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { DEMO_MODE } from '@/services/api';
 import { hasRole, mayRead } from '@/lib/permissions';
+import { ShoppingBag, ClipboardCheck, FileInput, PackageCheck, Boxes, Bell } from 'lucide-react';
+import { NotificationBell } from '@/components/layout/NotificationBell';
 
 export function AdminLayout() {
   const { user, isAdmin } = useAuth();
@@ -41,7 +43,17 @@ export function AdminLayout() {
     };
   }, [mobile, open]);
   const { pathname } = useLocation();
+  const warehouse = hasRole(user, 'ADMIN', 'WAREHOUSE_STAFF');
   const links = [
+    { path: 'sales-orders', name: 'Đơn bán & giao hàng', icon: ShoppingBag, visible: true },
+    { path: 'payment-review', name: 'Đối soát thanh toán', icon: ClipboardCheck, visible: hasRole(user, 'ADMIN', 'SALES_STAFF') },
+    { path: 'promotions', name: 'Khuyến mãi', icon: Shapes, visible: isAdmin },
+    { path: 'purchase-orders', name: 'Đơn mua', icon: ShoppingBag, visible: warehouse },
+    { path: 'order-approvals', name: 'Duyệt đơn', icon: ClipboardCheck, visible: isAdmin },
+    { path: 'goods-receipts', name: 'Phiếu nhập', icon: FileInput, visible: warehouse },
+    { path: 'receipt-approvals', name: 'Duyệt nhập', icon: PackageCheck, visible: isAdmin },
+    { path: 'inventory', name: 'Tồn kho / lô', icon: Boxes, visible: warehouse },
+    { path: 'notifications', name: 'Thông báo', icon: Bell, visible: warehouse },
     { path: 'home', name: 'Trang chủ', icon: Home, visible: isAdmin },
     { path: 'products', name: 'Sản phẩm', icon: Package, visible: isAdmin },
     { path: 'categories', name: 'Loại sản phẩm', icon: Shapes, visible: isAdmin },
@@ -53,5 +65,5 @@ export function AdminLayout() {
   ].filter((item) => item.visible);
   const name = links.find((item) => pathname === `/admin/${item.path}`)?.name || 'Quản lý cửa hàng';
   const roleName = isAdmin ? 'Quản trị viên' : hasRole(user, 'WAREHOUSE_STAFF') ? 'Nhân viên kho' : 'Nhân viên bán hàng';
-  return <div className="admin-shell"><a href="#main-content" className="skip-link">Bỏ qua đến nội dung</a><aside ref={sidebarRef} id="admin-navigation" inert={mobile && !open} role={mobile ? 'dialog' : undefined} aria-modal={mobile && open ? true : undefined} aria-label="Điều hướng quản lý" className={`admin-sidebar ${open ? 'sidebar-open' : ''}`}><div className="sidebar-brand"><Logo /><button className="icon-button sidebar-close" aria-label="Đóng menu" onClick={() => setOpen(false)}><X size={20} /></button></div><span className="admin-workspace-label">KHÔNG GIAN QUẢN LÝ</span><nav aria-label="Quản lý cửa hàng"><span className="nav-group-label">CỬA HÀNG & NGUỒN GỐC</span>{links.map(({ path, name: title, icon: Icon }) => <NavLink key={path} to={`/admin/${path}`} onClick={() => setOpen(false)}><Icon size={18} />{title}<ChevronRight size={14} /></NavLink>)}</nav><div className="sidebar-bottom"><div className="sidebar-green-note"><Leaf size={24} strokeWidth={1.2} /><strong>Chăm chút từ những điều nhỏ.</strong><Link to="/">Ghé thăm cửa hàng <ArrowUpRight size={14} /></Link></div><Link className="sidebar-logout" to="/dang-xuat"><LogOut size={17} />Đăng xuất</Link><div className="sidebar-user"><span>{(user.fullName || user.username).slice(0, 1).toUpperCase()}</span><div><strong>{user.fullName || user.username}</strong><small>{roleName}</small></div><Leaf size={17} /></div></div></aside>{open && <button className="sidebar-backdrop" aria-label="Đóng menu" onClick={() => setOpen(false)} />}<div className="admin-main"><header className="admin-topbar"><div><button ref={menuRef} aria-expanded={open} aria-controls="admin-navigation" className="icon-button admin-menu-toggle" aria-label="Mở menu quản lý" onClick={() => setOpen(true)}><Menu size={21} /></button><span>Quản lý cửa hàng</span><ChevronRight size={13} /><strong>{name}</strong></div><div><span className="admin-mode"><i />{DEMO_MODE ? 'Dữ liệu mẫu' : 'Kết nối API'}</span><Link to="/" className="admin-store-link">Xem cửa hàng <ArrowUpRight size={15} /></Link></div></header><main className="admin-content" id="main-content"><Outlet /></main><footer className="admin-footer"><span>© {new Date().getFullYear()} Mộc Organic</span><span><CircleHelp size={13} />Thông tin được quản lý theo quyền tài khoản.</span></footer></div></div>;
+  return <div className="admin-shell"><a href="#main-content" className="skip-link">Bỏ qua đến nội dung</a><aside ref={sidebarRef} id="admin-navigation" inert={mobile && !open} role={mobile ? 'dialog' : undefined} aria-modal={mobile && open ? true : undefined} aria-label="Điều hướng quản lý" className={`admin-sidebar ${open ? 'sidebar-open' : ''}`}><div className="sidebar-brand"><Logo /><button className="icon-button sidebar-close" aria-label="Đóng menu" onClick={() => setOpen(false)}><X size={20} /></button></div><span className="admin-workspace-label">KHÔNG GIAN QUẢN LÝ</span><nav aria-label="Quản lý cửa hàng"><span className="nav-group-label">CỬA HÀNG & NGUỒN GỐC</span>{links.map(({ path, name: title, icon: Icon }) => <NavLink key={path} to={`/admin/${path}`} onClick={() => setOpen(false)}><Icon size={18} />{title}<ChevronRight size={14} /></NavLink>)}</nav><div className="sidebar-bottom"><div className="sidebar-green-note"><Leaf size={24} strokeWidth={1.2} /><strong>Chăm chút từ những điều nhỏ.</strong><Link to="/">Ghé thăm cửa hàng <ArrowUpRight size={14} /></Link></div><Link className="sidebar-logout" to="/dang-xuat"><LogOut size={17} />Đăng xuất</Link><div className="sidebar-user"><span>{(user.fullName || user.username).slice(0, 1).toUpperCase()}</span><div><strong>{user.fullName || user.username}</strong><small>{roleName}</small></div><Leaf size={17} /></div></div></aside>{open && <button className="sidebar-backdrop" aria-label="Đóng menu" onClick={() => setOpen(false)} />}<div className="admin-main"><header className="admin-topbar"><div><button ref={menuRef} aria-expanded={open} aria-controls="admin-navigation" className="icon-button admin-menu-toggle" aria-label="Mở menu quản lý" onClick={() => setOpen(true)}><Menu size={21} /></button><span>Quản lý cửa hàng</span><ChevronRight size={13} /><strong>{name}</strong></div><div><NotificationBell /><span className="admin-mode"><i />{DEMO_MODE ? 'Dữ liệu mẫu' : 'Kết nối API'}</span><Link to="/" className="admin-store-link">Xem cửa hàng <ArrowUpRight size={15} /></Link></div></header><main className="admin-content" id="main-content"><Outlet /></main><footer className="admin-footer"><span>© {new Date().getFullYear()} Mộc Organic</span><span><CircleHelp size={13} />Thông tin được quản lý theo quyền tài khoản.</span></footer></div></div>;
 }

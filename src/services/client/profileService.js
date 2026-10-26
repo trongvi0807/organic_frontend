@@ -1,6 +1,7 @@
 import api, { unwrap } from '../api';
 import { optional, validateUpload } from '@/lib/apiData';
 import { requireBackend } from '../backendGuard';
+import { AVATAR_UPLOAD_TIMEOUT_MS } from '@/lib/avatarUpload';
 
 export function createProfileService(id = 'me') {
   const base = `/customers/${id}`;
@@ -11,7 +12,13 @@ export function createProfileService(id = 'me') {
       const payload = Object.fromEntries(['fullName', 'phoneNumber', 'email', 'dateOfBirth'].map((key) => [key, optional(values[key])]));
       return unwrap(await api.put(base, payload));
     },
-    async uploadAvatar(file) { requireBackend(); validateUpload(file); const data = new FormData(); data.append('file', file); return unwrap(await api.post(`${base}/avatar`, data, { headers: { 'Content-Type': undefined } })); },
+    async uploadAvatar(file) {
+      requireBackend(); validateUpload(file);
+      if (!file.size) throw new Error('Ảnh đang rỗng. Vui lòng chọn một ảnh khác.');
+      const data = new FormData(); data.append('file', file);
+      // Let Axios/browser generate Content-Type and its multipart boundary.
+      return unwrap(await api.post(`${base}/avatar`, data, { timeout: AVATAR_UPLOAD_TIMEOUT_MS, headers: { 'Content-Type': undefined } }));
+    },
     async deleteAvatar() { requireBackend(); return unwrap(await api.delete(`${base}/avatar`)); },
     async saveAddress(addressId, values) {
       requireBackend();

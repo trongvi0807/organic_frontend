@@ -1,0 +1,23 @@
+import { ArrowUpRight, CalendarDays, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useHome } from '@/contexts/HomeContext';
+import { Reveal } from '@/components/common/Reveal';
+import { ResourceState } from '@/components/common/ResourceState';
+import { certificateState, traceabilityDate } from '@/lib/traceability';
+import { STANDARD_REFERENCES } from '@/constants/highlights';
+import { SectionHeading } from './SectionHeading';
+
+export function CertificationSection() {
+  const { data: home, loading, error, reload } = useHome();
+  const certificates = home?.certifications || [];
+  return <section id="chung-nhan" aria-labelledby="highlights-certificates-heading" className="scroll-mt-32 border-t border-line bg-[#f2f4eb] py-14 sm:py-20 lg:py-24"><div className="!mx-auto max-w-[1408px] px-5 sm:px-10 lg:px-14">
+    <Reveal><SectionHeading eyebrow="02 / NIỀM TIN TỪ THÔNG TIN RÕ RÀNG" title={<span id="highlights-certificates-heading">Chứng nhận để đối chiếu.<br />An tâm từ điều mình hiểu.</span>} description="Tên tiêu chuẩn, tổ chức cấp và thời hạn là những chi tiết đáng đọc kỹ. Các thẻ dưới đây giúp bạn nhận diện một số hệ tiêu chuẩn thường gặp." centered /></Reveal>
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">{STANDARD_REFERENCES.map((standard, index) => <Reveal as="article" key={standard.mark} delay={index * 55} className="flex min-w-0 flex-col items-center rounded-3xl border border-[#e0e6d5] bg-white p-7 text-center sm:p-8"><span className="!mb-3 text-[9px] font-medium uppercase tracking-[0.16em] text-[#919b83]">THAM KHẢO TIÊU CHUẨN</span><div className="!mb-5 flex size-23 flex-col items-center justify-center gap-1 rounded-full border border-[#9dae83] bg-[#f7f9f1] text-[#708354] ring-4 ring-[#f0f4e6]"><ShieldCheck size={26} strokeWidth={1.2} /><span className="text-[13px] font-semibold tracking-wider">{standard.mark}</span></div><p className="!mb-2 text-[9px] tracking-[0.17em] text-[#a0a88f]">{standard.region}</p><h3 className="font-serif text-2xl font-medium text-primary">{standard.name}</h3><p className="!mt-4 flex-1 text-xs leading-7 text-[#7c8571]">{standard.description}</p><a href={standard.href} target="_blank" rel="noopener noreferrer" className="!mt-5 inline-flex min-h-11 items-center gap-2 text-xs font-medium !text-primary">{standard.linkLabel}<ArrowUpRight size={14} /></a></Reveal>)}</div>
+    <p className="!mt-5 text-center text-xs leading-7 text-[#7d8871]">Các biểu tượng minh họa ở trên dùng để tìm hiểu tiêu chuẩn, không xác nhận toàn bộ cửa hàng hoặc sản phẩm đã được chứng nhận.</p>
+    <Reveal className="!mt-10 rounded-3xl border border-[#dce4d0] bg-[#fbfcf7] p-5 sm:p-8"><div className="!mb-5 flex flex-wrap items-center justify-between gap-4"><h3 className="flex items-center gap-2 text-sm font-semibold text-primary"><ShieldCheck size={19} strokeWidth={1.4} /> Hồ sơ do cửa hàng công bố</h3><Link to="/ve-cua-hang#chung-nhan" className="inline-flex min-h-11 items-center gap-2 text-xs font-medium !text-primary">Kiểm tra theo sản phẩm <ArrowUpRight size={14} /></Link></div><ResourceState loading={loading} error={error ? 'Chưa thể tải hồ sơ chứng nhận. Vui lòng thử lại.' : ''} onRetry={reload} />{!loading && !error && (certificates.length ? <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{certificates.map((certificate) => {
+      // The public Home endpoint returns certificates filtered as valid by the backend.
+      const state = certificateState({ ...certificate, currentlyValid: true });
+      return <article key={certificate.id} className="min-w-0 rounded-2xl border border-line bg-white p-5"><span className={`inline-flex rounded-full px-2.5 py-1 text-[9px] font-medium ${state.tone === 'valid' ? 'bg-sage text-primary' : 'bg-[#f8eddf] text-[#8a6741]'}`}>{state.label}</span><h4 className="!mt-3 break-words text-sm font-semibold text-primary">{certificate.name}</h4><p className="!mt-2 break-words text-xs leading-6 text-[#7b8671]">{certificate.issuingOrganization}</p><p className="!mt-1 break-words text-[10px] leading-6 text-[#8b947e]">Số hồ sơ: {certificate.number || 'Chưa công bố'}</p><p className="!mt-3 flex items-center gap-2 border-t border-line pt-3 text-xs text-primary"><CalendarDays size={14} className="shrink-0" />Hiệu lực đến: {traceabilityDate(certificate.expiresAt)}</p>{certificate.productCount != null && <p className="!mt-2 text-[10px] text-[#8a9380]">{certificate.productCount} sản phẩm liên quan</p>}</article>;
+    })}</div> : <p className="text-sm leading-7 text-[#7d8871]">Hồ sơ chứng nhận đang được cập nhật. Bạn có thể xem thông tin công bố của từng sản phẩm tại trang Về cửa hàng.</p>)}</Reveal>
+  </div></section>;
+}

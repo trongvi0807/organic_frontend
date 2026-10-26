@@ -16,15 +16,49 @@ export const setSession = (session) => {
 };
 api.interceptors.request.use((config) => {
   const token = getSession()?.accessToken;
+  config._sessionOwner ??= getSession()?.user?.username;
+  config._sessionId ??= getSession()?.sessionId;
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
-api.interceptors.response.use((response) => response, (error) => {
-  if (error.response?.status === 401 && !error.config?.url?.startsWith('/auth/')) {
-    setSession(null);
-    window.dispatchEvent(new Event('moc:session-expired'));
+let refreshFlight;
+export async function refreshSession() {
+  const current = getSession();
+  if (!current?.refreshToken) throw new Error('Phiên đăng nhập đã hết hạn.');
+  if (!refreshFlight) {
+    const pending = (async () => {
+      const result = unwrap(await publicApi.post('/auth/refresh-token', { refreshToken: current.refreshToken }));
+      if (!result?.accessToken || !result.refreshToken) throw new Error('Phản hồi làm mới phiên không hợp lệ.');
+      if (getSession()?.accessToken !== current.accessToken) throw new Error('Tài khoản hoặc phiên đăng nhập đã thay đổi.');
+      const next = { ...current, ...result };
+      setSession(next);
+      window.dispatchEvent(new Event('moc:session-refreshed'));
+      return next;
+    })();
+    refreshFlight = pending;
+    pending.finally(() => { if (refreshFlight === pending) refreshFlight = null; }).catch(() => {});
   }
-  return Promise.reject(error);
+  return refreshFlight;
+}
+api.interceptors.response.use((response) => response, async (error) => {
+  const config = error.config;
+  if (error.response?.status !== 401 || !config || config.url?.startsWith('/auth/')) throw error;
+  const current = getSession();
+  const sentToken = config.headers?.Authorization?.replace(/^Bearer /, '');
+  try {
+    if (config._sessionRetried || !current?.accessToken || (config._sessionOwner && config._sessionOwner !== current.user?.username) || (config._sessionId && config._sessionId !== current.sessionId)) throw error;
+    config._sessionRetried = true;
+    // A parallel request may already have refreshed this session.
+    if (sentToken === current.accessToken) await refreshSession();
+  } catch (failure) {
+    const invalidSession = !current?.refreshToken || config._sessionRetried && failure === error || [400,401,403].includes(failure.response?.status);
+    if (invalidSession && getSession()?.accessToken === current?.accessToken && (!config._sessionOwner || config._sessionOwner === current?.user?.username) && (!config._sessionId || config._sessionId === current?.sessionId)) {
+      setSession(null);
+      window.dispatchEvent(new Event('moc:session-expired'));
+    }
+    throw failure;
+  }
+  return api.request(config);
 });
 export const unwrap = (response) => response.data.data;
 export default api;

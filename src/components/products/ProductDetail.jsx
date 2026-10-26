@@ -5,15 +5,20 @@ import { useResource } from '@/hooks/useResource';
 import { catalogService } from '@/services/client/catalogService';
 import { currency } from '@/lib/utils';
 import { ResourceState } from '@/components/common/ResourceState';
+import { Link } from 'react-router-dom';
+import { productHref } from '@/lib/productDetail';
 import { useShop } from '@/contexts/ShopContext';
 
 export function ProductDetail({ product, onClose }) {
   const { data, loading, error, reload } = useResource(() => catalogService.product(product.id), [product.id]);
   const { addToCart } = useShop();
   const validVariants = data?.variants?.filter((variant) => variant.status === 'active' && Number(variant.sellingPrice) > 0 && Number(variant.netQuantity) > 0).sort((a,b) => a.sellingPrice - b.sellingPrice) || [];
-  const price = validVariants[0]?.sellingPrice ?? data?.minPrice ?? product.minPrice;
+  const chosen = validVariants.find((v) => v.id === data?.defaultVariantId) || validVariants[0];
+  const availableQuantity = data?.stock;
+  const price = chosen?.sellingPrice ?? data?.minPrice ?? product.minPrice;
   return <Modal open onOpenChange={(value) => { if (!value) onClose(); }} title="Chi tiết sản phẩm" description="Một lựa chọn tươi lành cho bạn." className="detail-modal">
+    <Link className="quick-view-detail-link" to={productHref(product)} onClick={onClose}>Xem đầy đủ ảnh, thông tin và đánh giá →</Link>
     <ResourceState loading={loading} error={error} onRetry={reload} />
-    {!loading && !error && data && <div className="detail-grid"><img src={data.imageUrl || data.images?.[0]?.imageUrl || '/images/vegetables.jpg'} alt={data.productName} /><div><span className="eyebrow"><Leaf size={14} />{data.categoryName}</span><h2>{data.productName}</h2><p className="detail-price">{currency(price)}</p><p>{data.description || 'Thông tin sản phẩm từ cửa hàng.'}</p>{product.organicVerified === true && <p className="detail-claim"><Check size={16} />Có chứng nhận hợp lệ theo dữ liệu trang chủ.</p>}{product.originName && <p>Xuất xứ: {product.originName}{product.country ? ` · ${product.country}` : ''}</p>}<p className="muted">{data.stock == null ? 'Chưa có thông tin số lượng tồn kho.' : `Tồn kho: ${data.stock} · ${data.unit}`}</p><Button className="w-full mt-5" disabled={data.stock === 0 || price == null} onClick={() => addToCart({ ...data, minPrice: price, imageUrl: data.imageUrl || data.images?.[0]?.imageUrl })}><ShoppingBag size={17} />{data.stock === 0 ? 'Tạm hết hàng' : 'Thêm vào giỏ hàng'}</Button></div></div>}
+    {!loading && !error && data && <div className="detail-grid"><img src={data.imageUrl || data.images?.[0]?.imageUrl || '/images/vegetables.jpg'} alt={data.productName} /><div><span className="eyebrow"><Leaf size={14} />{data.categoryName}</span><h2>{data.productName}</h2><p className="detail-price">{currency(price)}</p><p>{data.description || 'Thông tin sản phẩm từ cửa hàng.'}</p>{product.organicVerified === true && <p className="detail-claim"><Check size={16} />Có chứng nhận hợp lệ theo dữ liệu trang chủ.</p>}{product.originName && <p>Xuất xứ: {product.originName}{product.country ? ` · ${product.country}` : ''}</p>}<p className="muted">{availableQuantity == null ? 'Tồn kho được kiểm tra khi thanh toán.' : `Có thể đặt: ${availableQuantity} gói / hộp`}</p><Link to={`${productHref(product)}#chung-nhan`} className="text-xs text-primary underline" onClick={onClose}>Xem nguồn gốc & chứng nhận</Link><Button className="w-full mt-5" disabled={availableQuantity === 0 || price == null} onClick={() => addToCart({ ...data, variantId: chosen?.id, defaultVariantId: chosen?.id, minPrice: price, imageUrl: data.imageUrl || data.images?.[0]?.imageUrl })}><ShoppingBag size={17} />{availableQuantity === 0 ? 'Tạm hết hàng' : 'Thêm vào giỏ hàng'}</Button></div></div>}
   </Modal>;
 }

@@ -2,6 +2,9 @@
 // Start with: node test-support/backend-fixture.mjs
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { productDetailFixture } from './product-detail-fixture-data.mjs';
+import { procurementFixture } from './procurement-fixture.mjs';
+import { checkoutFixture } from './checkout-fixture.mjs';
 const port = Number(process.env.QA_API_PORT || 19088);
 const ids = { product: '11111111-1111-4111-8111-111111111111', category: '22222222-2222-4222-8222-222222222222', supplier: '33333333-3333-4333-8333-333333333333', origin: '44444444-4444-4444-8444-444444444444', certificate: '55555555-5555-4555-8555-555555555555', customer: '66666666-6666-4666-8666-666666666666', account: '77777777-7777-4777-8777-777777777777' };
 let content = { siteName: 'Mộc QA', headline: 'Tươi lành từ nguồn gốc rõ ràng.', introduction: 'Dữ liệu kiểm thử giao diện — không kết nối database thật.', banners: [], highlights: [{ title: 'Thông tin nguồn gốc', description: 'Xem vùng sản xuất và hồ sơ chứng nhận được công bố.' }], faqs: [{ question: 'Làm sao xem thông tin sản phẩm?', answer: 'Chọn sản phẩm để xem chi tiết.' }], contactEmail: 'qa@example.com', contactPhone: null, contactAddress: null, openingHours: '08:00–18:00' };
@@ -39,13 +42,18 @@ function home() {
   const products = db.products.filter((p) => p.status === 'active').map((p) => ({ ...p, name: p.productName, minPrice: 28000, defaultPrice: 28000, compareAtPrice: 32000, defaultVariantName: 'Gói 500g', organicVerified: trace(p.id).effectiveOrganicStatus === 'verified', originName: record('origins',p.originId)?.originName, country: 'Việt Nam' }));
   return { content, featuredProducts: products.filter((p) => p.featured), newProducts: products, certifiedProducts: products.filter((p) => p.organicVerified), categories: db.categories.map((c) => ({ id:c.id, code:c.categoryCode, name:c.categoryName, productCount:1 })), origins: db.origins.filter((o) => o.status === 'active').map((o) => ({ ...o, name:o.originName, code:o.originCode })), certifications: db.certifications.filter((c) => certificateValidity(c).currentlyValid).map((c) => ({ id:c.id,name:c.certificateName,number:c.certificateNumber,issuingOrganization:c.issuingOrganization,issuedAt:c.issuedAt,expiresAt:c.expiresAt,productCount:1 })), statistics: { availableProducts:products.length,categories:db.categories.length,growingRegions:db.origins.length,validCertifications:db.certifications.filter((c) => c.currentlyValid).length } };
 }
+const procurement = procurementFixture(db.suppliers[0]);
+const commerce = checkoutFixture(db);
 createServer(async (req,res) => {
   const url = new URL(req.url,'http://localhost'), method = req.method;
   const parts = url.pathname.replace(/^\/api\/v1\/?/,'').split('/').filter(Boolean);
   const send = (data, status=200) => { res.writeHead(status,{'Content-Type':'application/json; charset=utf-8'}); res.end(JSON.stringify({ statusCode:status,name:'QA_RESPONSE',message:'Dữ liệu QA',data })); };
-  let raw=''; for await (const chunk of req) raw += chunk.toString();
+  const chunks = []; for await (const chunk of req) chunks.push(chunk);
+  const rawBody = Buffer.concat(chunks), raw = rawBody.toString();
   const body = req.headers['content-type']?.includes('application/json') && raw ? JSON.parse(raw) : {};
   const role = String(req.headers.authorization || '').replace('Bearer qa-','');
+  if (process.env.QA_CHECKOUT === 'true' && commerce({ parts, method, body, query: url.searchParams, role, send, req, res })) return;
+  if (procurement({ parts, method, body, query: url.searchParams, role, send })) return;
   if (parts[0] === 'auth') {
     if (parts[1] === 'logout') return send({});
     const roles = { admin:'ADMIN',sales:'SALES_STAFF',warehouse:'WAREHOUSE_STAFF',customer:'CUSTOMER' };
@@ -65,6 +73,34 @@ createServer(async (req,res) => {
   }
   if (parts[0] === 'admin') parts.shift();
   const [module,id,action,child] = parts;
+  if (process.env.QA_PRODUCT_DETAIL === 'true' && module === 'products' && action === 'availability') {
+    const product=productDetailFixture(db).find(id);if(!product)return send(null,404);
+    return send({productId:id,availableQuantity:{[`${id}-small`]:12,[`${id}-large`]:4},checkedAt:new Date().toISOString()});
+  }
+  if (process.env.QA_TRACEABILITY === 'true' && module === 'products' && !id && method === 'GET') {
+    let rows = productDetailFixture(db).list();
+    const keyword = url.searchParams.get('keyword')?.toLocaleLowerCase('vi');
+    if (keyword) rows = rows.filter((row) => `${row.productName} ${row.productCode}`.toLocaleLowerCase('vi').includes(keyword));
+    return send(page(rows, url.searchParams));
+  }
+  if (process.env.QA_PRODUCT_DETAIL === 'true' && module === 'products' && id && !['options','traceability-options'].includes(id) && (!action || id === 'slug' || ['reviews','related'].includes(action))) {
+    const fixture = productDetailFixture(db);
+    const product = fixture.find(id === 'slug' ? action : id);
+    if (!product) return send(null,404);
+    if (method !== 'GET') return send(null,405);
+    if (action === 'reviews') return send(fixture.reviews(product,url.searchParams));
+    if (action === 'related') return send(fixture.detail(product).relatedProducts);
+    const detail = fixture.detail(product);
+    if (process.env.QA_TRACEABILITY === 'true' && product.productCode === 'QA-SP002') {
+      detail.origin = null; detail.certifications = [];
+      detail.variants = [{ id: `${product.id}-unknown`, variantName: 'Hộp QA', sku: 'QA-UNKNOWN', netQuantity: 1, unitId: 'box', sellingPrice: 42000, status: 'active' }];
+    }
+    if (process.env.QA_TRACEABILITY === 'true' && product.productCode === 'QA-SP003') {
+      detail.certifications = [{ ...detail.certifications[0], expiresAt: '2020-01-01', currentlyValid: false }];
+      detail.variants = detail.variants.map((variant) => ({ ...variant, status: 'inactive' }));
+    }
+    return send(detail);
+  }
   if (module === 'products' && id === 'options') return send({brands:[],certifications:db.certifications});
   if (module === 'products' && id === 'traceability-options') return send(list('products',url.searchParams));
   if (module === 'products' && id && action) {
@@ -92,7 +128,19 @@ createServer(async (req,res) => {
     else { const address={...body,id:child || randomUUID()}; if (address.isDefault || !item.addresses.length) { item.addresses.forEach((a)=>a.isDefault=false); address.isDefault=true; } if (child) Object.assign(item.addresses.find((a)=>a.id===child),address); else item.addresses.push(address); }
     return send(item);
   }
-  if (action === 'avatar') { item.avatarUrl=method === 'DELETE' ? null : '/images/avocado.jpg'; return send(item); }
+  if (action === 'avatar') {
+    if (method === 'POST' && process.env.QA_AVATAR_UPLOAD === 'true') {
+      try {
+        const contentType = req.headers['content-type'] || '';
+        const form = await new Request('http://localhost/avatar', { method: 'POST', headers: { 'content-type': contentType }, body: rawBody }).formData();
+        const file = form.get('file');
+        if (!file || !['image/jpeg','image/png','image/webp'].includes(file.type) || !file.size || file.size > 5 * 1024 ** 2) return send(null,400);
+        console.log(JSON.stringify({ event:'qa-avatar-multipart', multipart:contentType.startsWith('multipart/form-data;'), fields:[...form.keys()], mime:file.type, bytes:file.size }));
+        await new Promise((resolve) => setTimeout(resolve, Number(process.env.QA_AVATAR_DELAY_MS || 0)));
+      } catch { return send(null,400); }
+    }
+    item.avatarUrl=method === 'DELETE' ? null : '/images/avocado.jpg'; return send(item);
+  }
   if (action === 'document') { Object.assign(item,{documentUrl:method === 'DELETE' ? null : 'https://example.com/qa-proof.pdf',documentName:'qa-proof.pdf',documentContentType:'application/pdf',status:'pending',currentlyValid:false,reviewNote:null}); return send(item); }
   if (action === 'status') { Object.assign(item,{status:body.status,reviewNote:body.note,reviewedAt:'2026-10-20T12:00:00'}); return send(certificateValidity(item)); }
   if (action === 'restore') { Object.assign(item,{archived:false,status:'pending'}); return send(certificateValidity(item)); }
@@ -100,4 +148,4 @@ createServer(async (req,res) => {
   if (method === 'PUT') {Object.assign(item,body);if (module === 'certifications') Object.assign(item,{status:'pending',currentlyValid:false});}
   if (module === 'products') return send({...item,variants:[{id:'qa-variant',variantName:'Gói 500g',status:'active',sellingPrice:28000,netQuantity:500}],images:[],certifications:[]});
   return send(item);
-}).listen(port,'127.0.0.1',() => console.log(`QA API fixture: http://127.0.0.1:${port}/api/v1 (in-memory only)`));
+}).listen(port,process.env.QA_API_HOST || '127.0.0.1',() => console.log(`QA API fixture: http://${process.env.QA_API_HOST || '127.0.0.1'}:${port}/api/v1 (in-memory only)`));

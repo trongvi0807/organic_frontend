@@ -1,10 +1,24 @@
 # Mộc Organic — Frontend
 
+Cập nhật giỏ hàng/checkout theo mẫu, đổi điểm ở giỏ và VNPay tự cập nhật: [PURCHASE_REDESIGN.md](docs/PURCHASE_REDESIGN.md).
+
 Tài liệu bàn giao nhóm: [Hướng dẫn cấu hình và chạy dự án](docs/HUONG_DAN_CAU_HINH_VA_CHAY_DU_AN.md) · [Kịch bản meeting 30 phút](docs/KICH_BAN_MEETING.md).
 
 API mới ngày 20/10/2026: [Home, khách hàng, nhà cung cấp, xuất xứ, chứng nhận và truy xuất](docs/TICH_HOP_API_MOI.md), gồm phân quyền, trình tự demo và cách kiểm tra với backend thật.
 
 Giao diện mới: [Design system organic, scroll reveal và hiệu ứng modal](docs/UI_ORGANIC.md).
+
+Trang chi tiết sản phẩm hỗ trợ đọc và gửi đánh giá sau mua: [hướng dẫn đánh giá](docs/VERIFIED_PURCHASE_REVIEWS.md). Giỏ Redis, đặt hàng/thanh toán, quản lý đơn/COD, điểm thưởng, khuyến mãi và chuông thông báo: [CHECKOUT_FRONTEND.md](docs/CHECKOUT_FRONTEND.md).
+
+Upload avatar: [Phân tích lỗi 502 Cloudinary, kiểm tra cấu hình backend và giới hạn upload frontend](docs/AVATAR_UPLOAD.md).
+
+Giỏ hàng: [Giao diện, mã ưu đãi dùng thử và phạm vi kết nối backend](docs/CART_FRONTEND.md). Nhấn biểu tượng túi trên header để mở `/gio-hang`; chỉ những sản phẩm được chọn mới chuyển sang `/thanh-toan`.
+
+Về cửa hàng: [Nguồn gốc, chứng nhận và so sánh quy cách sản phẩm](docs/ABOUT_STORE.md). Trang `/ve-cua-hang` đọc API công khai, cho chọn sản phẩm, kiểm tra ngày hiệu lực và so giá/kg hoặc lít trước khi thêm từng biến thể vào giỏ.
+
+Footer: [Bố cục, nội dung mô phỏng và cách thay thông tin liên hệ](docs/FOOTER.md). Đã thêm địa chỉ 36 Trịnh Đình Trọng, Phường Tân Phú và hotline 0344 855 913; các nhóm hỗ trợ, nhận tin, mạng xã hội và thanh toán có hướng dẫn rõ phạm vi mô phỏng.
+
+Điểm nổi bật: [Banner, tiêu chuẩn, chứng nhận, dinh dưỡng và bao bì](docs/HIGHLIGHTS_PAGE.md). Trang `/diem-noi-bat` có điều hướng riêng, hiệu ứng cuộn, nội dung bao bì tương tác và hồ sơ chứng nhận đọc từ Home.
 
 Website thương mại điện tử organic, ưu tiên giao diện desktop. React + Vite, Tailwind CSS v4, React Router, Axios, Radix UI (Dialog), hệ component theo cách tổ chức shadcn/ui, Lucide và Sonner. JavaScript/JSX, alias `@/` trỏ đến `src/`.
 
@@ -103,7 +117,7 @@ docker-compose.yml
 
 Sản phẩm, danh mục và biên tập Home yêu cầu `ADMIN`; hồ sơ khách hàng dành cho `ADMIN`/`SALES_STAFF`. `WAREHOUSE_STAFF` được quản lý nhà cung cấp, xuất xứ, chứng nhận và liên kết truy xuất; duyệt/lưu trữ chỉ dành cho ADMIN. Sales có quyền xem các module nguồn gốc. Hỗ trợ cả tiền tố `ROLE_`; xem ma trận chi tiết trong tài liệu tích hợp. Backend vẫn kiểm tra quyền thực tế. Khi API riêng tư trả 401, phiên local được xóa và trang bảo vệ chuyển về đăng nhập. Token được giữ trong sessionStorage; `rememberMe` được gửi cho backend để quyết định thời hạn token.
 
-Giỏ hàng và yêu thích hoạt động tại trình duyệt. Chưa có thanh toán/đặt đơn vì backend hiện chưa có API đơn hàng. Modal dùng Radix để quản lý focus, bàn phím và Escape.
+Chế độ API thật dùng giỏ Redis qua cookie/Bearer; thanh toán và đơn hàng gọi API backend. Yêu thích vẫn lưu trên trình duyệt; chế độ demo giữ giỏ cục bộ. Modal dùng Radix để quản lý focus, bàn phím và Escape.
 
 ## 4. Kết nối backend hiện có
 
@@ -212,6 +226,8 @@ Compose cung cấp cả build arguments và environment. Entry point tạo `runt
 
 ## 6. Kiểm tra
 
+Luồng mới **Đơn mua → Duyệt đơn → Phiếu nhập → Duyệt nhập → Tồn kho/lô → Thông báo**, phân quyền và hướng dẫn bật Firebase Push: [PROCUREMENT_FRONTEND.md](docs/PROCUREMENT_FRONTEND.md). Đã tích hợp public config và VAPID project `backend-organic`; chỉ xin quyền thông báo khi người dùng bấm bật.
+
 ```powershell
 pnpm test
 pnpm build
@@ -220,6 +236,6 @@ docker compose config --quiet
 docker compose build
 ```
 
-28 test kiểm tra phân trang/lọc, bảo toàn liên kết khi sửa, phân quyền helper, public transport, payload hồ sơ/chứng nhận, upload FormData và DTO Axios. Xem [kết quả và giới hạn kiểm thử](docs/VERIFICATION.md). Ảnh từ Unsplash được lưu trong `public/images`; font Be Vietnam Pro/Lora tải từ Google Fonts, có fallback sans-serif/Georgia khi offline.
+100 test kiểm tra phân trang/lọc, bảo toàn liên kết khi sửa, phân quyền helper, public transport, payload hồ sơ/chứng nhận, upload FormData qua HTTP, DTO Axios, hợp đồng chi tiết/đánh giá và giới hạn tệp nháp. Xem [kết quả và giới hạn kiểm thử](docs/VERIFICATION.md). Ảnh từ Unsplash được lưu trong `public/images`; font Be Vietnam Pro/Lora tải từ Google Fonts, có fallback sans-serif/Georgia khi offline.
 
 Tài liệu stack: [Vite](https://vite.dev/guide/), [Tailwind + Vite](https://tailwindcss.com/docs/installation/using-vite).

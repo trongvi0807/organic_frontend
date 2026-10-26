@@ -1,0 +1,17 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowUp, CreditCard, Mail, MapPin, Phone } from 'lucide-react';
+import { Logo } from '@/components/common/Logo';
+import { FOOTER_CONFIG } from '@/constants/footer';
+import { FooterSupportDialog, paymentIcons } from './FooterSupportDialog';
+
+const linkStyle='inline-flex min-h-9 items-center !text-xs leading-6 text-stone-500 transition-colors hover:text-primary';
+export function StoreFooter({content}) {
+  const [topic,setTopic]=useState(null), config=FOOTER_CONFIG;
+  return <footer id="lien-he" aria-label="Thông tin cửa hàng và hỗ trợ" className="border-t border-line bg-[#f7f8f1] text-primary"><div className="!mx-auto max-w-[1240px] px-5 py-8 sm:px-8">
+    <div className="grid grid-cols-2 gap-5 sm:gap-7 sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr] lg:gap-12"><div className="col-span-2 lg:col-span-1"><Logo /><p className="!mt-3 max-w-xs text-xs leading-6 text-stone-500">Một chút xanh, một đời lành.</p><address className="!mt-4 space-y-2 text-xs not-italic leading-6 text-stone-500"><p className="flex gap-2"><MapPin size={15} className="!mt-1 shrink-0" />{config.address}</p><a href={`tel:${config.phone}`} className="inline-flex items-center gap-2 font-semibold text-primary"><Phone size={14} />{config.phoneDisplay}</a>{content?.contactEmail && <p><a href={`mailto:${content.contactEmail}`} className="inline-flex items-center gap-2 break-all"><Mail size={14} />{content.contactEmail}</a></p>}</address></div>
+    <nav aria-label="Khám phá Mộc"><h3 className="!mb-3 text-xs font-semibold uppercase tracking-wider">Khám phá Mộc</h3><ul>{[['/san-pham','Sản phẩm'],['/ve-cua-hang','Về cửa hàng'],['/ve-cua-hang#chung-nhan','Xem chứng nhận'],['/diem-noi-bat','Điểm nổi bật']].map(([to,label])=><li key={to}><Link to={to} className={linkStyle}>{label}</Link></li>)}</ul></nav>
+    <nav aria-label="Hỗ trợ khách hàng"><h3 className="!mb-3 text-xs font-semibold uppercase tracking-wider">Hỗ trợ khách hàng</h3><ul>{[['shopping','Hướng dẫn mua hàng'],['delivery','Giao hàng & nhận hàng'],['returns','Đổi trả & hoàn tiền'],['privacy','Quyền riêng tư']].map(([key,label])=><li key={key}><button type="button" className={linkStyle} onClick={()=>setTopic(key)}>{label}</button></li>)}</ul><div className="!mt-3 flex flex-wrap gap-2" aria-label="Phương thức thanh toán">{config.paymentMethods.map((method)=>{const Icon=paymentIcons[method.id]||CreditCard;return <button key={method.id} type="button" onClick={()=>setTopic('payment')} aria-label={method.description} className="inline-flex min-h-8 items-center gap-1 rounded-md border border-line bg-white px-2 !text-[10px] text-stone-500"><Icon size={12} />{method.label}</button>;})}</div></nav></div>
+    <div className="!mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-[10px] text-stone-400"><p>© {new Date().getFullYear()} Mộc Organic.</p><div className="flex items-center gap-4"><button type="button" className="min-h-8 !text-[10px] hover:text-primary" onClick={()=>setTopic('terms')}>Điều khoản sử dụng</button><button type="button" className="inline-flex min-h-8 items-center gap-1 !text-[10px] hover:text-primary" onClick={()=>window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}>Về đầu trang<ArrowUp size={12} /></button></div></div>
+  </div><FooterSupportDialog topic={topic} onClose={()=>setTopic(null)} faqs={content?.faqs||[]} /></footer>;
+}
