@@ -25,7 +25,7 @@ const A='11111111-1111-4111-8111-111111111111',B='22222222-2222-4222-8222-222222
 const paging={page:0,size:20};
 const profile={fullName:'Khách QA',phoneNumber:'0901234567',email:'qa@example.com',dateOfBirth:'2000-01-01'};
 const address={label:'Nhà',receiverName:'Khách QA',receiverPhone:'0901234567',province:'Hồ Chí Minh',ward:'Phường Sài Gòn',streetAddress:'1 đường QA',isDefault:true};
-const customer={...profile,customerId:'QA001',membershipStatus:'regular',registrationDate:'2026-10-26',rewardPoints:0,status:'active',accountId:A};
+const customer={...profile,customerId:'QA001',membershipStatus:'REGULAR',registrationDate:'2026-10-26',rewardPoints:0,status:'ACTIVE',accountId:A};
 const supplier={supplierCode:'NCC001',supplierName:'NCC QA',taxCode:'1234567890',contactPerson:'QA',phoneNumber:'0901234567',email:'qa@example.com',address:'QA',status:'active'};
 const origin={originCode:'QA001',originName:'Vườn QA',countryCode:'VN',country:'Việt Nam',region:'Lâm Đồng',producerName:'QA',address:'QA',description:'QA',supplierId:A,status:'active'};
 const cert={certificateName:'Chứng nhận QA',certificateNumber:'QA001',issuingOrganization:'QA',issuedAt:'2026-01-01',expiresAt:'2027-01-01'};
@@ -36,7 +36,7 @@ const image={imageUrl:'https://example.com/qa.png',altText:'Ảnh QA',sortOrder:
 const checkout={items:[{variantId:A,quantity:1}],receiverName:'Khách QA',receiverPhone:'0901234567',shippingAddress:'Địa chỉ QA',note:null,paymentMethod:'vnpay',promotionCode:null,points:0};
 const promo={promotionCode:'QA10',name:'QA',description:'QA',discountType:'percentage',discountValue:10,maxDiscountAmount:10000,minOrderValue:0,startDate:'2026-01-01T00:00',endDate:'2027-01-01T00:00',usageLimit:10,perUserLimit:1,status:'active',productIds:[A],batchIds:[]};
 const purchase={supplierId:A,expectedDeliveryDate:'2027-01-01',note:'QA',items:[{variantId:A,quantity:1,unitPrice:10000}]};
-const receipt={purchaseOrderId:A,receivedAt:'2026-10-26T10:00',note:'QA',items:[{purchaseOrderDetailId:B,batchCode:'QA',manufacturingDate:'2026-10-01',expiryDate:'2027-10-01',acceptedQuantity:1,rejectedQuantity:0,note:null}]};
+const receipt={purchaseOrderId:A,note:'QA',items:[{purchaseOrderDetailId:B,batchCode:'QA',manufactureDate:'2026-10-01',expiryDate:'2027-10-01',quantityReceived:1,quantityRejected:0,discrepancyReason:null,originDescription:null}]};
 const file=new File(['qa'],'qa.png',{type:'image/png'});
 const cases=[];const add=(number,run)=>cases.push({number,run});
 add(1,()=>authService.register({username:'customer',password:'Organic@123',confirmPassword:'Organic@123',...profile}));add(2,()=>authService.verifyOtp({email:profile.email,otp:'123456'}));add(3,()=>authService.resendOtp(profile.email));add(4,()=>authService.refresh());add(5,()=>authService.logout());add(6,()=>authService.login({username:'customer',password:'Organic@123',rememberMe:false}));
@@ -49,7 +49,7 @@ add(43,()=>customerService.list(paging));add(44,()=>customerService.get(A));add(
 for(const [id,start] of [[A,48],['me',55]]){const p=createProfileService(id);add(start,()=>p.uploadAvatar(file));add(start+1,()=>p.deleteAvatar());add(start+2,()=>p.saveAddress(null,address));add(start+3,()=>p.saveAddress(B,address));add(start+4,()=>p.removeAddress(B));}
 add(53,()=>createProfileService().get());add(54,()=>createProfileService().save(profile));
 for(const [s,values,start] of [[supplierService,supplier,60],[originService,origin,65],[certificationService,cert,71]]){add(start,()=>s.list(paging));add(start+1,()=>s.get(A));add(start+2,()=>s.save(null,values));add(start+3,()=>s.save(A,values));if(start!==71)add(start+4,()=>s.archive(A));}
-add(70,()=>originService.products(A,paging));add(75,()=>certificationService.review(A,{status:'approved',note:'QA'}));add(76,()=>certificationService.archive(A));add(77,()=>certificationService.restore(A));add(78,()=>certificationService.upload(A,file));add(79,()=>certificationService.deleteDocument(A));add(80,()=>certificationService.products(A,paging));
+add(70,()=>originService.products(A,paging));add(75,()=>certificationService.review(A,{status:'verified',note:'QA'}));add(76,()=>certificationService.archive(A));add(77,()=>certificationService.restore(A));add(78,()=>certificationService.upload(A,file));add(79,()=>certificationService.deleteDocument(A));add(80,()=>certificationService.products(A,paging));
 add(81,()=>traceabilityService.list(paging));add(82,()=>traceabilityService.get(A));add(83,()=>traceabilityService.setOrigin(A,B));add(84,()=>traceabilityService.removeOrigin(A));add(85,()=>traceabilityService.attach(A,B));add(86,()=>traceabilityService.detach(A,B));
 const cart=createCartService(true);add(87,()=>cart.get());add(88,()=>cart.add(A,1));add(89,()=>cart.quantity(A,2));add(90,()=>cart.remove(A));add(91,()=>cart.clear());add(92,()=>cart.merge());
 add(93,()=>checkoutService.preview(checkout));add(94,()=>checkoutService.create(checkout,'qa-contract-key'));add(95,()=>checkoutService.orders(paging));add(96,()=>checkoutService.order(A));add(97,()=>checkoutService.cancel(A));add(98,()=>checkoutService.methods());add(99,()=>checkoutService.initiate(A,'vnpay'));add(100,()=>checkoutService.payment(A));add(101,()=>checkoutService.sync(A));add(102,()=>checkoutService.capture(A));add(103,()=>checkoutService.promotions(paging));add(104,()=>checkoutService.rewards());add(105,()=>checkoutService.transactions(paging));
@@ -69,6 +69,17 @@ beforeEach(()=>{
   });
 });
 function routePattern(path){return new RegExp('^'+path.replace('/api/v1','').replace(/\{[^}]+\}/g,'[^/]+')+'$');}
+function checkFields(shape,data,label){
+  if(data===null||data===undefined)return;
+  if(Array.isArray(shape)&&Array.isArray(data)){
+    const ref=typeof shape[0]==='string'&&shape[0].match(/^<(.+)>$/)?.[1];
+    const raw=ref&&contract.schemas[ref];const match=raw?.match(/Ví dụ JSON[^\n]*\n(\{[\s\S]*\})\nNguồn:/);
+    if(match)for(const item of data)checkFields(JSON.parse(match[1]),item,label+'.items');
+  }else if(shape&&typeof shape==='object'&&!Array.isArray(shape)){
+    expect(Object.keys(data).filter(k=>!Object.hasOwn(shape,k)),label).toEqual([]);
+    for(const key of Object.keys(data))checkFields(shape[key],data[key],label+'.'+key);
+  }
+}
 it('covers all 152 browser-callable endpoints; provider callbacks stay outside frontend services',()=>{
   expect(cases.map(c=>c.number).sort((a,b)=>a-b)).toEqual(contract.endpoints.filter(e=>e.frontend).map(e=>e.number));
   expect(contract.endpoints.filter(e=>!e.frontend).map(e=>e.number)).toEqual([153,154,155]);
@@ -81,7 +92,7 @@ for(const testCase of cases) it(`PDF API ${String(testCase.number).padStart(3,'0
   const queries=endpoint.parameters.filter(p=>p.location==='Query / form').map(p=>p.name);
   expect(Object.entries(call.params||{}).filter(([,v])=>v!==undefined).map(([k])=>k).every(k=>queries.includes(k))).toBe(true);
   if(endpoint.requestShape && !(call.data instanceof FormData)){
-    const allowed=Object.keys(endpoint.requestShape);expect(Object.keys(call.data||{}).every(k=>allowed.includes(k)),`Unexpected request fields for API ${endpoint.number}`).toBe(true);
+    checkFields(endpoint.requestShape,call.data||{},`Unexpected request fields for API ${endpoint.number}`);
   }
   if(endpoint.parameters.some(p=>p.location==='Part'))expect(call.data.get('file')).toBeDefined();
   if(testCase.number===94)expect(call.headers['Idempotency-Key']).toBe('qa-contract-key');

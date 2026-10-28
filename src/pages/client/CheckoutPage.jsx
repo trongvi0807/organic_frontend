@@ -84,6 +84,7 @@ function CheckoutForm({ user }) {
         current = { key: crypto.randomUUID(), payload }; saveAttempt(user.username, current); setAttempt(current);
       }
       const order = await checkoutService.create(current.payload, current.key);
+      window.dispatchEvent(new Event('moc:order-updated'));
       saveAttempt(user.username, { ...current, orderId: order.id }); setAttempt({ ...current, orderId: order.id });
       await removePurchased(current.payload.items); clearAttempt(user.username); setRewardPoints(0); setPromoCode('');
       if (canPayOrder(order)) {

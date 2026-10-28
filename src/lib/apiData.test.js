@@ -1,9 +1,15 @@
-import { describe, expect, it } from 'vitest';
-import { normalizePage, normalizeHomeProduct, withHomePricing, internalHref, validateUpload } from './apiData';
+import { describe, expect, it, vi } from 'vitest';
+import { allPages, normalizePage, normalizeHomeProduct, withHomePricing, internalHref, validateUpload } from './apiData';
 import { dashboardPath, mayRead, mayEdit, hasRole } from './permissions';
 import { modules } from '@/constants/management';
 
 describe('Backend DTO compatibility', () => {
+  it('loads every page without exceeding the orders API maximum size', async () => {
+    const list = vi.fn().mockResolvedValueOnce({ items: ['first'], totalPages: 2 }).mockResolvedValueOnce({ content: ['second'] });
+    expect(await allPages(list, { status: 'confirmed', size: 100 })).toEqual(['first', 'second']);
+    expect(list).toHaveBeenNthCalledWith(1, { status: 'confirmed', page: 0, size: 50 });
+    expect(list).toHaveBeenNthCalledWith(2, { status: 'confirmed', page: 1, size: 50 });
+  });
   it('normalizes content pages and preserves page metadata', () => {
     const item = { id: '1' };
     expect(normalizePage({ content: [item], page: 2, totalElements: 18 }).items).toEqual([item]);

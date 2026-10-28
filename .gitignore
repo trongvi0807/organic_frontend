@@ -6,3 +6,8 @@ dist/
 *.log
 .DS_Store
 test-results/
+
+# Local artifact builders, caches and rendered previews.
+/tmp/
+/outputs/**/*.ndjson
+/outputs/**/*.png

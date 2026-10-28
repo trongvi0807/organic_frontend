@@ -7,8 +7,13 @@ import { disablePush, revokeLocalPush } from '@/services/pushNotifications';
 import { DEMO_MODE } from '@/services/api';
 
 const AuthContext = createContext(null);
+function restoreSession() {
+  const session = getSession();
+  if (session && !session.sessionId) { session.sessionId = crypto.randomUUID(); setSession(session); }
+  return session;
+}
 export function AuthProvider({ children }) {
-  const [session, updateSession] = useState(getSession);
+  const [session, updateSession] = useState(restoreSession);
   useEffect(() => {
     const expired = () => { updateSession(null); revokeLocalPush().catch(() => toast.error('Chưa thu hồi được thông báo trên thiết bị. Kiểm tra kết nối mạng.')); toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'); };
     window.addEventListener('moc:session-expired', expired);

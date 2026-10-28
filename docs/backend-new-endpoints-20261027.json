@@ -1,0 +1,441 @@
+{
+  "backendHead": "18064e7",
+  "featureCommit": "464877f",
+  "source": "Controller source in sibling organic_backend; frontend implementation status in BACKEND_API_UPDATE_20261027.md",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/products/import-template",
+      "authorization": "hasAuthority('ADMIN')",
+      "source": "ExcelImportController.java",
+      "handler": "productsTemplate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/products/import/preview",
+      "authorization": "hasAuthority('ADMIN')",
+      "source": "ExcelImportController.java",
+      "handler": "productsPreview"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/products/import",
+      "authorization": "hasAuthority('ADMIN')",
+      "source": "ExcelImportController.java",
+      "handler": "productsImport"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/purchase-orders/import-template",
+      "authorization": "hasAnyAuthority('ADMIN','WAREHOUSE_STAFF')",
+      "source": "ExcelImportController.java",
+      "handler": "purchaseTemplate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/purchase-orders/import/preview",
+      "authorization": "hasAnyAuthority('ADMIN','WAREHOUSE_STAFF')",
+      "source": "ExcelImportController.java",
+      "handler": "purchasePreview"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/purchase-orders/import",
+      "authorization": "hasAnyAuthority('ADMIN','WAREHOUSE_STAFF')",
+      "source": "ExcelImportController.java",
+      "handler": "purchaseImport"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/goods-receipts/import-template",
+      "authorization": "hasAnyAuthority('ADMIN','WAREHOUSE_STAFF')",
+      "source": "ExcelImportController.java",
+      "handler": "receiptTemplate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/goods-receipts/import/preview",
+      "authorization": "hasAnyAuthority('ADMIN','WAREHOUSE_STAFF')",
+      "source": "ExcelImportController.java",
+      "handler": "receiptPreview"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/goods-receipts/import",
+      "authorization": "hasAnyAuthority('ADMIN','WAREHOUSE_STAFF')",
+      "source": "ExcelImportController.java",
+      "handler": "receiptImport"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/orders/{id}/invoice",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "DocumentExportController.java",
+      "handler": "sale"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/orders/{id}/invoice",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF')",
+      "source": "DocumentExportController.java",
+      "handler": "staffSale"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/purchase-orders/{id}/pdf",
+      "authorization": "hasAnyAuthority('ADMIN','WAREHOUSE_STAFF')",
+      "source": "DocumentExportController.java",
+      "handler": "purchase"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/goods-receipts/{id}/pdf",
+      "authorization": "hasAnyAuthority('ADMIN','WAREHOUSE_STAFF')",
+      "source": "DocumentExportController.java",
+      "handler": "receipt"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/feedbacks",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "create"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/feedbacks/me",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "list"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/feedbacks/{id}",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "get"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/feedbacks/{id}/messages",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "messages"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/feedbacks/{id}/messages",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "reply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/feedbacks/{id}/media",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "upload"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/feedbacks/{id}/media/{mediaId}",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "deleteMedia"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/feedbacks/{id}/close",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "close"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/feedbacks/{id}/reopen",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerFeedbackController.java",
+      "handler": "reopen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/feedbacks",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "list"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/feedbacks/assignees",
+      "authorization": "hasAuthority('ADMIN')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "assignees"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/feedbacks/{id}/claim",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "claim"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/management/feedbacks/{id}/assignment",
+      "authorization": "hasAuthority('ADMIN')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "assign"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/management/feedbacks/{id}/status",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/feedbacks/{id}",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "get"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/feedbacks/{id}/messages",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "messages"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/feedbacks/{id}/messages",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "reply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/feedbacks/{id}/media",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "upload"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/management/feedbacks/{id}/media/{mediaId}",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementFeedbackController.java",
+      "handler": "deleteMedia"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/return-requests/eligible-items",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "eligible"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/return-requests",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "create"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/return-requests/me",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/return-requests/{id}/cancel",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "cancel"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/return-requests/{id}/accept",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "accept"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/return-requests/{id}/decline",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "decline"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/return-requests/{id}/submit-information",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "information"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/return-requests/{id}",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "get"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/return-requests/{id}/histories",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnRequestController.java",
+      "handler": "histories"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/return-requests",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF')",
+      "source": "ManagementReturnRequestController.java",
+      "handler": "list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-requests/{id}/claim",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementReturnRequestController.java",
+      "handler": "claim"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-requests/{id}/request-information",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementReturnRequestController.java",
+      "handler": "requestInformation"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-requests/{id}/approve",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementReturnRequestController.java",
+      "handler": "approve"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-requests/{id}/reject",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementReturnRequestController.java",
+      "handler": "reject"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-requests/{id}/preview-decision",
+      "authorization": "hasAuthority('SALES_STAFF')",
+      "source": "ManagementReturnRequestController.java",
+      "handler": "preview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/return-requests/{id}",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF')",
+      "source": "ManagementReturnRequestController.java",
+      "handler": "get"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/return-requests/{id}/histories",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF')",
+      "source": "ManagementReturnRequestController.java",
+      "handler": "histories"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/return-receipts/requests",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF','WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "queue"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/return-receipts/requests/{id}",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF','WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "detail"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/return-receipts/requests/{id}/items",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF','WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "list"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/return-receipts/requests/{id}/histories",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF','WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "history"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/management/return-receipts/items/{id}",
+      "authorization": "hasAnyAuthority('ADMIN','SALES_STAFF','WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "get"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-receipts/requests/{id}/items",
+      "authorization": "hasAuthority('WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "receive"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-receipts/items/{id}/identify-batch",
+      "authorization": "hasAuthority('WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "identify"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-receipts/items/{id}/inspect",
+      "authorization": "hasAuthority('WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "inspect"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-receipts/items/{id}/reinspect",
+      "authorization": "hasAuthority('WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "reinspect"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-receipts/items/{id}/restock",
+      "authorization": "hasAuthority('WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "restock"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/management/return-receipts/items/{id}/dispose",
+      "authorization": "hasAuthority('WAREHOUSE_STAFF')",
+      "source": "ReturnReceiptController.java",
+      "handler": "dispose"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/return-requests/{id}/warehouse-progress",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnReceiptController.java",
+      "handler": "progress"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/return-requests/{id}/receipts",
+      "authorization": "hasAuthority('CUSTOMER')",
+      "source": "CustomerReturnReceiptController.java",
+      "handler": "receipts"
+    }
+  ]
+}

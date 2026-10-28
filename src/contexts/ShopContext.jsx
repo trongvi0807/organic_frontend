@@ -10,10 +10,14 @@ import { cartItemKey, changeCartQuantity, parseCartQuantity, quantityLimit, sele
 import { cartFromServer } from '@/lib/checkout';
 import { sellableVariants } from '@/lib/productDetail';
 import { errorMessage } from '@/lib/utils';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { shoppingReturn, validShoppingReturn } from '@/lib/shoppingReturn';
 
 const ShopContext = createContext(null);
 export function ShopProvider({ children }) {
   const { user } = useAuth();
+  const navigate = useNavigate(), location = useLocation();
+  const [cartAdded, setCartAdded] = useState(null), addedSequence = useRef(0);
   const customer = hasRole(user, 'CUSTOMER');
   const allowed = !user || customer;
   const token = getSession()?.accessToken || '';
@@ -30,6 +34,7 @@ export function ShopProvider({ children }) {
   const remoteVersion = useRef(0);
   useEffect(() => { if (DEMO_MODE) writeStorage('moc.cart', cart); }, [cart]);
   useEffect(() => writeStorage('moc.favorites', favorites), [favorites]);
+  useEffect(() => { setCartAdded(null); toast.dismiss('cart-added'); }, [scope]);
   const sameScope = () => currentScope.current === scope && `${getSession()?.user?.username || 'guest'}:${getSession()?.sessionId || getSession()?.accessToken || ''}` === scope;
   function accept(data) {
     if (!sameScope()) return;
@@ -71,6 +76,14 @@ export function ShopProvider({ children }) {
     queue.current = run; return run;
   }
   function addToCart(product, quantity = 1) {
+    function announce() {
+      if (!sameScope()) return;
+      setCartAdded({ sequence: ++addedSequence.current, productName: product.productName || 'sản phẩm', quantity });
+      const back = location.pathname === '/' || location.pathname.startsWith('/san-pham') ? validShoppingReturn({ to: location.pathname + location.search + location.hash, y: window.scrollY }) : shoppingReturn();
+      toast.success('Đã thêm vào giỏ hàng!', { id: 'cart-added', position: 'top-right', duration: 5000,
+        description: `${product.productName || 'Sản phẩm'} · ${quantity} sản phẩm. Bạn có thể tiếp tục chọn hoặc xem giỏ hàng.`,
+        action: { label: 'Xem giỏ hàng', onClick: () => navigate('/gio-hang', { state: { shoppingReturn: back } }) } });
+    }
     if (!DEMO_MODE) return mutate(async (service) => {
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999) throw new Error('Số lượng cần là số gói/hộp nguyên từ 1 đến 999.');
       let variantId = product.variantId || product.defaultVariantId;
@@ -82,12 +95,12 @@ export function ShopProvider({ children }) {
       if (!variantId) throw new Error('Sản phẩm chưa có quy cách đang bán. Vui lòng xem chi tiết.');
       if (!sameScope()) throw new Error('Phiên đã thay đổi. Vui lòng thử lại.');
       return service.add(variantId, quantity);
-    }, `Đã thêm ${product.productName} vào giỏ`);
+    }).then((success) => { if (success) announce(); return success; });
     if (product.stock === 0 || product.minPrice == null || !Number.isInteger(quantity) || quantity < 1) return false;
     const variantId = product.variantId || product.defaultVariantId, cartKey = variantId ? `${product.id}:${variantId}` : product.id;
     const maximum = Math.min(product.stock ?? 99, 99);
     setCart((items) => items.some((item) => cartItemKey(item) === cartKey) ? items.map((item) => cartItemKey(item) === cartKey ? { ...item, minPrice: product.minPrice, stock: product.stock, selected: true, quantity: Math.min(item.quantity + quantity, maximum) } : item) : [...items, { ...product, variantId, cartKey, selected: true, quantity: Math.min(quantity, maximum) }]);
-    toast.success(`Đã thêm ${product.productName} vào giỏ`); return true;
+    announce(); return true;
   }
   function updateQuantity(key, amount) {
     if (DEMO_MODE) { setCart((items) => changeCartQuantity(items, key, amount)); return; }
@@ -122,7 +135,7 @@ export function ShopProvider({ children }) {
     });
   }
   function toggleFavorite(id) { setFavorites((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id]); }
-  return <ShopContext.Provider value={{ cart, favorites, addToCart, updateQuantity, setQuantity, toggleFavorite, promoCode, setPromoCode, rewardPoints, setRewardPoints, clearCart, removeFromCart, refreshCart, removePurchased, cartLoading, cartBusy, cartError, cartMeta, cartAllowed: allowed,
+  return <ShopContext.Provider value={{ cart, cartAdded, favorites, addToCart, updateQuantity, setQuantity, toggleFavorite, promoCode, setPromoCode, rewardPoints, setRewardPoints, clearCart, removeFromCart, refreshCart, removePurchased, cartLoading, cartBusy, cartError, cartMeta, cartAllowed: allowed,
     setItemSelected: (key, selected) => { const next = selectCartItem(cartRef.current, key, selected); cartRef.current = next; setCart(next); },
     setAllSelected: (selected) => { const next = selectAllCartItems(cartRef.current, selected); cartRef.current = next; setCart(next); },
   }}>{children}</ShopContext.Provider>;

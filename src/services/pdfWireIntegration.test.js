@@ -1,0 +1,24 @@
+import {afterAll,afterEach,beforeAll,expect,it,vi} from 'vitest';
+import api,{publicApi} from './api';
+import {createPdfApiFixture,qaIds,qaReference} from '../../test-support/pdf-api-fixture.mjs';
+import {checkoutService} from './client/checkoutService';
+import {resolvePaymentReturn} from './client/paymentReturnService';
+import {rememberPayment} from '@/lib/checkoutAttempt';
+import {paymentRedirect} from '@/lib/checkout';
+const {server,state}=createPdfApiFixture();const privateBase=api.defaults.baseURL,publicBase=publicApi.defaults.baseURL;
+beforeAll(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));api.defaults.baseURL=publicApi.defaults.baseURL=`http://127.0.0.1:${server.address().port}/api/v1`;});
+afterEach(()=>vi.unstubAllGlobals());afterAll(async()=>{api.defaults.baseURL=privateBase;publicApi.defaults.baseURL=publicBase;server.closeAllConnections();await new Promise(r=>server.close(r));});
+it('runs documented preview/create/initiate/read transport and observes paid without the failing reference API',async()=>{
+ const values=new Map();values.set('moc.session',JSON.stringify({accessToken:'qa-CUSTOMER',user:{username:'customer'}}));vi.stubGlobal('sessionStorage',{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)});
+ const body={items:[{variantId:qaIds.variant,quantity:1}],receiverName:'Khách QA',receiverPhone:'0901234567',shippingAddress:'Địa chỉ QA',note:null,paymentMethod:'vnpay',promotionCode:null,points:0};
+ expect((await checkoutService.preview(body)).totalAmount).toBe(28000);await checkoutService.create(body,'pdf-wire-key');await checkoutService.initiate(qaIds.order,'vnpay');
+ rememberPayment('customer',state.payment);expect(paymentRedirect(state.payment)).toContain('sandbox.vnpayment.vn');
+ expect((await resolvePaymentReturn({username:'customer',reference:qaReference})).status).toBe('pending');
+ state.payment.status='paid';state.payment.paymentUrl=null;state.order.paymentStatus='paid';state.order.status='paid';
+ expect((await resolvePaymentReturn({username:'customer',reference:qaReference})).status).toBe('paid');
+ expect(state.requests.some(r=>r.path.includes('/vnpay/reference/')||r.path.endsWith('/ipn'))).toBe(false);
+ expect(state.requests.find(r=>r.path==='/api/v1/orders').headers['idempotency-key']).toBe('pdf-wire-key');
+ expect(state.requests.find(r=>r.path==='/api/v1/orders').body).toEqual(body);
+ expect(state.requests.every(r=>r.headers.authorization==='Bearer qa-CUSTOMER')).toBe(true);
+ expect(state.created).toBe(1);expect(state.initiated).toBe(1);
+});

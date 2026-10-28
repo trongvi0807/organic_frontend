@@ -1,5 +1,14 @@
 # Kết quả kiểm tra — 19/10/2026
 
+## Hợp đồng PDF và VNPay — 26/10/2026
+
+- Đối chiếu **155 API / 107 schema** từ PDF. Service frontend bao phủ 152 endpoint; 3 webhook/IPN chỉ dành cho nhà cung cấp gọi backend.
+- Bỏ gọi API ngoài PDF (`payments/vnpay/reference`, `reviews/eligibility`, `products/{id}/availability`); dùng đúng payments/id, eligible-items và POST review orderDetailId. Bổ sung service đọc Home/danh mục, quản lý biến thể/ảnh, refresh token.
+- **288/288 test, 25 file đạt**, gồm 153 kiểm thử hợp đồng method/path/query/body/multipart và HTTP Axios thật cho preview → create → initiate → read payment. Build SPA + worker thành công; chunk chính khoảng 524 kB còn cảnh báo kích thước.
+- Browser QA riêng 5188/19098, API RAM chỉ mô phỏng các route PDF: khách đăng nhập, VNPay return được map đúng payment UUID rồi GET trạng thái pending → paid; Admin hiển thị Đã thanh toán; sửa giá quy cách và đọc lại 27.000đ thành công. Có lỗi dev HMR lúc thay source giữa phiên, sau điều hướng màn hình hoạt động; không coi đây là kiểm thử gateway/IPN sandbox thật.
+- Không thay controller/DTO/config/backend/DB thật. Kết quả và giới hạn: [API_INTEGRATION_RESULT.md](API_INTEGRATION_RESULT.md), [bảng input/output](API_INTEGRATION_AUDIT.md).
+- Firebase: gỡ key gán cứng trong source/.env.example, thêm kiểm tra cấu hình thiếu cho page/worker. Test riêng 9/9 đạt; chưa thu hồi key trên Google Cloud hoặc đóng alert Revoked. [Các bước chủ dự án cần làm](FIREBASE_KEY_ALERT.md).
+
 ## Footer gọn, tồn khả dụng và trải nghiệm mua sắm — 26/10/2026
 
 - Frontend **122/122 test (20 file) đạt**, build SPA/worker thành công. Chunk chính khoảng 520 kB trước gzip còn cảnh báo kích thước.

@@ -1,0 +1,125 @@
+/* Self-hosted Vietnamese font; OFL license ships alongside the two font files. */
+@font-face { font-family: 'Organic Print'; src: url('/fonts/noto-sans/NotoSans-Regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Organic Print'; src: url('/fonts/noto-sans/NotoSans-Bold.ttf') format('truetype'); font-weight: 700; font-style: normal; font-display: swap; }
+.print-form-preview { min-width: 0; color: #1b4d2e; }
+.print-form-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; border: 1px solid #a3c1ad; border-radius: 12px; background: #f7faf5; padding: 16px; }
+.print-form-toolbar strong { font-size: 14px; }
+.print-form-toolbar p { margin: 4px 0 0; font-size: 11px; line-height: 1.7; color: #527367; }
+.print-form-toolbar .print-form-print-help { flex-basis: 100%; }
+.print-form-scroll { max-width: 100%; overflow-x: auto; border-radius: 8px; background: #e8eee9; padding: 20px; }
+.print-form-sheet { width: 210mm; min-height: 297mm; margin: 0 auto; border: 1px solid #a3c1ad; padding: 8mm; box-sizing: border-box; background: #f7faf5; color: #24392e; box-shadow: 0 4px 24px #173f311a; font-family: 'Organic Print', 'Noto Sans', Arial, sans-serif; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.print-form-sheet *, .print-form-sheet *::before, .print-form-sheet *::after { box-sizing: border-box; }
+.print-form-sheet h1, .print-form-sheet h2, .print-form-sheet p, .print-form-sheet dl { margin: 0; }
+.print-form-sheet h1, .print-form-sheet h2, .print-form-sheet th { font-family: inherit; color: #1b4d2e; }
+.print-form-sheet[data-orientation="landscape"] { width: 297mm; min-height: 210mm; }
+.print-form-header { display: grid; grid-template-columns: 3fr 5fr 4fr; align-items: center; gap: 3mm; padding-bottom: 3mm; border-bottom: 1px solid #689f75; break-inside: avoid; }
+.print-form-brand { display: flex; flex-direction: column; align-items: center; text-align: center; color: #1b4d2e; }
+.print-form-brand-leaves { width: 14mm; height: 12mm; color: #2e6f40; }
+.print-form-brand strong { margin-top: 1mm; font-size: 15px; font-weight: 700; letter-spacing: -.4px; line-height: 1.2; white-space: nowrap; }
+.print-form-brand span { font-size: 10px; font-style: italic; color: #2e6f40; }
+.print-form-heading { text-align: center; }
+.print-form-heading .print-form-company { font-size: 12px; font-weight: 700; line-height: 1.6; letter-spacing: .15px; }
+.print-form-heading .print-form-subtitle { margin-top: 1mm; font-size: 12px; font-style: italic; color: #374151; }
+.print-form-metadata { border: 1px solid #689f75; border-radius: 2mm; background: #fff; padding: 2mm; font-size: 12px; }
+.print-form-metadata > p { line-height: 1.7; }
+.print-form-metadata .print-dotted-field { font-size: 12px; line-height: 1.7; }
+.print-form-title { display: flex; justify-content: center; margin: 4mm 0; break-inside: avoid; break-after: avoid; }
+.print-form-title h1 { max-width: 100%; border: 1px solid #689f75; border-radius: 2mm; background: #dcead6; padding: 2mm 6mm; font-size: 18px; font-weight: 700; line-height: 1.45; text-align: center; text-transform: uppercase; letter-spacing: .25px; }
+.print-form-body { display: block; }
+.print-form-section { margin: 0 0 3mm; border: 1px solid #689f75; border-radius: 1.5mm; background: #fff; }
+.print-form-section-title { border-bottom: 1px solid #689f75; border-radius: 1.2mm 1.2mm 0 0; background: #dcead6; padding: 1mm 2.5mm; font-size: 13px; font-weight: 700; line-height: 1.4; text-transform: uppercase; break-after: avoid; }
+.print-form-section-body { padding: 2mm 3mm; }
+.print-form-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm 6mm; }
+.print-form-fields dt { display: inline; color: #374151; }
+.print-form-fields dd { display: inline; margin-left: 2mm; font-weight: 500; }
+.print-two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 3mm; }
+.print-two-columns > .print-form-section { min-width: 0; }
+.print-dotted-field { display: flex; align-items: baseline; min-width: 0; font-size: 12px; line-height: 22px; }
+.print-dotted-label { flex: 0 0 auto; margin-right: 5px; color: #111827; white-space: nowrap; }
+.print-dotted-value { flex: 1 1 0%; min-width: 0; min-height: 20px; border-bottom: 1px dotted #4b5563; padding: 0 6px; color: #111827; font-weight: 500; overflow-wrap: anywhere; white-space: pre-wrap; }
+.print-dotted-notes { display: grid; gap: 2mm; }
+.print-note-line { min-height: 20px; border-bottom: 1px dotted #4b5563; padding-inline: 2px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.print-checkbox-box { width: 14px; height: 14px; border: 1px solid #1b4d2e; color: #1b4d2e; }
+.print-form-table-wrap { width: 100%; margin: 0 0 3mm; }
+.print-form-section-body > .print-form-table-wrap:last-child { margin-bottom: 0; }
+.print-table-section .print-form-section-body { padding: 0; }
+.print-form-table, .print-form-signatures { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1px solid #689f75; font-size: 12px; }
+.print-form-table caption { padding: 0 0 2mm; font-size: 13px; font-weight: 700; text-align: left; color: #1b4d2e; }
+.print-form-table th, .print-form-table td { border: 1px solid #689f75; padding: 1mm 1.5mm; vertical-align: middle; overflow-wrap: anywhere; }
+.print-form-table th { background: #dcead6; font-size: 12px; font-weight: 700; text-align: center; line-height: 1.3; }
+.print-form-table tbody tr { height: 28px; }
+.print-form-table tbody td { background: #fff; }
+.print-form-table tfoot td { background: #f7faf5; font-weight: 700; }
+.print-form-sheet .print-numeric { text-align: right; font-variant-numeric: tabular-nums; }
+.print-form-sheet .print-form-table { font-size: 11px; line-height: 1.45; }
+.print-form-sheet .print-form-table th { font-size: 10.5px; padding: 2mm 1.5mm; }
+.print-form-sheet .print-form-section-title { font-size: 11.5px; letter-spacing: .15px; padding: 1.5mm 2.5mm; }
+.print-form-sheet .print-form-signatures th { font-size: 11px; line-height: 1.5; }
+.print-form-sheet .print-dotted-label { white-space: normal; flex-shrink: 1; }
+.print-schema-fields { display: grid; gap: 1mm 5mm; grid-template-columns: repeat(var(--field-columns, 1), minmax(0, 1fr)); }
+.print-schema-checks { display: grid; gap: 1mm 3mm; grid-template-columns: repeat(var(--check-columns, 2), minmax(0, 1fr)); margin-block: 1mm; }
+.print-schema-checks .print-checkbox { min-width: 0; font-size: 11px; line-height: 1.5; align-items: baseline; }
+.print-schema-checks .print-checkbox-box { flex-shrink: 0; }
+.print-schema-summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2mm 5mm; border-top: 1px solid #b8d0bd; padding: 2mm; background: #f3f8ef; }
+.print-schema-summary .print-dotted-field { flex: 1 1 170px; }
+.print-form-sheet[data-orientation="landscape"] .print-form-header { grid-template-columns: 48mm minmax(0, 1fr) 58mm; }
+.print-form-sheet[data-orientation="landscape"] .print-signature-cell { min-height: 21mm; }
+.print-form-sheet[data-orientation="landscape"] .print-form-title { margin-block: 2mm; }
+.print-form-sheet[data-orientation="landscape"] .print-form-header { padding-bottom: 2mm; }
+.print-form-sheet[data-orientation="landscape"] .print-form-brand-leaves { width: 11mm; height: 9mm; }
+.print-form-sheet[data-orientation="landscape"] .print-form-brand strong { font-size: 12px; }
+.print-form-sheet[data-orientation="landscape"] .print-form-title h1 { padding-block: 1mm; font-size: 17px; }
+.print-form-sheet[data-orientation="landscape"] .print-dotted-field { font-size: 10.5px; line-height: 18px; }
+.print-form-sheet[data-orientation="landscape"] .print-dotted-value { min-height: 17px; }
+.print-form-sheet[data-orientation="landscape"] .print-form-section-title { padding-block: 1mm; font-size: 10.5px; }
+.print-form-sheet[data-orientation="landscape"] .print-form-table tbody tr { height: 24px; }
+.print-form-sheet[data-orientation="landscape"] .print-form-table th { padding-block: 1mm; font-size: 10px; }
+.print-form-sheet[data-orientation="landscape"] .print-form-section-body { padding: 1.5mm 2mm; }
+.print-form-sheet[data-orientation="landscape"] .print-table-section .print-form-section-body { padding: 0; }
+.print-form-sheet .print-dense .print-form-section { margin-bottom: 2mm; }
+.print-form-sheet .print-center { text-align: center; }
+.print-po-totals { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2mm; padding: 2mm 3mm; font-size: 13px; }
+.print-po-totals > :last-child { margin-left: auto; text-align: right; font-weight: 700; }
+.print-form-notes { margin: 3mm 0; white-space: pre-wrap; font-size: 12px; }
+.print-form-confirmation { margin-top: 3mm; break-inside: avoid; }
+.print-form-confirmation > .print-form-section-title { border: 1px solid #689f75; border-bottom: 0; }
+.print-form-signatures { break-inside: avoid; }
+.print-form-signatures th, .print-form-signatures td { border: 1px solid #689f75; text-align: center; vertical-align: top; }
+.print-form-signatures th { background: #dcead6; padding: 1mm; font-size: 13px; font-weight: 700; }
+.print-form-signatures td { position: relative; background: #fff; padding: 1mm 2mm; }
+.print-signature-cell { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 30mm; }
+.print-signature-cell > p { font-size: 11px; font-style: italic; color: #4b5563; }
+.print-signature-cell > strong { z-index: 1; min-height: 5mm; font-size: 13px; }
+.print-signature-space { position: static; flex: 1; min-height: 20mm; width: 100%; }
+.print-signature-cell > .print-dotted-field { width: 100%; font-size: 11px; }
+.print-form-banner { margin-top: 3mm; text-align: center; color: #1b4d2e; break-inside: avoid; }
+.print-form-banner > strong { display: block; border: 1px solid #a3c1ad; border-radius: 1mm; background: #dcead6; padding: 1mm 2mm; font-size: 10px; font-weight: 700; line-height: 1.5; }
+.print-form-banner > p { display: flex; justify-content: center; align-items: center; gap: 2mm; margin-top: 1mm; font-size: 12px; font-style: italic; color: #2e6f40; }
+.print-form-banner svg { flex: 0 0 auto; }
+.print-keep-together { break-inside: avoid; }
+.print-uc01-po .print-dotted-field { line-height: 20px; }
+.print-uc01-po .print-form-section-body { padding: 1.5mm 2.5mm; }
+.print-uc01-po .print-table-section .print-form-section-body { padding: 0; }
+.print-uc01-po .print-signature-cell { min-height: 28mm; }
+#organic-print-root { display: none; }
+@media (max-width: 640px) { .print-form-scroll { padding: 12px; }.print-form-toolbar { padding: 12px; } }
+
+@page organic-form { size: A4 portrait; margin: 8mm; }
+@page organic-form-landscape { size: A4 landscape; margin: 8mm; }
+@media print {
+  html:has(body.organic-print-active), body.organic-print-active { margin: 0 !important; padding: 0 !important; min-width: 0 !important; height: auto !important; overflow: visible !important; background: white !important; }
+  body.organic-print-active { page: organic-form; }
+  body.organic-print-active > :not(#organic-print-root) { display: none !important; }
+  body.organic-print-active > #organic-print-root { display: block !important; position: static !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
+  #organic-print-root .print-form-sheet { page: organic-form; width: 100% !important; min-height: 0 !important; height: auto !important; margin: 0 !important; padding: 3mm !important; border: 1px solid #a3c1ad !important; box-shadow: none !important; overflow: visible !important; background: #f7faf5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.organic-print-active:has(#organic-print-root [data-orientation="landscape"]), #organic-print-root .print-form-sheet[data-orientation="landscape"] { page: organic-form-landscape; }
+  #organic-print-root [data-print-hide], #organic-print-root .print-form-toolbar { display: none !important; }
+  #organic-print-root *, #organic-print-root *::before, #organic-print-root *::after { animation: none !important; transition: none !important; text-shadow: none !important; }
+  #organic-print-root thead { display: table-header-group; }
+  #organic-print-root tfoot { display: table-row-group; }
+  #organic-print-root tr, #organic-print-root .print-keep-together { break-inside: avoid; page-break-inside: avoid; }
+  #organic-print-root .print-form-header, #organic-print-root .print-form-signatures, #organic-print-root .print-form-banner { break-inside: avoid; page-break-inside: avoid; }
+  #organic-print-root .print-form-section-title, #organic-print-root caption { break-after: avoid; page-break-after: avoid; }
+  #organic-print-root p { orphans: 3; widows: 3; }
+  #organic-print-root a { color: inherit !important; text-decoration: none !important; }
+}

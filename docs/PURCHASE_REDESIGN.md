@@ -1,3 +1,5 @@
+> Cập nhật theo PDF 26/10/2026: chỉ dùng API trong tài liệu. Luồng reference/availability mô tả bên dưới là bản trước và đã được thay bằng API chuẩn. Xem [kết quả hiện tại](API_INTEGRATION_RESULT.md).
+
 # Giỏ hàng, checkout theo mẫu và VNPay — 26/10/2026
 
 ## Giao diện cuối cùng

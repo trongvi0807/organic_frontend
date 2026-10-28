@@ -1,0 +1,13 @@
+import { useState } from 'react';
+import { Settings2 } from 'lucide-react';
+import { Modal } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Field, Input, Select } from '@/components/ui/field';
+import { readProductRules, saveProductRules } from '@/lib/productRules';
+import { AdminForm } from './AdminForm';
+
+export function ProductRulesDialog({ onSaved = () => {} }) {
+  const [open, setOpen] = useState(false), [rules, setRules] = useState(readProductRules), [error, setError] = useState('');
+  const field = (key, value) => setRules((old) => ({ ...old, [key]: value }));
+  return <><Button variant="outline" size="sm" onClick={() => { setRules(readProductRules()); setError(''); setOpen(true); }}><Settings2 size={15} />Quy ước sản phẩm</Button><Modal open={open} onOpenChange={setOpen} title="Quy ước sản phẩm" description="Áp dụng cho sản phẩm được tạo mới trên trình duyệt này; không thay đổi khối lượng của sản phẩm đã lưu."><AdminForm onSubmit={(event) => { event.preventDefault(); try { saveProductRules(rules); onSaved(rules); setOpen(false); } catch (e) { setError(e.message); } }} className="space-y-4"><Field label="Tiền tố mã tự động"><Input required pattern="[A-Z0-9_-]{1,10}" maxLength={10} value={rules.codePrefix} onChange={(e) => field('codePrefix', e.target.value.toUpperCase())} /></Field><Field label="Danh sách đơn vị (ngăn cách bằng dấu phẩy)"><Input required defaultValue={rules.units.join(', ')} onChange={(e) => field('units', e.target.value.split(',').map((x) => x.trim()).filter(Boolean))} /></Field><Field label="Đơn vị mặc định"><Select required value={rules.defaultUnit} onChange={(e) => field('defaultUnit', e.target.value)}><option value="">Chọn đơn vị</option>{rules.units.map((unit) => <option key={unit}>{unit}</option>)}</Select></Field><Field label="Khối lượng mặc định"><Input required type="number" min="0.001" max="999999999.999" step="0.001" value={rules.defaultQuantity} onChange={(e) => field('defaultQuantity', e.target.value)} /></Field><Field label="Kiểu đóng gói (ngăn cách bằng dấu phẩy)"><Input required defaultValue={rules.packages.join(', ')} onChange={(e) => field('packages', e.target.value.split(',').map((x) => x.trim()).filter(Boolean))} /></Field><Field label="Đóng gói mặc định"><Select required value={rules.defaultPackage} onChange={(e) => field('defaultPackage', e.target.value)}><option value="">Chọn kiểu đóng gói</option>{rules.packages.map((pack) => <option key={pack}>{pack}</option>)}</Select></Field>{error && <p role="alert" className="form-error">{error}</p>}<div className="form-actions"><Button type="button" variant="outline" onClick={() => setOpen(false)}>Đóng</Button><Button type="submit">Lưu quy ước</Button></div></AdminForm></Modal></>;
+}

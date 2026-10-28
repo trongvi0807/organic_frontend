@@ -1,0 +1,523 @@
+{
+  "title": "Dữ liệu thực hành thủ công: sản phẩm, nhập hàng từ nhà sản xuất và bán hàng",
+  "preparedAt": "2026-10-28",
+  "prefix": "AT281026",
+  "execution": "MANUAL_ONLY",
+  "instructions": "Chỉ sao chép request.body vào Bruno nếu muốn thử API thủ công. Thay mọi {{...}} bằng ID/mã thực tế. Không gửi nguyên tệp JSON này lên API. Không có script tự chạy.",
+  "baseUrl": "http://localhost:8088/api/v1",
+  "authentication": "Bearer access token của tài khoản đúng vai trò, do người dùng tự đăng nhập.",
+  "categories": [
+    "Rau củ",
+    "Trái cây",
+    "Thực phẩm khô"
+  ],
+  "samples": [
+    {
+      "code": "CR",
+      "name": "Cà rốt hữu cơ",
+      "slug": "ca-rot",
+      "sku": "AT281026-CR500",
+      "pack": "Gói 500 g",
+      "net": 500,
+      "unit": "g",
+      "sale": 28000,
+      "cost": 12000,
+      "ordered": 100,
+      "accepted": 95,
+      "rejected": 3,
+      "category": "Rau củ",
+      "productCode": "AT281026-CR",
+      "batchCode": "AT281026-LO-CR500",
+      "missing": 2
+    },
+    {
+      "code": "CR",
+      "name": "Cà rốt hữu cơ",
+      "slug": "ca-rot",
+      "sku": "AT281026-CR1K",
+      "pack": "Gói 1 kg",
+      "net": 1,
+      "unit": "kg",
+      "sale": 50000,
+      "cost": 23000,
+      "ordered": 50,
+      "accepted": 50,
+      "rejected": 0,
+      "category": "Rau củ",
+      "productCode": "AT281026-CR",
+      "batchCode": "AT281026-LO-CR1K",
+      "missing": 0
+    },
+    {
+      "code": "TAO",
+      "name": "Táo hữu cơ",
+      "slug": "tao",
+      "sku": "AT281026-TAO1K",
+      "pack": "Hộp 1 kg",
+      "net": 1,
+      "unit": "kg",
+      "sale": 120000,
+      "cost": 65000,
+      "ordered": 40,
+      "accepted": 40,
+      "rejected": 0,
+      "category": "Trái cây",
+      "productCode": "AT281026-TAO",
+      "batchCode": "AT281026-LO-TAO1K",
+      "missing": 0
+    },
+    {
+      "code": "GAO",
+      "name": "Gạo lứt",
+      "slug": "gao-lut",
+      "sku": "AT281026-GAO1K",
+      "pack": "Túi 1 kg",
+      "net": 1,
+      "unit": "kg",
+      "sale": 45000,
+      "cost": 23000,
+      "ordered": 30,
+      "accepted": 30,
+      "rejected": 0,
+      "category": "Thực phẩm khô",
+      "productCode": "AT281026-GAO",
+      "batchCode": "AT281026-LO-GAO1K",
+      "missing": 0
+    },
+    {
+      "code": "YM",
+      "name": "Yến mạch",
+      "slug": "yen-mach",
+      "sku": "AT281026-YM500",
+      "pack": "Gói 500 g",
+      "net": 500,
+      "unit": "g",
+      "sale": 60000,
+      "cost": 32000,
+      "ordered": 20,
+      "accepted": 20,
+      "rejected": 0,
+      "category": "Thực phẩm khô",
+      "productCode": "AT281026-YM",
+      "batchCode": "AT281026-LO-YM500",
+      "missing": 0
+    }
+  ],
+  "requests": [
+    {
+      "name": "Nhà sản xuất được quản lý bằng Nhà cung cấp",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/suppliers",
+      "body": {
+        "supplierCode": "{{supplierCodeUnique}}",
+        "supplierName": "AT281026 - Nhà sản xuất nông sản mẫu",
+        "address": "36 Trịnh Đình Trọng, Phường Tân Phú, Thành phố Hồ Chí Minh",
+        "status": "active"
+      },
+      "expected": "Lưu supplierId và supplierCode thực tế từ response; không dùng mã mẫu trùng bản ghi có sẵn."
+    },
+    {
+      "name": "Xuất xứ liên kết nhà sản xuất",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/origins",
+      "body": {
+        "originCode": "AT281026-XX",
+        "originName": "AT281026 - Vùng sản xuất mẫu",
+        "countryCode": "VN",
+        "country": "Việt Nam",
+        "region": "Vùng sản xuất giả lập",
+        "producerName": "AT281026 - Nhà sản xuất nông sản mẫu",
+        "address": "Địa điểm mẫu phục vụ kiểm thử",
+        "description": "Thông tin giả lập, không phải xác nhận nguồn gốc thực tế.",
+        "supplierId": "{{supplierId}}",
+        "status": "active"
+      },
+      "expected": "Lưu originId và điền vào cột originId trong Excel sản phẩm."
+    },
+    {
+      "name": "Lập đơn mua bằng JSON (phương án thay thế Excel, không tạo lại cùng đơn)",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/purchase-orders",
+      "body": {
+        "supplierId": "{{supplierId}}",
+        "expectedDeliveryDate": "2026-10-29",
+        "note": "AT281026 - Nhập hàng từ nhà sản xuất mẫu",
+        "items": [
+          {
+            "variantId": "{{variantId_CR500}}",
+            "quantity": 100,
+            "unitPrice": 12000
+          },
+          {
+            "variantId": "{{variantId_CR1K}}",
+            "quantity": 50,
+            "unitPrice": 23000
+          },
+          {
+            "variantId": "{{variantId_TAO1K}}",
+            "quantity": 40,
+            "unitPrice": 65000
+          },
+          {
+            "variantId": "{{variantId_GAO1K}}",
+            "quantity": 30,
+            "unitPrice": 23000
+          },
+          {
+            "variantId": "{{variantId_YM500}}",
+            "quantity": 20,
+            "unitPrice": 32000
+          }
+        ]
+      },
+      "expected": {
+        "status": "pending_approval",
+        "amount": 6280000,
+        "save": [
+          "id",
+          "orderCode",
+          "items[].id"
+        ]
+      }
+    },
+    {
+      "name": "Duyệt đơn mua",
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/purchase-orders/{{purchaseOrderId}}/approve",
+      "body": {
+        "note": null
+      },
+      "expected": {
+        "status": "approved",
+        "stockChange": 0
+      }
+    },
+    {
+      "name": "Lập phiếu nhập bằng JSON (thay thế Excel)",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/goods-receipts",
+      "body": {
+        "purchaseOrderId": "{{purchaseOrderId}}",
+        "note": "AT281026 - Kiểm nhận hàng mẫu",
+        "items": [
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_CR500}}",
+            "quantityReceived": 95,
+            "quantityRejected": 3,
+            "discrepancyReason": "3 gói hỏng, thiếu 2 gói",
+            "batchCode": "AT281026-LO-CR500",
+            "manufactureDate": "2026-10-27",
+            "expiryDate": "2027-04-26",
+            "originDescription": "Vùng sản xuất mẫu AT281026"
+          },
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_CR1K}}",
+            "quantityReceived": 50,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": "AT281026-LO-CR1K",
+            "manufactureDate": "2026-10-27",
+            "expiryDate": "2027-04-26",
+            "originDescription": "Vùng sản xuất mẫu AT281026"
+          },
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_TAO1K}}",
+            "quantityReceived": 40,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": "AT281026-LO-TAO1K",
+            "manufactureDate": "2026-10-27",
+            "expiryDate": "2027-04-26",
+            "originDescription": "Vùng sản xuất mẫu AT281026"
+          },
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_GAO1K}}",
+            "quantityReceived": 30,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": "AT281026-LO-GAO1K",
+            "manufactureDate": "2026-10-27",
+            "expiryDate": "2027-04-26",
+            "originDescription": "Vùng sản xuất mẫu AT281026"
+          },
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_YM500}}",
+            "quantityReceived": 20,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": "AT281026-LO-YM500",
+            "manufactureDate": "2026-10-27",
+            "expiryDate": "2027-04-26",
+            "originDescription": "Vùng sản xuất mẫu AT281026"
+          }
+        ]
+      },
+      "expected": {
+        "status": "draft",
+        "stockChange": 0
+      }
+    },
+    {
+      "name": "Gửi duyệt phiếu nhập",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/goods-receipts/{{goodsReceiptId}}/submit",
+      "expected": {
+        "status": "pending_approval",
+        "stockChange": 0
+      }
+    },
+    {
+      "name": "Duyệt nhập kho đợt 1",
+      "role": "ADMIN",
+      "method": "POST",
+      "path": "/goods-receipts/{{goodsReceiptId}}/approve",
+      "body": {
+        "note": null
+      },
+      "expected": {
+        "status": "confirmed",
+        "purchaseOrderStatus": "partially_received",
+        "acceptedQuantity": 235,
+        "acceptedValue": 6220000,
+        "remainingAcceptedObligation": 5
+      }
+    },
+    {
+      "name": "Đợt 2: nhận bù phần thiếu và hàng loại (chọn nhánh nhập tiếp)",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/goods-receipts",
+      "body": {
+        "purchaseOrderId": "{{purchaseOrderId}}",
+        "note": "AT281026 - Nhập bù đợt 2",
+        "items": [
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_CR500}}",
+            "quantityReceived": 5,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": "AT281026-LO-CR500-2",
+            "manufactureDate": "2026-10-27",
+            "expiryDate": "2027-04-26",
+            "originDescription": "Giao bù từ nhà sản xuất mẫu"
+          },
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_CR1K}}",
+            "quantityReceived": 0,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": null,
+            "manufactureDate": null,
+            "expiryDate": null,
+            "originDescription": null
+          },
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_TAO1K}}",
+            "quantityReceived": 0,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": null,
+            "manufactureDate": null,
+            "expiryDate": null,
+            "originDescription": null
+          },
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_GAO1K}}",
+            "quantityReceived": 0,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": null,
+            "manufactureDate": null,
+            "expiryDate": null,
+            "originDescription": null
+          },
+          {
+            "purchaseOrderDetailId": "{{purchaseOrderDetailId_YM500}}",
+            "quantityReceived": 0,
+            "quantityRejected": 0,
+            "discrepancyReason": null,
+            "batchCode": null,
+            "manufactureDate": null,
+            "expiryDate": null,
+            "originDescription": null
+          }
+        ]
+      },
+      "expected": "Nháp, chưa tăng tồn. Sau submit + approve: PO received, đã nhập đạt 240, tổng giá trị đạt 6.280.000đ. Đợt 2 thay cả 3 gói bị loại và 2 gói chưa giao."
+    },
+    {
+      "name": "Nhánh thay thế: đóng phần thiếu sau đợt 1 (không tạo đợt 2)",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/purchase-orders/{{purchaseOrderId}}/close",
+      "body": {
+        "reasonCode": "supplier_cancelled",
+        "note": "Nhà sản xuất không giao tiếp 5 gói còn phải nhận đạt."
+      },
+      "expected": {
+        "status": "closed",
+        "receivedTotalAmount": 6220000,
+        "stockChange": 0,
+        "remainingReceivable": "Không cho nhập tiếp. Lưu nguyên số còn thiếu 5 để đối chiếu."
+      }
+    },
+    {
+      "name": "Hủy phiếu chưa duyệt nếu cần đóng đơn",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/goods-receipts/{{unconfirmedReceiptId}}/cancel",
+      "body": {
+        "note": "Không tiếp tục nhận phần hàng trên phiếu nháp."
+      },
+      "expected": {
+        "status": "cancelled",
+        "stockChange": 0
+      }
+    },
+    {
+      "name": "Khuyến mãi 10%",
+      "role": "SALES_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/admin/promotions",
+      "body": {
+        "promotionCode": "AT281026_10",
+        "name": "AT281026 - Giảm 10%",
+        "description": "Khuyến mãi mẫu",
+        "discountType": "percentage",
+        "discountValue": 10,
+        "maxDiscountAmount": 50000,
+        "minOrderValue": 100000,
+        "startDate": "2026-10-28T00:00:00",
+        "endDate": "2026-11-28T23:59:59",
+        "usageLimit": 100,
+        "perUserLimit": 5,
+        "status": "active",
+        "productIds": [
+          "{{productId_CR}}",
+          "{{productId_TAO}}",
+          "{{productId_GAO}}"
+        ],
+        "batchIds": []
+      },
+      "expected": "Mã hoạt động trong khoảng ngày đã cấu hình. Điều chỉnh ngày nếu thực hành muộn."
+    },
+    {
+      "name": "Xem trước đơn COD",
+      "role": "CUSTOMER",
+      "method": "POST",
+      "path": "/checkout/preview",
+      "body": {
+        "items": [
+          {
+            "variantId": "{{variantId_CR500}}",
+            "quantity": 2
+          },
+          {
+            "variantId": "{{variantId_TAO1K}}",
+            "quantity": 1
+          }
+        ],
+        "receiverName": "Khách hàng thực hành AT281026",
+        "receiverPhone": "0344855913",
+        "shippingAddress": "36 Trịnh Đình Trọng, Phường Tân Phú, Thành phố Hồ Chí Minh",
+        "note": "AT281026 - Đơn COD mẫu",
+        "paymentMethod": "cod",
+        "promotionCode": "AT281026_10",
+        "points": 0
+      },
+      "expected": {
+        "subtotal": 176000,
+        "promotionDiscount": 17600,
+        "total": 158400,
+        "assumption": "Không có ưu đãi khác; phí giao hàng hiện tại bằng 0. Đây là số đối chiếu, không phải response đã chạy."
+      }
+    },
+    {
+      "name": "Tạo đơn bán",
+      "role": "CUSTOMER",
+      "method": "POST",
+      "path": "/orders",
+      "headers": {
+        "Idempotency-Key": "{{uniqueKeyForThisOrder}}"
+      },
+      "bodyFrom": "Sao chép body của Xem trước đơn COD",
+      "expected": "Lưu orderId/orderCode. Dùng lại cùng key chỉ khi thử lại cùng yêu cầu; đơn mới dùng key mới."
+    },
+    {
+      "name": "Chuẩn bị hàng",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/management/orders/{{orderId}}/prepare",
+      "expected": "Đơn chuyển sang bước chuẩn bị theo API."
+    },
+    {
+      "name": "Đặt vận chuyển",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/management/orders/{{orderId}}/shipments",
+      "body": {
+        "carrier": "Giao hàng mẫu AT281026",
+        "trackingCode": "AT281026-GH01",
+        "driverName": "Nhân viên giao hàng mẫu",
+        "driverPhone": "0344855913",
+        "shippingCost": 0,
+        "note": "Chỉ dùng thực hành"
+      },
+      "expected": "Lưu shipmentId."
+    },
+    {
+      "name": "Bàn giao vận chuyển",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "PATCH",
+      "path": "/management/shipments/{{shipmentId}}/status",
+      "body": {
+        "status": "picked_up",
+        "note": "Bàn giao hàng mẫu"
+      },
+      "expected": "Xuất kho số lượng thực giao; không trừ kho thêm lần thứ hai."
+    },
+    {
+      "name": "Giao hàng thành công",
+      "role": "WAREHOUSE_STAFF hoặc ADMIN",
+      "method": "PATCH",
+      "path": "/management/shipments/{{shipmentId}}/status",
+      "body": {
+        "status": "delivered",
+        "note": "Khách đã nhận hàng mẫu"
+      },
+      "expected": "Trạng thái giao hàng đã giao. COD chưa tự được coi là đã đối soát."
+    },
+    {
+      "name": "Ghi nhận thu COD",
+      "role": "SALES_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/management/orders/{{orderId}}/cod/collect",
+      "expected": "Ghi nhận thu hộ, kiểm tra trạng thái trả về."
+    },
+    {
+      "name": "Đối soát COD",
+      "role": "SALES_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/management/orders/{{orderId}}/cod/reconcile",
+      "expected": "Ghi nhận đối soát, kiểm tra trạng thái thanh toán trả về."
+    },
+    {
+      "name": "Hoàn tất đơn",
+      "role": "SALES_STAFF hoặc ADMIN",
+      "method": "POST",
+      "path": "/management/orders/{{orderId}}/complete",
+      "expected": "Hoàn tất khi giao hàng và thanh toán đủ điều kiện. Điểm được cộng một lần."
+    }
+  ],
+  "limitations": [
+    "Luồng nhiều đợt / đóng đơn cần cập nhật backend và chạy migration SQL theo tài liệu trước khi kiểm tra thủ công.",
+    "Số liệu trong expected là kết quả mong đợi từ dữ liệu mẫu và mã nguồn, không phải kết quả kiểm thử thực tế.",
+    "Nhánh nhập đợt 2 và nhánh đóng sau đợt 1 là hai lựa chọn loại trừ nhau trên cùng một đơn. Dùng đơn riêng với tiền tố khác nếu muốn thực hiện cả hai."
+  ]
+}

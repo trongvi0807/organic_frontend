@@ -15,6 +15,8 @@ export const orderService = {
   reviewPayments: async (params) => normalizePage(await get('/management/payments/requires-review', params)),
 };
 export const promotionService = {
+  products: async (params) => normalizePage(await get('/admin/promotions/products', params)),
+  batches: async (params) => normalizePage(await get('/admin/promotions/batches', params)),
   list: async (params) => normalizePage(await get('/admin/promotions', params)),
   get: (id) => get(`/admin/promotions/${encodeURIComponent(id)}`),
   save: async (id, data) => { requireBackend(); return unwrap(await (id ? api.put(`/admin/promotions/${encodeURIComponent(id)}`, data) : api.post('/admin/promotions', data))); },

@@ -1,4 +1,6 @@
 export const STAFF_ROLES = ['ADMIN', 'SALES_STAFF', 'WAREHOUSE_STAFF'];
+export const PRODUCT_MANAGERS = ['ADMIN', 'WAREHOUSE_STAFF'];
+export const PROMOTION_MANAGERS = ['ADMIN', 'SALES_STAFF'];
 export const roleCodes = (user) => (user?.roles || []).map((role) => role.replace(/^ROLE_/, ''));
 export const hasRole = (user, ...roles) => roleCodes(user).some((role) => roles.includes(role));
 export function dashboardPath(user) {

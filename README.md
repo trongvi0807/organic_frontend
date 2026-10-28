@@ -239,3 +239,25 @@ docker compose build
 100 test kiểm tra phân trang/lọc, bảo toàn liên kết khi sửa, phân quyền helper, public transport, payload hồ sơ/chứng nhận, upload FormData qua HTTP, DTO Axios, hợp đồng chi tiết/đánh giá và giới hạn tệp nháp. Xem [kết quả và giới hạn kiểm thử](docs/VERIFICATION.md). Ảnh từ Unsplash được lưu trong `public/images`; font Be Vietnam Pro/Lora tải từ Google Fonts, có fallback sans-serif/Georgia khi offline.
 
 Tài liệu stack: [Vite](https://vite.dev/guide/), [Tailwind + Vite](https://tailwindcss.com/docs/installation/using-vite).
+
+Đối chiếu API theo tài liệu 26/10/2026: [Kết quả và hướng dẫn kiểm tra thanh toán](docs/API_INTEGRATION_RESULT.md) · [155 API và input/output](docs/API_INTEGRATION_AUDIT.md).
+
+Tài liệu cập nhật giao diện và nghiệp vụ Admin: [ADMIN_OPERATIONS_UPDATE.md](docs/ADMIN_OPERATIONS_UPDATE.md).
+
+Cập nhật mã tự động, nhập Excel và quy trình giao nhiều đợt: [ADMIN_PURCHASE_WORKFLOW_V2.md](docs/ADMIN_PURCHASE_WORKFLOW_V2.md).
+
+API backend mới (27-10-2026): [Hướng dẫn nhập Excel Đơn mua/Sản phẩm/Phiếu nhập, tải PDF và rà soát API còn thiếu giao diện](docs/BACKEND_API_UPDATE_20261027.md). Luồng Excel hiện tại tải mẫu và kiểm tra/nhập trực tiếp qua backend, thay cho mẫu SanPham trước đây.
+
+Khung biểu mẫu khóa luận A4: [PrintFormLayout — hướng dẫn dùng chung, xem trước, in và lưu PDF](docs/PRINT_FORMS.md). Đã gắn nút xem trước vào chi tiết Đơn mua và Phiếu nhập.
+
+Hai biểu mẫu UC01 theo Golden Reference: [Phiếu đề nghị BM-NV01-01 và Đơn đặt hàng BM-NV01-02](docs/UC01_PRINT_FORMS.md), dùng chung font Times New Roman, dòng chấm, bảng 8 dòng và vùng xác nhận trống để đóng dấu thủ công sau khi in.
+
+Cập nhật 28-10-2026: [Bộ đầy đủ 16 biểu mẫu theo PDF tham chiếu](docs/BUSINESS_FORMS_PDF_REFERENCE.md). Mở **Admin → Biểu mẫu & bản in**, có A4 ngang/dọc theo từng mẫu và font Noto Sans tiếng Việt đóng gói trong dự án; không tạo con dấu đỏ.
+
+Đơn hàng khách hàng: [Lịch sử mua hàng, theo dõi đơn, hủy và đổi trả — API và phần backend còn thiếu](docs/CUSTOMER_ORDERS.md). Mở `/don-hang` cho tài khoản CUSTOMER hoặc `/demo/don-hang` để thử ngay với dữ liệu organic mẫu. Hiển thị mã đơn/mã vận đơn/mã yêu cầu nghiệp vụ, không hiển thị UUID.
+
+Header cửa hàng: [Tìm kiếm gợi ý theo tên/mã SP, menu tài khoản, phản hồi thêm giỏ và chuông sản phẩm/ưu đãi/đơn](docs/STOREFRONT_HEADER.md).
+
+Dashboard quản trị tại `/admin/dashboard`: [KPI, Recharts, cảnh báo lô/tồn, công việc chờ duyệt và hoạt động từ chứng từ — định nghĩa chỉ số và API](docs/ADMIN_DASHBOARD.md). Có nút Xem bản mẫu để xem dữ liệu organic mô phỏng mà không thay đổi dữ liệu thật.
+
+Điều hướng Admin: [Sidebar theo vai trò, tab ngang, quyền sản phẩm/khuyến mãi và các API lựa chọn tương ứng](docs/ADMIN_NAVIGATION_ROLES.md). Cần cập nhật và khởi động lại backend đi kèm.

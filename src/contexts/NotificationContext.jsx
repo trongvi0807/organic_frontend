@@ -17,15 +17,16 @@ export function NotificationProvider({ children }) {
   const allowed = !DEMO_MODE && hasRole(user, 'ADMIN', 'WAREHOUSE_STAFF');
   const [enabled, setEnabled] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [revision, setRevision] = useState(0);
   const seen = useRef(new Set());
-  const inbox = useResource(() => user && !DEMO_MODE ? loadInbox(user) : Promise.resolve(null), [user?.username, revision]);
-  const items = inbox.data?.owner === user?.username ? inbox.data?.items || [] : [];
+  const owner = user?.username || 'guest';
+  const inbox = useResource(() => loadInbox(user), [owner, revision]);
+  const items = inbox.data?.owner === owner ? inbox.data?.items || [] : [];
   useEffect(() => {
-    if (!user || DEMO_MODE) return;
-    const refresh = () => { if (document.visibilityState === 'visible') inbox.reload(); };
+    const refresh = () => { if (document.visibilityState === 'visible') inbox.reload({ background: true }); };
     const timer = setInterval(refresh, 30000); window.addEventListener('focus', refresh);
-    return () => { clearInterval(timer); window.removeEventListener('focus', refresh); };
-  }, [user?.username, inbox.reload]);
-  async function markRead(item) { await readInboxItem(user, item); inbox.setData((old) => old ? { ...old, items: old.items.map((n) => n.key === item.key ? { ...n, read: true } : n) } : old); }
+    window.addEventListener('moc:order-updated', refresh); window.addEventListener('moc:payment-updated', refresh);
+    return () => { clearInterval(timer); window.removeEventListener('focus', refresh); window.removeEventListener('moc:order-updated', refresh); window.removeEventListener('moc:payment-updated', refresh); };
+  }, [owner, inbox.reload]);
+  async function markRead(item) { await readInboxItem(user, item); inbox.setData((old) => old?.owner === owner ? { ...old, items: old.items.map((n) => n.key === item.key ? { ...n, read: true } : n) } : old); }
   useEffect(() => {
     let cancelled = false;
     setError(''); setEnabled(false); seen.current.clear();
@@ -65,6 +66,6 @@ export function NotificationProvider({ children }) {
     } catch (err) { setError(errorMessage(err)); }
     finally { setBusy(false); }
   }
-  return <NotificationContext.Provider value={{ enabled, busy, error, toggle, revision, items, unread: items.filter((n) => !n.read).length, inboxLoading: inbox.loading, inboxError: inbox.error || (inbox.data?.partialError ? 'Một nguồn thông báo chưa tải được. Bấm chuông để thử lại.' : ''), reloadInbox: inbox.reload, markRead }}>{children}</NotificationContext.Provider>;
+  return <NotificationContext.Provider value={{ enabled, busy, error, toggle, revision, items, unread: items.filter((n) => !n.read).length, inboxLoading: inbox.loading, inboxError: inbox.error || inbox.refreshError || (inbox.data?.partialError ? 'Một nguồn thông báo chưa tải được. Bấm chuông để thử lại.' : ''), reloadInbox: inbox.reload, markRead }}>{children}</NotificationContext.Provider>;
 }
 export const useNotifications = () => useContext(NotificationContext);

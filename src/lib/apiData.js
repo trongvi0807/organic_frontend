@@ -1,12 +1,15 @@
+import { adminDate } from './adminFormat';
 // Support both existing catalog items and the new management PageResponse.content.
 export function normalizePage(data) {
   return { ...data, items: data?.content ?? data?.items ?? [] };
 }
 export async function allPages(list, params = {}) {
-  const first = normalizePage(await list({ ...params, page: 0, size: 100 }));
+  // Orders enforce a maximum of 50; shared admin loaders must respect that contract.
+  const size = Number.isInteger(params.size) && params.size > 0 ? Math.min(params.size, 50) : 50;
+  const first = normalizePage(await list({ ...params, page: 0, size }));
   const items = [...first.items];
   for (let page = 1; page < (first.totalPages || 0); page++) {
-    const next = normalizePage(await list({ ...params, page, size: 100 }));
+    const next = normalizePage(await list({ ...params, page, size }));
     items.push(...next.items);
   }
   return items;
@@ -31,7 +34,7 @@ export function internalHref(value, fallback = '/san-pham') {
   return value.replace(/^\/products(?=[?#]|$)/, '/san-pham');
 }
 export const optional = (value) => value == null || String(value).trim() === '' ? null : String(value).trim();
-export const dateText = (value) => value ? new Intl.DateTimeFormat('vi-VN').format(new Date(`${value.slice(0, 10)}T12:00:00`)) : 'Không đặt';
+export const dateText = (value) => value ? adminDate(value) : 'Không đặt';
 export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 export function validateUpload(file, document = false) {
   const types = ['image/jpeg', 'image/png', 'image/webp', ...(document ? ['application/pdf'] : [])];

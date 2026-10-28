@@ -1,0 +1,16 @@
+.admin-workspace-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 18px; color: #61705d; font-size: 12px; }
+.admin-workspace-heading > span { font-weight: 600; color: #31553a; }
+.admin-workspace-heading > div { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 14px; }
+.admin-workspace-heading a { display: inline-flex; align-items: center; gap: 6px; }
+.admin-workspace-heading a:hover { color: #1b4d2e; text-decoration: underline; text-underline-offset: 4px; }
+.admin-section-tabs { display: flex; gap: 6px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; border-bottom: 1px solid #dfe7d9; margin-bottom: 28px; padding: 0 3px; }
+.admin-section-tab { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; min-height: 49px; padding: 13px 17px; border-radius: 10px 10px 0 0; color: #72806b; font-size: 13px; white-space: nowrap; transition: color 160ms ease, background-color 160ms ease; }
+.admin-section-tab:hover { background: #eff4e9; color: #31553a; }
+.admin-section-tab.is-active { background: #eaf1e4; color: #1b4d2e; font-weight: 600; }
+.admin-section-tab.is-active::after { content: ''; position: absolute; bottom: 0; left: 14px; right: 14px; height: 3px; border-radius: 3px 3px 0 0; background: #6a8d4a; }
+.admin-section-tab:focus-visible { outline: 2px solid #668549; outline-offset: -3px; }
+.admin-route-content { animation: admin-section-enter 170ms ease-out; }
+@keyframes admin-section-enter { from { opacity: .65; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@media (max-width: 640px) { .admin-workspace-heading { align-items: flex-start; font-size: 11px; flex-direction: column; gap: 10px; } .admin-workspace-heading > div { justify-content: flex-start; gap: 12px; } .admin-section-tabs { margin-bottom: 22px; } .admin-section-tab { min-height: 45px; padding-inline: 12px; font-size: 12px; } }
+@media (prefers-reduced-motion: reduce) { .admin-route-content { animation: none; } .admin-section-tab { transition: none; } }
+@media print { .admin-workspace-heading, .admin-section-tabs { display: none !important; } }

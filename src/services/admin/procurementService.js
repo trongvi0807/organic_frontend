@@ -7,12 +7,15 @@ const post = async (url, data) => { requireBackend(); return unwrap(await api.po
 function documents(base) {
   return {
     list: async (params) => normalizePage(await get(base, params)),
-    get: (id) => get(`${base}/${id}`),
+    get: (id, params) => get(`${base}/${id}`, params),
     save: async (id, data) => { requireBackend(); return id ? unwrap(await api.put(`${base}/${id}`, data)) : post(base, data); },
     decide: (id, action, note) => post(`${base}/${id}/${action}`, { note: note?.trim() || null }),
   };
 }
-export const purchaseOrderService = documents('/purchase-orders');
+export const purchaseOrderService = {
+  ...documents('/purchase-orders'),
+  close: (id, data) => post(`/purchase-orders/${id}/close`, data),
+};
 export const goodsReceiptService = {
   ...documents('/goods-receipts'),
   submit: (id) => post(`/goods-receipts/${id}/submit`),

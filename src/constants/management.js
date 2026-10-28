@@ -15,13 +15,13 @@ export const modules = {
     ],
   },
   suppliers: {
-    title: 'Nhà cung cấp', singular: 'nhà cung cấp', description: 'Quản lý đối tác cung ứng và thông tin liên hệ.', nameKey: 'supplierName', codeKey: 'supplierCode', active: 'active', inactive: 'inactive',
+    title: 'Nhà cung cấp', singular: 'nhà cung cấp', description: 'Quản lý nguồn cung, người liên hệ, mã số thuế và địa chỉ nhà cung cấp.', nameKey: 'supplierName', codeKey: 'supplierCode', active: 'active', inactive: 'inactive',
     fields: [
-      { name: 'supplierCode', label: 'Mã nhà cung cấp', required: true, maxLength: 50 },
+      { name: 'supplierCode', label: 'Mã nhà cung cấp tự động', required: true, readOnly: true, maxLength: 50, hint: 'Tự động theo thứ tự NCC01, NCC02… Mã đã lưu được giữ nguyên.' },
       { name: 'supplierName', label: 'Tên nhà cung cấp', required: true, maxLength: 200 },
       { name: 'taxCode', label: 'Mã số thuế', maxLength: 50 },
-      { name: 'contactPerson', label: 'Người liên hệ', maxLength: 100 },
-      { name: 'phoneNumber', label: 'Điện thoại', type: 'tel', pattern: '\\+?[0-9]{9,15}' },
+      { name: 'contactPerson', label: 'Người đại diện / liên hệ', maxLength: 100 },
+      { name: 'phoneNumber', label: 'Số điện thoại', type: 'tel', pattern: '\\+?[0-9]{9,15}', maxLength: 16, hint: '9–15 chữ số, có thể có dấu + ở đầu.' },
       { name: 'email', label: 'Email', type: 'email', maxLength: 100 },
       { name: 'address', label: 'Địa chỉ', type: 'textarea', maxLength: 500 },
       { name: 'status', label: 'Trạng thái', options: [['active', 'Hoạt động'], ['inactive', 'Ngừng hoạt động']], defaultValue: 'active' },
