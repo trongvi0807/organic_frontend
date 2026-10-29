@@ -37,3 +37,12 @@ it('reads the documented authenticated payment endpoint without submitting brows
   expect((await checkoutService.payment('payment-id')).status).toBe('pending');
   expect(api.get).toHaveBeenCalledWith('/payments/payment-id',{params:undefined});
 });
+it('uses the authenticated VNPay return contract and reference lookup without calling IPN', async () => {
+  const queryString = 'vnp_TxnRef=ref&vnp_ResponseCode=00&vnp_SecureHash=signed';
+  await checkoutService.confirmVnpayReturn(queryString);
+  await checkoutService.vnpayByReference('safe-reference');
+  expect(api.post).toHaveBeenCalledWith('/payments/vnpay/return', { queryString }, undefined);
+  expect(api.get).toHaveBeenCalledWith('/payments/vnpay/reference/safe-reference', { params: undefined });
+  expect(api.post.mock.calls.some(([url]) => url.includes('/ipn'))).toBe(false);
+  expect(api.get.mock.calls.some(([url]) => url.includes('/ipn'))).toBe(false);
+});

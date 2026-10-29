@@ -49,7 +49,7 @@ export async function loadFormData(form, id, shipmentId) {
     const context = { products: {} };
     try { if (record.variant?.productId) context.products[record.variant.productId] = await traceabilityService.get(record.variant.productId); }
     catch { warnings.push('Chưa tải được mã sản phẩm, ô Mã SP để trống.'); }
-    return { data: inventoryFormData([record], context, form.id), warnings: [...warnings, 'Số trên sổ lấy từ số lượng lô hiện tại. Kết quả kiểm đếm và lịch sử nhập/xuất chưa có API được để trống.'] };
+    return { data: inventoryFormData([record], context, form.id), warnings: [...warnings, 'Số trên sổ lấy từ lượng tồn của từng lô. Kết quả kiểm đếm và các thông tin chưa ghi nhận được để trống để bổ sung.'] };
   }
   if (form.source === 'sale') {
     const shipments = record.shipments || [];

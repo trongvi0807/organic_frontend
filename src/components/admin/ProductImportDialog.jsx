@@ -9,7 +9,7 @@ import { categoryService } from '@/services/admin/categoryService';
 
 export function ProductImportDialog({ onChanged }) {
   const [open, setOpen] = useState(false), [busy, setBusy] = useState(false);
-  return <><Button variant="outline" onClick={() => setOpen(true)}><FileSpreadsheet size={16} />Nhập Excel</Button><Modal open={open} onOpenChange={(next) => { if (!busy) setOpen(next); }} title="Nhập sản phẩm từ Excel" description="Tải mẫu từ backend, kiểm tra từng dòng và xác nhận nhập toàn bộ file." className="!max-w-[1100px]">
+  return <><Button variant="outline" onClick={() => setOpen(true)}><FileSpreadsheet size={16} />Nhập Excel</Button><Modal open={open} onOpenChange={(next) => { if (!busy) setOpen(next); }} title="Nhập sản phẩm từ Excel" description="Tải mẫu Excel, điền sản phẩm rồi kiểm tra trước khi lưu." className="!max-w-[1100px]">
     {open && <ProductImportContent onBusyChange={setBusy} onSaved={() => { setOpen(false); onChanged?.(); }} />}
   </Modal></>;
 }

@@ -25,7 +25,7 @@ export default function BusinessFormsPage() {
     setParams(query, { replace: true });
   }
   return <>
-    <div className="admin-page-heading"><div><span className="eyebrow">HỒ SƠ NGHIỆP VỤ</span><h1>Biểu mẫu & bản in.</h1><p>16 mẫu theo tài liệu khóa luận. Chọn chứng từ nguồn hoặc in mẫu trống để điền tay.</p></div><Printer size={28} className="text-primary" /></div>
+    <div className="admin-page-heading"><div><span className="eyebrow">HỒ SƠ NGHIỆP VỤ</span><h1>Biểu mẫu & bản in.</h1><p>Chọn chứng từ để xem trước, in hoặc lưu PDF. Bạn cũng có thể in mẫu trống để điền tay.</p></div><Printer size={28} className="text-primary" /></div>
     <div className="business-form-workspace">
       <aside className="business-form-catalog" aria-label="Danh sách 16 biểu mẫu">{Object.entries(formGroups).map(([group, name]) => <section key={group}><h2>{name}</h2><div>{businessForms.filter((item) => item.group === group).map((item) => <button key={item.id} type="button" className={item.id === form.id ? 'active' : ''} aria-pressed={item.id === form.id} onClick={() => select(item)}><FileText size={15} /><span><small>{item.code}</small>{item.title}</span></button>)}</div></section>)}</aside>
       <div className="min-w-0 space-y-4">

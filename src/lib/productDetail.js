@@ -28,6 +28,14 @@ export function sellableVariants(product) {
     .sort((a, b) => Number(a.sellingPrice) - Number(b.sellingPrice));
 }
 
+export function variantDisplayName(variant) {
+  if (!variant) return '';
+  const name = String(variant.variantName || '').trim();
+  const quantity = Number(variant.netQuantity);
+  if (!Number.isFinite(quantity) || quantity <= 0 || !variant.unitId || /\d\s*(?:[.,]\d+)?\s*(?:kg|g|ml|l)\b/i.test(name)) return name;
+  return `${name}${name ? ' · ' : ''}${quantity.toLocaleString('vi-VN')} ${variant.unitId}`;
+}
+
 export function reviewMedia(review) {
   const source = review.media ?? (review.images || []).map((item) => ({ ...item, url: item.imageUrl, type: 'image', alt: item.altText }));
   return source.flatMap((item, index) => {

@@ -1,5 +1,7 @@
 # Thanh toán và tích hợp API backend — 26/10/2026
 
+**VNPay cập nhật 29-10-2026:** xem [luồng hiện tại và kiểm tra thủ công](VNPAY_FLOW_20261029.md). Đã bổ sung xác minh Return ở backend và đồng bộ kết quả ngay khi khách quay về.
+
 **Bố cục cuối đã cập nhật:** ưu đãi/đổi điểm chỉ ở giỏ, checkout theo ảnh mẫu và nút THANH TOÁN. Đọc [PURCHASE_REDESIGN.md](PURCHASE_REDESIGN.md) cho thay đổi mới, địa chỉ và VNPay tự làm mới; các mục dưới mô tả nền tảng tích hợp trước khi đổi bố cục.
 
 Trang `/thanh-toan` đã thay bản xem trước bằng luồng dùng API thật theo `organic_backend/docs/CHECKOUT_PAYMENTS_API.md` và `CART_API.md`. Không sửa backend trong lượt này.
@@ -46,14 +48,14 @@ Thay bằng đúng URL đang dùng. Nếu frontend Docker chạy port 3000 thì 
 
 Frontend gọi `GET /payments/methods` để bật/tắt lựa chọn COD/Stripe/PayPal/VNPay. Cổng chưa đủ cấu hình hiển thị nhưng bị vô hiệu hóa. Không đưa secret của Stripe, PayPal hoặc VNPay vào `VITE_*`. Luồng hiện tại dùng trang thanh toán redirect của backend nên không cần Stripe.js hay publishable key ở frontend.
 
-Backend giữ khóa trong biến môi trường hoặc `config/local.properties` theo `organic_backend/docs/PAYMENT_LOCAL_SETUP.md`. Webhook/IPN cần URL HTTPS public của backend và signing secret/webhook ID đúng môi trường. Chỉ có API key chưa đủ để xác nhận tiền.
+Backend giữ cấu hình trong `application.yml` và biến môi trường theo `organic_backend/docs/PAYMENT_LOCAL_SETUP.md`; không đưa secret vào frontend. Webhook/IPN cần URL HTTPS public của backend và signing secret/webhook ID đúng môi trường.
 
 Các route quay về đã triển khai:
 
 - `/payment/result?paymentId=...`
 - `/payment/cancel?paymentId=...`
 
-VNPay quay về không có paymentId thì dùng tham chiếu đã lưu trong phiên trình duyệt trước redirect. Nếu mở ở phiên khác không có tham chiếu, trang hướng dẫn vào đơn hàng để chọn lần thanh toán. Không suy ra đơn hoặc trạng thái trả tiền từ `vnp_ResponseCode`, `status=paid`, `token`, `session_id` hay tham số tự thêm.
+VNPay quay về không có paymentId thì gửi query đã ký sang POST `/payments/vnpay/return` để xác minh; đọc lại bằng GET `/payments/vnpay/reference/{vnp_TxnRef}`. Không phụ thuộc ánh xạ trình duyệt, không suy ra trả tiền từ riêng `vnp_ResponseCode`, `status=paid` hoặc tham số tự thêm.
 
 ## Luồng khách hàng
 
@@ -65,7 +67,7 @@ VNPay quay về không có paymentId thì dùng tham chiếu đã lưu trong phi
 6. **Chống đặt trùng:** lưu payload và Idempotency-Key vào sessionStorage trước POST orders. Nếu không lưu được key thì không gửi tạo đơn. Lỗi mạng/5xx giữ lần đặt; tải lại trang vẫn có nút khôi phục, gửi đúng body/key cũ. Không preview lại hoặc tạo key mới trong bước khôi phục vì đơn có thể đã giữ hàng.
 7. **Sau tạo:** mở chi tiết đơn. Chỉ xóa các dòng đã mua nếu số lượng hiện tại còn khớp; giữ dòng chưa chọn hoặc số lượng đã đổi. Backend chưa có thao tác remove-if-quantity nguyên tử, nên sửa cùng lúc từ nhiều tab vẫn có thể chạy đua; frontend không gọi clear toàn giỏ khi checkout.
 8. **Thanh toán online:** tại chi tiết đơn chọn “Tiếp tục thanh toán”, gọi initiate, lưu paymentId/orderId trước redirect. Chỉ chấp nhận URL HTTPS đến host của cổng tương ứng. COD và đơn 0 đồng không gọi cổng.
-9. **Kết quả:** đọc GET payment từ backend. Stripe/PayPal có nút sync; PayPal có nút xác nhận capture sau buyer approval. Không capture tự động chỉ vì truy cập URL. VNPay chờ IPN, không gọi API sync chưa được hỗ trợ. Poll GET ngắn hạn tối đa khoảng một phút khi trạng thái chưa rõ, có nút tải lại thủ công.
+9. **Kết quả:** hiển thị theo trạng thái backend. VNPay gửi query Return để xác minh/lưu; khi thiếu query thì tra cứu reference/payment và đối chiếu QueryDR một lần. Có nút sync; polling thường chỉ GET trạng thái. PayPal vẫn yêu cầu thao tác capture sau buyer approval, không capture chỉ vì truy cập URL.
 10. **Đơn hàng/điểm:** xem trạng thái và yêu cầu hủy trước khi chuẩn bị/chưa trả tiền theo điều kiện backend. Không tự báo đã hủy khi chỉ quay lại `/payment/cancel`. Đơn paid/requires_review không tự hoàn tiền. Xem số dư, điểm đang giữ và lịch sử điểm dạng list phân trang từ API.
 
 ## Trang và phân quyền

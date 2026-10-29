@@ -1,5 +1,7 @@
 # Kết quả tích hợp theo PDF — 26/10/2026
 
+**Lịch sử phiên bản:** phần VNPay dưới đây đã được thay bằng [luồng đồng bộ backend/frontend ngày 29-10-2026](VNPAY_FLOW_20261029.md), gồm API Return mới và dùng API reference đã có. Các kết quả kiểm thử dưới chỉ thuộc đợt 26/10, không xác nhận phiên bản VNPay mới đã được chạy thử.
+
 Hợp đồng tham chiếu: Organic_Backend_Tai_lieu_Tich_hop_API_Frontend.pdf (144 trang, 155 endpoint, 107 schema). Lượt này chỉ chỉnh frontend; không thay controller, DTO, nghiệp vụ, cấu hình hoặc dữ liệu backend.
 
 ## Những chỗ đã sửa

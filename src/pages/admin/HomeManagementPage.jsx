@@ -12,6 +12,7 @@ import { Pagination } from '@/components/common/Pagination';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea, Select } from '@/components/ui/field';
 import { StatusBadge } from '@/components/admin/StatusBadge';
+import { HomeCertificateEditor } from '@/components/admin/HomeCertificateEditor';
 
 export default function HomeManagementPage() {
   const [tab, setTab] = useState('content');
@@ -29,7 +30,7 @@ function ContentPanel() {
   return <section className="admin-table-panel content-editor-panel"><ResourceState loading={resource.loading} error={resource.error} onRetry={resource.reload} />{!resource.loading && !resource.error && resource.data && <ContentEditor key={JSON.stringify(resource.data)} initial={resource.data} onSaved={resource.setData} />}</section>;
 }
 function ContentEditor({ initial, onSaved }) {
-  const [data, setData] = useState({ ...initial, banners: initial.banners || [], highlights: initial.highlights || [], faqs: initial.faqs || [] });
+  const [data, setData] = useState({ ...initial, banners: initial.banners || [], highlights: initial.highlights || [], faqs: initial.faqs || [], certificationGallery: initial.certificationGallery || [] });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   function field(name, value) { setData((old) => ({ ...old, [name]: value })); }
@@ -37,7 +38,7 @@ function ContentEditor({ initial, onSaved }) {
   function remove(group, index) { setData((old) => ({ ...old, [group]: old[group].filter((_, at) => at !== index) })); }
   async function save(event) {
     event.preventDefault(); setBusy(true); setError('');
-    const payload = { ...data, contactEmail: optional(data.contactEmail), contactPhone: optional(data.contactPhone), contactAddress: optional(data.contactAddress), openingHours: optional(data.openingHours), banners: data.banners.map((banner) => ({ ...banner, subtitle: optional(banner.subtitle), imageUrl: optional(banner.imageUrl), imageAlt: optional(banner.imageAlt) })) };
+    const payload = { ...data, contactEmail: optional(data.contactEmail), contactPhone: optional(data.contactPhone), contactAddress: optional(data.contactAddress), openingHours: optional(data.openingHours), banners: data.banners.map((banner) => ({ ...banner, subtitle: optional(banner.subtitle), imageUrl: optional(banner.imageUrl), imageAlt: optional(banner.imageAlt) })), certificationGallery: data.certificationGallery.map((entry) => ({ ...entry, previewImageUrl: optional(entry.previewImageUrl), previewDocumentUrl: optional(entry.previewDocumentUrl), description: optional(entry.description) })) };
     try { const saved = await homeAdminService.saveContent(payload); toast.success('Đã lưu nội dung trang chủ.'); onSaved(saved); }
     catch (err) { setError(errorMessage(err)); } finally { setBusy(false); }
   }
@@ -48,6 +49,7 @@ function ContentEditor({ initial, onSaved }) {
   ];
   return <AdminForm className="home-content-form" onSubmit={save}><fieldset disabled={busy}><h2>Nội dung cửa hàng</h2><div className="record-form-grid"><Field label="Tên cửa hàng *"><Input required maxLength={150} value={data.siteName} onChange={(e) => field('siteName', e.target.value)} /></Field><Field label="Tiêu đề chính *"><Input required maxLength={200} value={data.headline} onChange={(e) => field('headline', e.target.value)} /></Field><Field label="Giới thiệu *" className="full-width"><Textarea required maxLength={2000} value={data.introduction} onChange={(e) => field('introduction', e.target.value)} /></Field></div>
   {groups.map((group) => <section className="content-group" key={group.key}><div className="profile-section-heading"><h3>{group.label} <span>{data[group.key].length}/{group.max}</span></h3><Button variant="outline" size="sm" disabled={busy || data[group.key].length >= group.max} onClick={() => field(group.key, [...data[group.key], { ...group.empty }])}><Plus size={14} />Thêm</Button></div>{!data[group.key].length && <p className="module-footnote">Chưa có nội dung. Khối này sẽ được ẩn trên trang chủ.</p>}{data[group.key].map((entry, index) => <div className="content-entry" key={`${group.key}-${index}`}><div className="content-entry-heading"><strong>{group.label} {index + 1}</strong><button className="icon-button delete-button" type="button" aria-label={`Xóa ${group.label} ${index + 1}`} onClick={() => remove(group.key, index)}><Trash2 size={16} /></button></div><div className="record-form-grid">{group.fields.map(([name,label,maxLength,required]) => <Field key={name} label={`${label}${required ? ' *' : ''}`} className={['description','answer','subtitle'].includes(name) ? 'full-width' : ''}>{['description','answer','subtitle'].includes(name) ? <Textarea required={required} maxLength={maxLength} value={entry[name] || ''} onChange={(e) => row(group.key,index,name,e.target.value)} /> : <Input required={required} maxLength={maxLength} value={entry[name] || ''} type={name === 'imageUrl' ? 'url' : 'text'} pattern={name === 'imageUrl' ? 'https://.*' : name === 'buttonHref' ? '/(?!/)[^\\s\\\\]*' : undefined} onChange={(e) => row(group.key,index,name,e.target.value)} />}</Field>)}</div></div>)}</section>)}
+  <HomeCertificateEditor value={data.certificationGallery} onChange={(value) => field('certificationGallery', value)} disabled={busy} />
   <section className="content-group"><h3>Thông tin liên hệ</h3><div className="record-form-grid">{[['contactEmail','Email',255,'email'],['contactPhone','Điện thoại',30,'text'],['contactAddress','Địa chỉ',500,'text'],['openingHours','Giờ mở cửa',150,'text']].map(([name,label,maxLength,type]) => <Field key={name} label={label}><Input type={type} maxLength={maxLength} value={data[name] || ''} onChange={(e) => field(name,e.target.value)} /></Field>)}</div></section>{error && <p className="form-error" role="alert">{error}</p>}<div className="form-actions"><Button type="submit" disabled={busy}><Save size={16} />{busy ? 'Đang lưu…' : 'Lưu nội dung trang chủ'}</Button></div></fieldset></AdminForm>;
 }
 function FeaturedPanel() {

@@ -47,6 +47,8 @@ Danh sách sản phẩm dùng cùng `ProductCard` và adapter giá với Home. B
 
 ## VNPay tự xác nhận
 
+**Cập nhật 29-10-2026:** [luồng VNPay hiện tại](VNPAY_FLOW_20261029.md) bổ sung xác minh Return và QueryDR; mô tả bên dưới ghi nhận cách tích hợp trước đợt cập nhật này.
+
 Backend sẵn có `GET /api/v1/payments/vnpay/ipn`: kiểm tra chữ ký HMAC, merchant, tham chiếu, tiền/currency; giao dịch thành công đúng hạn cập nhật **payment.status=paid**, **order.paymentStatus=paid**, **order.status=paid**. Không cần Admin bấm duyệt. Tiền đến muộn/trùng/đơn đã đóng có thể `requires_review`, cần xử lý ngoại lệ; không bỏ ràng buộc này.
 
 Lượt này thêm API chỉ đọc, CUSTOMER và đúng chủ đơn:

@@ -1,3 +1,7 @@
+# Cập nhật dữ liệu 29-10-2026
+
+Giao diện vận hành chỉ dùng dữ liệu từ hệ thống lưu trữ. Cờ `VITE_DEMO_MODE` không còn bật dữ liệu dựng sẵn; Dashboard không có nút chuyển sang bản mẫu. Các đường dẫn đơn hàng mẫu cũ chuyển tới lịch sử đơn hàng của tài khoản đã đăng nhập. Những hướng dẫn chế độ mẫu ở phần tài liệu cũ bên dưới không còn áp dụng. Xem [kết quả rà soát](docs/DATA_AUDIT_20261029.md).
+
 # Mộc Organic — Frontend
 
 Cập nhật giỏ hàng/checkout theo mẫu, đổi điểm ở giỏ và VNPay tự cập nhật: [PURCHASE_REDESIGN.md](docs/PURCHASE_REDESIGN.md).

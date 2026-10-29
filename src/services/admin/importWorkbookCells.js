@@ -41,12 +41,12 @@ export async function openImportWorkbookCells(file, headers, maxRows) {
   catch { throw new Error('Không mở được cấu trúc nén của file .xlsx. Hãy lưu lại file bằng Excel rồi chọn lại.'); }
   async function readXml(path) {
     const entry = zip.file(path);
-    if (!entry) throw new Error(`File Excel thiếu thành phần ${path}. Hãy dùng file mẫu của backend.`);
+    if (!entry) throw new Error(`File Excel thiếu thành phần ${path}. Vui lòng tải lại mẫu Excel mới.`);
     return xmlDocument(await entry.async('string'));
   }
   const workbook = await readXml('xl/workbook.xml');
   const sheetInfo = elements(workbook, 'sheet').find((sheet) => sheet.getAttribute('name') === 'Data');
-  if (!sheetInfo) throw new Error('Không tìm thấy sheet Data. Hãy dùng đúng file Excel mẫu của backend.');
+  if (!sheetInfo) throw new Error('Không tìm thấy sheet Data. Vui lòng dùng đúng mẫu Excel đã tải.');
   const relationshipId = sheetInfo.getAttributeNS(officeRelNS, 'id');
   const relationships = await readXml('xl/_rels/workbook.xml.rels');
   const relations = elements(relationships, 'Relationship', packageRelNS);
@@ -88,7 +88,7 @@ export async function openImportWorkbookCells(file, headers, maxRows) {
     return value;
   }
   // The supported import templates have fewer than 26 columns.
-  if (headers.some((header, index) => text(`${String.fromCharCode(65 + index)}1`).trim() !== header)) throw new Error('Tên hoặc thứ tự cột trong sheet Data khác file mẫu của backend.');
+  if (headers.some((header, index) => text(`${String.fromCharCode(65 + index)}1`).trim() !== header)) throw new Error('Tên hoặc thứ tự cột trong trang tính Data khác mẫu. Vui lòng dùng đúng mẫu Excel đã tải.');
   const makeElement = (name) => sheet.createElementNS(spreadsheetNS, sheet.documentElement.prefix ? `${sheet.documentElement.prefix}:${name}` : name);
   return {
     text,

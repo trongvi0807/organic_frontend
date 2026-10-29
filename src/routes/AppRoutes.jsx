@@ -50,7 +50,6 @@ export function AppRoutes() {
     if (operations[pathname.replace('/admin/', '')]) document.title = `${operations[pathname.replace('/admin/', '')]} | Mộc Organic`;
     const commerce = { '/don-hang': 'Đơn hàng', '/diem-thuong': 'Điểm thưởng', '/danh-gia-cua-toi': 'Đánh giá của tôi', '/payment/result': 'Kết quả thanh toán', '/payment/cancel': 'Quay lại từ thanh toán', '/admin/sales-orders': 'Đơn bán & giao hàng', '/admin/promotions': 'Khuyến mãi', '/admin/payment-review': 'Đối soát thanh toán' };
     if (commerce[pathname] || pathname.startsWith('/don-hang/')) document.title = `${commerce[pathname] || 'Chi tiết đơn hàng'} | Mộc Organic`;
-    if (pathname.startsWith('/demo/don-hang')) document.title = `${pathname === '/demo/don-hang' ? 'Lịch sử mua hàng' : 'Theo dõi đơn hàng'} (mô phỏng) | Mộc Organic`;
     if (pathname.startsWith('/dat-hang-thanh-cong/')) document.title = 'Đơn hàng đã ghi nhận | Mộc Organic';
     if (pathname === '/admin/business-forms') document.title = 'Biểu mẫu & bản in | Mộc Organic';
     if (pathname === '/admin/dashboard') document.title = 'Trang tổng quan | Mộc Organic';
@@ -63,8 +62,8 @@ export function AppRoutes() {
       <Route path="san-pham/id/:productId" element={<ProductDetailPage />} />
       <Route path="gio-hang" element={<CartPage />} />
       <Route path="thanh-toan" element={<CheckoutPage />} />
-      <Route path="demo/don-hang" element={<OrdersPage key="demo-history" demo />} />
-      <Route path="demo/don-hang/:id" element={<OrderPage key="demo-tracking" demo />} />
+      <Route path="demo/don-hang" element={<Navigate to="/don-hang" replace />} />
+      <Route path="demo/don-hang/:id" element={<Navigate to="/don-hang" replace />} />
       <Route element={<ProtectedRoute roles={['CUSTOMER']} />}>
         <Route path="dat-hang-thanh-cong/:id" element={<OrderSuccessPage />} />
         <Route path="don-hang" element={<OrdersPage />} />

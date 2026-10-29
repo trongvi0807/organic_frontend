@@ -15,6 +15,7 @@ export const orderService = {
   reviewPayments: async (params) => normalizePage(await get('/management/payments/requires-review', params)),
 };
 export const promotionService = {
+  nextCode: () => get('/admin/promotions/next-code'),
   products: async (params) => normalizePage(await get('/admin/promotions/products', params)),
   batches: async (params) => normalizePage(await get('/admin/promotions/batches', params)),
   list: async (params) => normalizePage(await get('/admin/promotions', params)),

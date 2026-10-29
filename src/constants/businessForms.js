@@ -79,7 +79,7 @@ export const businessForms = [
   },
   {
     id: 'sales_receipt', code: 'BM-NV04-01', title: 'Phiếu bán hàng', group: 'sale', source: 'sale', dateLabel: 'Ngày bán:',
-    disclaimer: 'PHIẾU MINH HỌA PHỤC VỤ KHÓA LUẬN - KHÔNG PHẢI HÓA ĐƠN TÀI CHÍNH - KHÔNG CÓ GIÁ TRỊ PHÁP LÝ',
+    disclaimer: 'PHIẾU GHI NHẬN ĐƠN HÀNG — KHÔNG THAY THẾ HÓA ĐƠN TÀI CHÍNH',
     signatures: signatures('Nhân viên bán hàng', 'Khách hàng'),
     sections: [section('Thông tin cửa hàng', fields([f('storeName', 'Cửa hàng:'), f('storePhone', 'Điện thoại:'), f('salesperson', 'Nhân viên bán hàng:')], 2)),
       section('1. Thông tin khách hàng (không bắt buộc với khách mua lẻ)', fields([f('customerCode', 'Mã khách hàng:'), f('customerName', 'Họ tên:'), f('customerPhone', 'Số điện thoại:'), f('membershipTier', 'Hạng thành viên:')], 2)),
@@ -101,7 +101,7 @@ export const businessForms = [
   },
   {
     id: 'goods_dispatch', code: 'BM-NV05-01', title: 'Phiếu xuất hàng', group: 'delivery', source: 'sale', orientation: 'landscape', dateLabel: 'Ngày xuất:',
-    disclaimer: 'BIỂU MẪU MINH HỌA PHỤC VỤ KHÓA LUẬN - KHÔNG PHẢI CHỨNG TỪ KẾ TOÁN - KHÔNG CÓ GIÁ TRỊ PHÁP LÝ',
+    disclaimer: 'BẢNG ĐỐI CHIẾU NỘI BỘ — KHÔNG THAY THẾ CHỨNG TỪ KẾ TOÁN',
     signatures: signatures('Người yêu cầu xuất', 'Người phụ trách kho', 'Người nhận hàng', 'Người xác nhận (nếu cần)'),
     sections: [section('A. Thông tin căn cứ xuất', fields([f('orderCode', 'Mã đơn hàng/Phiếu bán hàng:'), f('orderedAt', 'Ngày bán/đặt hàng:', 'date'), f('customerName', 'Khách hàng:'), f('requestedBy', 'Người yêu cầu xuất:'), f('dispatchedBy', 'Người phụ trách xuất:'), f('warehouse', 'Kho/khu vực xuất:'), f('receiverName', 'Người nhận dự kiến:')], 2), checks('deliveryMethods', ['Tại cửa hàng', 'Giao tận nơi'])),
       table('B. Chi tiết hàng xuất', [...product, c('quantity', 'SL/TL theo đơn', true), c('dispatchedQuantity', 'SL/TL thực xuất', true), c('batchCode', 'Lô hàng'), c('expiryDate', 'HSD', false, 'date'), c('pickLocation', 'Vị trí lấy hàng'), c('condition', 'Tình trạng'), c('note', 'Ghi chú')]),

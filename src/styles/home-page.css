@@ -105,6 +105,11 @@
 .home-page .public-certifications .section-heading h2 { font-size: clamp(28px,2.7vw,39px); }
 .home-page .public-info-grid article { min-width: 0; padding: 18px; border-radius: 20px; background: #fffefa; }
 .home-page .public-info-grid h3 { font-size: 22px; margin-top: 22px; }.home-page .public-info-grid p { font-size: 11px; }.home-page .public-info-grid strong { font-size: 11px; }
+.home-page .home-certificate-grid h3 { margin-top: 16px; }
+.home-page .home-certificate-grid .home-certificate-description { margin-top: 16px; font-size: 12px; line-height: 1.8; }
+.home-page .home-certificate-grid > article { transition: box-shadow .25s, border-color .25s; }
+.home-page .home-certificate-grid > article:hover { border-color: #bfd0b0; box-shadow: 0 12px 30px #2947350a; }
+.home-page .home-certificate-grid dl { color: #415240; }
 .home-page .moc-home-contact { position: relative; background: #2a4d35; color: #f5f4e9; padding-block: 61px; margin-top: 12px; }
 .home-page .moc-home-contact > div { display: flex; justify-content: space-between; align-items: center; gap: 28px; }
 .home-page .moc-home-contact .moc-home-kicker { color: #bac9a1; }

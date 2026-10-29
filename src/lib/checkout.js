@@ -29,15 +29,15 @@ export function paymentRedirect(payment) {
     const url = new URL(payment.paymentUrl);
     if (payment.status !== 'pending' || url.protocol !== 'https:' || url.username || url.password || !hosts[payment.gateway]?.includes(url.hostname)) throw new Error();
     return url.href;
-  } catch { throw new Error('Backend chưa trả đường dẫn thanh toán hợp lệ. Mở đơn hàng để kiểm tra lại.'); }
+  } catch { throw new Error('Chưa thể mở trang thanh toán. Vui lòng mở chi tiết đơn hàng để kiểm tra và thử lại.'); }
 }
 export const canCancelOrder = (order) => ['pending_payment', 'confirmed'].includes(order.status) && !['paid', 'requires_review'].includes(order.paymentStatus);
 export const canPayOrder = (order) => order.status === 'pending_payment' && !['paid', 'requires_review'].includes(order.paymentStatus);
 export const quoteFingerprint = (quote) => JSON.stringify({ subtotal: quote.subtotal, promotionDiscount: quote.promotionDiscount, pointsUsed: quote.pointsUsed, pointsDiscount: quote.pointsDiscount, shippingFee: quote.shippingFee, totalAmount: quote.totalAmount, items: quote.items.map(({ variantId, quantity, unitPrice, discountAmount }) => ({ variantId, quantity, unitPrice, discountAmount })) });
-export function promotionPayload(values) {
-  const payload = { ...values, promotionCode: values.promotionCode.trim().toUpperCase(), name: values.name.trim(), description: values.description.trim() || null,
+export function promotionPayload(values, { automaticCode = false } = {}) {
+  const payload = { ...values, promotionCode: automaticCode ? null : values.promotionCode.trim().toUpperCase(), name: values.name.trim(), description: values.description.trim() || null,
     discountValue: Number(values.discountValue), minOrderValue: Number(values.minOrderValue), maxDiscountAmount: values.maxDiscountAmount === '' ? null : Number(values.maxDiscountAmount), usageLimit: values.usageLimit === '' ? null : Number(values.usageLimit), perUserLimit: values.perUserLimit === '' ? null : Number(values.perUserLimit) };
-  if (!/^[A-Z0-9_-]{1,50}$/.test(payload.promotionCode) || !payload.name) throw new Error('Kiểm tra mã khuyến mãi và tên chương trình.');
+  if ((!automaticCode && !/^[A-Z0-9_-]{1,50}$/.test(payload.promotionCode)) || !payload.name) throw new Error('Kiểm tra mã khuyến mãi và tên chương trình.');
   if (!(payload.discountValue > 0) || (payload.discountType === 'percentage' && payload.discountValue > 100)) throw new Error('Giá trị giảm phải dương, phần trăm tối đa 100.');
   if (!payload.startDate || !payload.endDate || payload.endDate <= payload.startDate) throw new Error('Ngày kết thúc phải sau ngày bắt đầu.');
   if (payload.status === 'active' && !payload.productIds.length && !payload.batchIds.length) throw new Error('Mã hoạt động cần ít nhất một sản phẩm hoặc lô áp dụng.');

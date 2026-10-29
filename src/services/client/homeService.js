@@ -4,7 +4,7 @@ import { normalizeHomeProduct } from '@/lib/apiData';
 
 export function normalizeHome(data) {
   return { ...data, content: { ...data.content, banners: data.content?.banners || [], highlights: data.content?.highlights || [], faqs: data.content?.faqs || [] },
-    featuredProducts: (data.featuredProducts || []).map(normalizeHomeProduct), newProducts: (data.newProducts || []).map(normalizeHomeProduct), certifiedProducts: (data.certifiedProducts || []).map(normalizeHomeProduct), categories: data.categories || [], origins: data.origins || [], certifications: data.certifications || [], statistics: data.statistics || {} };
+    featuredProducts: (data.featuredProducts || []).map(normalizeHomeProduct), newProducts: (data.newProducts || []).map(normalizeHomeProduct), certifiedProducts: (data.certifiedProducts || []).map(normalizeHomeProduct), categories: data.categories || [], origins: data.origins || [], certifications: (data.certifications || []).map((item) => ({ ...item, status: item.status || 'verified', currentlyValid: item.currentlyValid ?? (!item.status || item.status === 'verified') })), statistics: data.statistics || {} };
 }
 export const homeService = {
   async content() { return DEMO_MODE ? (await this.get()).content : unwrap(await publicApi.get('/home/content')); },

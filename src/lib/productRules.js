@@ -1,6 +1,6 @@
 import { searchText } from './adminFormat';
 import { nextRecordCode } from './recordCodes';
-export const defaultProductRules = { codePrefix: 'SP', defaultUnit: 'kg', defaultQuantity: 1, defaultPackage: 'Gói', units: ['g', 'kg', 'ml', 'l'], packages: ['Gói', 'Hộp', 'Túi', 'Chai'] };
+export const defaultProductRules = { codePrefix: 'SP', defaultUnit: 'kg', defaultQuantity: 1, defaultPackage: 'Gói', units: ['g', 'kg', 'ml', 'l'], packages: ['Gói', 'Thùng', 'Hộp', 'Túi', 'Chai'] };
 const key = 'moc.admin.product-rules.v2';
 export function readProductRules() {
   try {

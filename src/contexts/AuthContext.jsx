@@ -9,6 +9,7 @@ import { DEMO_MODE } from '@/services/api';
 const AuthContext = createContext(null);
 function restoreSession() {
   const session = getSession();
+  if (session?.accessToken === 'demo-only') { setSession(null); return null; }
   if (session && !session.sessionId) { session.sessionId = crypto.randomUUID(); setSession(session); }
   return session;
 }

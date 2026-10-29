@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Leaf, ShieldCheck, Mail, LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Logo } from '@/components/common/Logo';
@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/auth/authService';
 import { DEMO_MODE } from '@/services/api';
 import { errorMessage } from '@/lib/utils';
-import { loginPath } from '@/lib/permissions';
+import { loginReturnPath } from '@/lib/loginReturn';
 
 export default function AuthPage({ mode = 'login' }) {
   const register = mode === 'register';
@@ -21,9 +21,10 @@ export default function AuthPage({ mode = 'login' }) {
   const [cooldown, setCooldown] = useState(0);
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const { state } = useLocation();
   useEffect(() => { setError(''); setVerify(false); }, [mode]);
   useEffect(() => { if (!cooldown) return; const timer = setTimeout(() => setCooldown((value) => value - 1), 1000); return () => clearTimeout(timer); }, [cooldown]);
-  if (user) return <Navigate to={loginPath(user)} replace />;
+  if (user) return <Navigate to={loginReturnPath(user, state?.from)} replace />;
   async function submit(event) {
     event.preventDefault(); setError(''); setBusy(true);
     const values = Object.fromEntries(new FormData(event.currentTarget));
@@ -35,7 +36,7 @@ export default function AuthPage({ mode = 'login' }) {
       } else {
         const signedIn = await login({ ...values, rememberMe: values.rememberMe === 'on' });
         toast.success(`Chào mừng ${signedIn.fullName || signedIn.username}!`);
-        navigate(loginPath(signedIn), { replace: true });
+        navigate(loginReturnPath(signedIn, state?.from), { replace: true });
       }
     } catch (err) { setError(errorMessage(err)); }
     finally { setBusy(false); }
@@ -53,5 +54,5 @@ export default function AuthPage({ mode = 'login' }) {
     {error && <p className="form-error" role="alert">{error}</p>}
     <Button type="submit" className="w-full" disabled={busy}>{busy ? <LoaderCircle className="animate-spin" size={17} /> : verify ? <Mail size={17} /> : null}{busy ? 'Đang xử lý…' : verify ? 'Xác thực tài khoản' : register ? 'Tạo tài khoản' : 'Đăng nhập'}{!busy && <ArrowRight size={17} />}</Button>
     {verify && <Button variant="ghost" className="w-full" disabled={busy || cooldown > 0} onClick={resend}>Gửi lại mã {cooldown > 0 ? `(${cooldown}s)` : ''}</Button>}
-  </form><p className="auth-switch">{register ? 'Đã là bạn của Mộc?' : 'Lần đầu đến với Mộc?'} <Link to={register ? '/dang-nhap' : '/dang-ky'}>{register ? 'Đăng nhập' : 'Tạo tài khoản'}</Link></p>{DEMO_MODE && <div className="demo-credentials"><span><Leaf size={14} /> ĐANG Ở CHẾ ĐỘ DEMO</span><p>Admin: <code>admin / Admin@123</code><br />Khách hàng: <code>khachhang / Khach@123</code></p>{register && <small>Đăng ký và OTP cần kết nối backend thật.</small>}</div>}<p className="auth-bottom-note"><ShieldCheck size={14} /> Thông tin của bạn được Mộc trân trọng.</p></div></section></div>;
+  </form><p className="auth-switch">{register ? 'Đã là bạn của Mộc?' : 'Lần đầu đến với Mộc?'} <Link to={register ? '/dang-nhap' : '/dang-ky'}>{register ? 'Đăng nhập' : 'Tạo tài khoản'}</Link></p>{DEMO_MODE && <div className="demo-credentials"><span><Leaf size={14} /> ĐANG Ở CHẾ ĐỘ DEMO</span><p>Admin: <code>admin / Admin@123</code><br />Khách hàng: <code>khachhang / Khach@123</code></p>{register && <small>Chức năng đăng ký hiện chưa sẵn sàng. Vui lòng thử lại sau.</small>}</div>}<p className="auth-bottom-note"><ShieldCheck size={14} /> Thông tin của bạn được Mộc trân trọng.</p></div></section></div>;
 }

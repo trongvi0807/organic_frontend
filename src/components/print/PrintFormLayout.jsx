@@ -8,7 +8,7 @@ import './print-forms.css';
 export { DottedField, DottedNotes, PrintCheckbox } from './PrintFormPrimitives';
 
 const PRINT_ROOT = 'organic-print-root';
-const disclaimer = 'BIỂU MẪU MINH HỌA PHỤC VỤ KHÓA LUẬN – KHÔNG CÓ GIÁ TRỊ PHÁP LÝ';
+const disclaimer = 'CHỨNG TỪ NỘI BỘ — KIỂM TRA THÔNG TIN TRƯỚC KHI KÝ XÁC NHẬN';
 const defaultSignatures = [{ title: 'Người lập phiếu' }, { title: 'Người kiểm nhận' }, { title: 'Quản lý xác nhận' }];
 
 export const printDate = (value) => {
@@ -120,7 +120,7 @@ export const PrintFormLayout = forwardRef(function PrintFormLayout({
       <article ref={sheet} data-print-form={id} data-orientation={orientation === 'landscape' ? 'landscape' : 'portrait'} className={cn('print-form-sheet border border-[#A3C1AD] bg-[#F7FAF5] text-gray-900', sheetClassName)} aria-label={`${title} – ${formCode}`}>
         <header className="print-form-header">
           <OrganicPrintLogo />
-          <div className="print-form-heading"><h2 className="print-form-company">CỬA HÀNG THỰC PHẨM HỮU CƠ<br />ORGANICFOOD.VN</h2><p className="print-form-subtitle">Biểu mẫu minh họa phục vụ khóa luận</p></div>
+          <div className="print-form-heading"><h2 className="print-form-company">CỬA HÀNG THỰC PHẨM HỮU CƠ<br />ORGANICFOOD.VN</h2><p className="print-form-subtitle">Chứng từ quản lý cửa hàng</p></div>
           <div className="print-form-metadata rounded-md border border-[#689F75] bg-white/80"><p><strong>Mã biểu mẫu:</strong> {formCode}</p><DottedField label={documentNumberLabel} value={documentNumber} /><DottedField label={createdAtLabel} value={printDate(createdAt) === '—' ? '....../....../.......' : printDate(createdAt)} />{time && <DottedField label="Thời gian:" value={time} />}</div>
         </header>
         <div className="print-form-title"><h1 className="rounded-md border border-[#689F75] bg-[#DCEAD6] text-[#1B4D2E]">{title}</h1></div>

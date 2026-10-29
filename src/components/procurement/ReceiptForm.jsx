@@ -12,6 +12,7 @@ import { SearchSelect } from '@/components/admin/SearchSelect';
 import { adminDate, productMeasure } from '@/lib/adminFormat';
 import { receiptLineErrors } from '@/lib/productRules';
 import { receiptCandidates } from '@/lib/purchaseWorkflow';
+import { fillReceiptBatchCodes } from '@/lib/receiptBatchCodes';
 import { useResource } from '@/hooks/useResource';
 import { allPages, today } from '@/lib/apiData';
 import { currency, errorMessage } from '@/lib/utils';
@@ -31,13 +32,20 @@ export function ReceiptForm({ receipt, initialOrderId = '', onClose, onSaved }) 
   useEffect(() => {
     if (order.data?.id === orderId && !order.loading && !order.error) setValues((old) => ({ ...old, purchaseOrderId: orderId, items: receiptLines(order.data, receipt) }));
   }, [orderId, order.data, order.loading, order.error, receipt]);
+  useEffect(() => {
+    if (existingBatches.loading || existingBatches.error) return;
+    setValues((old) => {
+      const items = fillReceiptBatchCodes(old.items, existingBatches.data || []);
+      return items === old.items ? old : { ...old, items };
+    });
+  }, [values.items, existingBatches.loading, existingBatches.error, existingBatches.data]);
   const editableOrder = order.data && receiptCandidates([order.data], receipt).length > 0;
   const ready = orderId && !order.loading && !order.error && editableOrder && values.purchaseOrderId === orderId;
   function line(index, key, value) { setValues((old) => ({ ...old, items: old.items.map((item, i) => i === index ? { ...item, [key]: value } : item) })); }
   async function save(event) {
     event.preventDefault(); setError('');
     try {
-      for (const [index, item] of values.items.entries()) { const problems = errorsFor(item, index); if (Object.keys(problems).length) throw new Error(`Dòng ${index + 1}: ${Object.values(problems)[0]}`); }
+      for (const [index, item] of values.items.entries()) { const problems = errorsFor(item, index); if (Object.keys(problems).length) throw new Error(`${item.variant?.productName || 'Sản phẩm'} · ${item.variant?.variantName || ''}: ${Object.values(problems)[0]}`); }
       const payload = receiptPayload(values); setBusy(true); await goodsReceiptService.save(receipt?.id, payload); toast.success('Đã lưu bản nháp. Gửi duyệt để đề nghị nhập kho.'); onSaved(); }
     catch (err) { setError(errorMessage(err)); } finally { setBusy(false); }
   }
@@ -69,9 +77,9 @@ export function ReceiptForm({ receipt, initialOrderId = '', onClose, onSaved }) 
         const missing = capacity - Number(item.quantityReceived || 0) - Number(item.quantityRejected || 0);
         return <section key={item.purchaseOrderDetailId} className="space-y-4 rounded-2xl border border-[#e5e8df] p-5">
           <div><h3 className="!text-base !font-semibold">{item.variant.productName} · {item.variant.variantName}</h3><p className="!mt-1 text-xs text-stone-500">Đơn vị: {item.variant.variantName} · Trọng lượng: {productMeasure(item.variant)} · Đặt: {item.quantityOrdered} · Đã duyệt nhập: {item.quantityReceivedPreviously} · Còn được nhận đợt này: {capacity} · Giá mua: {currency(item.unitPrice)}</p></div>
-          {capacity === 0 && Number(item.quantityReceived) === 0 && Number(item.quantityRejected) === 0 ? <p className="text-sm text-stone-500">Dòng này đã nhận đủ hoặc đang được giữ trong phiếu khác. Đợt này ghi nhận 0.</p> : <div className="grid grid-cols-1 gap-4 sm:grid-cols-3"><Field error={inline.quantityReceived} label={`Số đạt dòng ${index + 1}`}><Input type="number" required min="0" max={capacity} step="1" value={item.quantityReceived} onChange={(e) => line(index, 'quantityReceived', e.target.value)} /></Field><Field error={inline.quantityRejected} label={`Số bị loại dòng ${index + 1}`}><Input type="number" required min="0" max={capacity} step="1" value={item.quantityRejected} onChange={(e) => line(index, 'quantityRejected', e.target.value)} /></Field><div className="rounded-xl bg-stone-50 p-3 text-sm"><span className="text-stone-500">Chưa giao trong đợt này</span><strong className={`block !mt-2 ${missing < 0 ? 'text-red-700' : ''}`}>{missing} gói/hộp</strong></div></div>}
-          {Number(item.quantityReceived) < capacity && <Field error={inline.discrepancyReason} label={`Lý do chênh lệch dòng ${index + 1} (bắt buộc)`}><Textarea required maxLength={1000} placeholder="Hàng hỏng, thiếu… và nội dung đã thống nhất với nhà cung cấp" value={item.discrepancyReason} onChange={(e) => line(index, 'discrepancyReason', e.target.value)} /></Field>}
-          {Number(item.quantityReceived) > 0 && <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Field error={inline.batchCode} label={`Mã lô dòng ${index + 1}`}><Input required maxLength={100} value={item.batchCode} onChange={(e) => line(index, 'batchCode', e.target.value)} /></Field><Field error={inline.expiryDate} label={`Hạn dùng dòng ${index + 1}`}><AdminDateInput required min={today()} value={item.expiryDate} onChange={(e) => line(index, 'expiryDate', e.target.value)} /></Field><Field error={inline.manufactureDate} label={`Ngày sản xuất dòng ${index + 1}`}><AdminDateInput max={today()} value={item.manufactureDate} onChange={(e) => line(index, 'manufactureDate', e.target.value)} /></Field><Field label={`Nguồn gốc dòng ${index + 1}`}><Input maxLength={500} value={item.originDescription} onChange={(e) => line(index, 'originDescription', e.target.value)} /></Field></div>}
+          {capacity === 0 && Number(item.quantityReceived) === 0 && Number(item.quantityRejected) === 0 ? <p className="text-sm text-stone-500">Sản phẩm này đã nhận đủ hoặc đang được giữ trong phiếu khác. Đợt này ghi nhận 0.</p> : <div className="grid grid-cols-1 gap-4 sm:grid-cols-3"><Field error={inline.quantityReceived} label="Số lượng đạt"><Input aria-label={`Số lượng đạt: ${item.variant.productName} ${item.variant.variantName}`} type="number" required min="0" max={capacity} step="1" value={item.quantityReceived} onChange={(e) => line(index, 'quantityReceived', e.target.value)} /></Field><Field error={inline.quantityRejected} label="Số lượng bị loại"><Input aria-label={`Số lượng bị loại: ${item.variant.productName} ${item.variant.variantName}`} type="number" required min="0" max={capacity} step="1" value={item.quantityRejected} onChange={(e) => line(index, 'quantityRejected', e.target.value)} /></Field><div className="rounded-xl bg-stone-50 p-3 text-sm"><span className="text-stone-500">Chưa giao trong đợt này</span><strong className={`block !mt-2 ${missing < 0 ? 'text-red-700' : ''}`}>{missing} gói/hộp</strong></div></div>}
+          {Number(item.quantityReceived) < capacity && <Field error={inline.discrepancyReason} label="Lý do chênh lệch (bắt buộc)"><Textarea required maxLength={1000} placeholder="Hàng hỏng, thiếu… và nội dung đã thống nhất với nhà cung cấp" value={item.discrepancyReason} onChange={(e) => line(index, 'discrepancyReason', e.target.value)} /></Field>}
+          {Number(item.quantityReceived) > 0 && <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><Field error={inline.batchCode} label="Mã lô tự động" hint="Mã được điền sẵn theo ngày và mã hàng; mã đã lưu được giữ nguyên."><Input required readOnly maxLength={100} value={item.batchCode} placeholder="Đang cấp mã lô…" /></Field><Field error={inline.expiryDate} label="Hạn dùng"><AdminDateInput required min={today()} value={item.expiryDate} onChange={(e) => line(index, 'expiryDate', e.target.value)} /></Field><Field error={inline.manufactureDate} label="Ngày sản xuất"><AdminDateInput max={today()} value={item.manufactureDate} onChange={(e) => line(index, 'manufactureDate', e.target.value)} /></Field><Field label="Nguồn gốc"><Input maxLength={500} value={item.originDescription} onChange={(e) => line(index, 'originDescription', e.target.value)} /></Field></div>}
         </section>;
       })}
       <Field label="Ghi chú phiếu"><Textarea maxLength={5000} value={values.note} onChange={(e) => setValues((old) => ({ ...old, note: e.target.value }))} /></Field>

@@ -1,0 +1,28 @@
+﻿BỘ ĐƠN MUA ĐÃ ĐIỀN ĐỦ — 29-10-2026
+
+5 tệp, 24 mã hàng khác nhau, đủ 4 nhà cung cấp. Không lặp mặt hàng giữa các tệp.
+NCC01 chia thành 2 đơn: đơn ban đầu 5 mặt hàng và đơn bổ sung 12 mặt hàng.
+
+Don-mua-NCC01-da-dien-du.xlsx: NCC01 · 5 mặt hàng · 1.850.000 đồng
+Don-mua-NCC01-bo-sung.xlsx: NCC01 · 12 mặt hàng · 6.710.000 đồng
+Don-mua-NCC02-da-dien-du.xlsx: NCC02 · 4 mặt hàng · 1.368.000 đồng
+Don-mua-NCC03-da-dien-du.xlsx: NCC03 · 2 mặt hàng · 1.560.000 đồng
+Don-mua-NCC04-da-dien-du.xlsx: NCC04 · 1 mặt hàng · 672.000 đồng
+
+CÁCH SỬ DỤNG
+1. Vào Kho vận & Mua hàng → Đơn mua → Lập đơn đặt mua → Nhập từ Excel.
+2. Chọn nhà cung cấp cùng mã NCC trong tên tệp.
+3. Chọn tệp .xlsx rồi kiểm tra kết quả. Không cần sửa hoặc điền thêm vào Excel.
+4. Bấm Tạo đơn mua chờ duyệt. Thực hiện lần lượt từng tệp, mỗi tệp một lần.
+5. Sau khi duyệt đơn, tải mẫu phiếu nhập ngay từ đơn đã duyệt để có đúng mã đơn, mã hàng và số còn được nhận.
+
+KHỐI LƯỢNG / DUNG TÍCH
+Trang đầu ChiTietDatMua có khối lượng/dung tích mỗi đơn vị, số lượng đặt, tổng quy đổi ra kg/l, giá nhập và thành tiền.
+Trang Data giữ đúng cấu trúc để nhập vào hệ thống.
+
+LƯU Ý
+Tên, mã hàng, đóng gói và khối lượng lấy từ danh mục đang có.
+Số lượng và giá nhập đã điền sẵn để kiểm tra luồng; khi mua thực tế cần đối chiếu báo giá nhà cung cấp.
+Nếu đã nhập tệp NCC01 ban đầu, chỉ nhập thêm 4 tệp còn lại để tránh tạo lại đơn cũ.
+Ngày giao dự kiến và ghi chú trên màn hình không bắt buộc, có thể để trống.
+Các file chưa được nhập vào hệ thống; chưa tạo đơn hoặc tăng tồn kho.

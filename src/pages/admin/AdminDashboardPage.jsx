@@ -4,7 +4,6 @@ import { ArrowUpRight, CalendarDays, CircleHelp, LayoutDashboard, RefreshCw, Shi
 import { useAuth } from '@/contexts/AuthContext';
 import { useResource } from '@/hooks/useResource';
 import { useOrderRefresh } from '@/hooks/useOrderRefresh';
-import { DEMO_MODE } from '@/services/api';
 import { dashboardService } from '@/services/admin/dashboardService';
 import { buildDashboard } from '@/lib/adminDashboard';
 import { adminDate } from '@/lib/adminFormat';
@@ -23,7 +22,8 @@ export default function AdminDashboardPage() {
 }
 
 function DashboardContent({ user }) {
-  const [days, setDays] = useState(7), [granularity, setGranularity] = useState('day'), [expiryDays, setExpiryDays] = useState(14), [demo, setDemo] = useState(DEMO_MODE), [selection, setSelection] = useState(null);
+  const [days, setDays] = useState(7), [granularity, setGranularity] = useState('day'), [expiryDays, setExpiryDays] = useState(14), [selection, setSelection] = useState(null);
+  const demo = false;
   const day = today();
   const snapshot = useResource(() => dashboardService.snapshot(user, { demo, today: day }), [demo, day]);
   useOrderRefresh(snapshot.reload, { enabled: !demo, interval: 60000 });
@@ -46,8 +46,7 @@ function DashboardContent({ user }) {
       </div>
     </header>
 
-    <div className="adk-data-status"><p><span className={`adk-status-dot ${demo ? 'is-demo' : ''}`} />{demo ? 'Số liệu mô phỏng' : 'Dữ liệu từ hệ thống'}<span className="adk-status-divider">|</span>{adminDate(model.range.start)} – {adminDate(model.range.end)}</p><div>{snapshot.data?.loadedAt && <span>Cập nhật {adminDate(snapshot.data.loadedAt, true)}</span>}<button type="button" disabled={DEMO_MODE || snapshot.loading} onClick={() => { setSelection(null); setDemo(!demo); }}>{demo ? 'Quay lại dữ liệu thật' : 'Xem bản mẫu'}</button></div></div>
-    {demo && <p className="adk-dashboard-notice" role="status">Đang xem dữ liệu mô phỏng thực phẩm organic. Đây không phải số liệu kinh doanh thực tế và không thực hiện thao tác duyệt trên chứng từ thật.</p>}
+    <div className="adk-data-status"><p><span className="adk-status-dot" />Tình hình kinh doanh<span className="adk-status-divider">|</span>{adminDate(model.range.start)} – {adminDate(model.range.end)}</p><div>{snapshot.data?.loadedAt && <span>Cập nhật {adminDate(snapshot.data.loadedAt, true)}</span>}</div></div>
     {(errors.length > 0 || snapshot.error || snapshot.refreshError) && <div role="status" className="adk-dashboard-notice"><strong>Dữ liệu chưa đầy đủ.</strong> {snapshot.refreshError ? 'Chưa làm mới được số liệu; dữ liệu dưới đây là lần tải gần nhất.' : snapshot.error ? 'Chưa tải được Dashboard.' : `Chưa tải được: ${errors.map((source) => source.label).join(', ')}.`} Bấm Cập nhật để thử lại. Các phần chưa tải được không được coi là số 0.</div>}
 
     <DashboardMetrics model={model} loading={loading} />
