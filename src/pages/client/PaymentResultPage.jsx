@@ -1,17 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Clock3, LoaderCircle, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { checkoutService } from '@/services/client/checkoutService';
 import { useResource } from '@/hooks/useResource';
 import { useOrderRefresh } from '@/hooks/useOrderRefresh';
 import { usePaymentConfirmation } from '@/hooks/usePaymentConfirmation';
+import { useAutomaticPaymentVerification } from '@/hooks/useAutomaticPaymentVerification';
 import { resolvePaymentReturn } from '@/services/client/paymentReturnService';
 import { PurchaseFrame, purchasePanel } from '@/components/checkout/PurchaseFrame';
 import { CommerceStatus } from '@/components/checkout/OrderUI';
 import { ResourceState } from '@/components/common/ResourceState';
-import { Button } from '@/components/ui/button';
-import { errorMessage } from '@/lib/utils';
 
 export default function PaymentResultPage({ cancelled = false }) {
   const { user } = useAuth(), [params] = useSearchParams();
@@ -22,41 +20,21 @@ export default function PaymentResultPage({ cancelled = false }) {
 
 function PaymentResultContent({ username, reference, explicitId, returnQuery, cancelled }) {
   const reconciled = useRef({ revision: 0, payment: null });
-  const mounted = useRef(true);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const payment = useResource(async () => {
     const revision = reconciled.current.revision;
     const result = await resolvePaymentReturn({ username, reference, paymentId: explicitId, returnQuery });
     // A GET started before reconciliation must not overwrite its newer result.
     return revision === reconciled.current.revision ? result : reconciled.current.payment;
   }, [reference, explicitId, username, returnQuery]);
-  const id = payment.data?.id, status = payment.data?.status;
+  const status = payment.data?.status;
   const pending = ['pending', 'creating', 'capturing', 'closing'].includes(status);
-  const [busy, setBusy] = useState(false), [error, setError] = useState('');
-  const locked = useRef(false);
-  const autoSynced = useRef(new Set());
+  const onVerified = useCallback((result) => {
+    reconciled.current = { revision: reconciled.current.revision + 1, payment: result };
+    payment.setData(result);
+  }, [payment.setData]);
+  const { busy, error } = useAutomaticPaymentVerification({ username, payment: payment.data, returnQuery, cancelled, onVerified, onRefresh: payment.reload });
   useOrderRefresh(payment.reload, { enabled: pending && !busy, interval: 4000 });
   usePaymentConfirmation(payment.data?.orderId, status);
-  const verify = useCallback(async (capture = false) => {
-    if (locked.current || !id) return;
-    locked.current = true; setBusy(true); setError('');
-    try {
-      const result = capture ? await checkoutService.capture(id) : await checkoutService.sync(id);
-      if (!mounted.current) return;
-      reconciled.current = { revision: reconciled.current.revision + 1, payment: result };
-      payment.setData(result);
-    }
-    catch (e) { if (mounted.current) { setError(errorMessage(e)); payment.reload({ background: true }); } }
-    finally { locked.current = false; if (mounted.current) setBusy(false); }
-  }, [id, payment.setData, payment.reload]);
-  useEffect(() => {
-    // QueryDR once for legacy links without a signed return. Polling stays read-only.
-    if (!id || !pending || payment.data?.gateway !== 'vnpay' || new URLSearchParams(returnQuery).has('vnp_SecureHash') || busy) return;
-    const key = `${username}:${id}`;
-    if (autoSynced.current.has(key)) return;
-    autoSynced.current.add(key);
-    verify();
-  }, [id, pending, payment.data?.gateway, returnQuery, username, busy, verify]);
   return <PurchaseFrame step={3} title={status === 'paid' ? 'Thanh toán thành công' : cancelled ? 'Bạn đã quay lại từ cổng thanh toán' : 'Kết quả thanh toán'}>
     <section className={`${purchasePanel} !mx-auto max-w-2xl p-6 text-center sm:p-10`}>
       <ResourceState loading={payment.loading} error={payment.error} onRetry={payment.reload} />
@@ -66,7 +44,8 @@ function PaymentResultContent({ username, reference, explicitId, returnQuery, ca
       <p className="!mt-5 rounded-xl bg-cream p-4 text-sm">Số tiền giao dịch <strong className="!ml-2 text-primary">{Number(payment.data.amount).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} {payment.data.currency}</strong></p>
       {pending && payment.data.gateway === 'vnpay' && <p className="!mt-4 text-xs leading-6 text-stone-500">Hệ thống đang đối chiếu kết quả với VNPay. Nếu bạn đã bị trừ tiền, không tạo lần thanh toán mới; trạng thái đơn sẽ cập nhật ngay sau khi xác minh.</p>}
       {payment.data.failureMessage && <p className="!mt-3 text-xs text-amber-800">{payment.data.failureMessage}</p>}
-      <div className="!mt-6 flex flex-wrap justify-center gap-3"><Link className="inline-flex min-h-11 items-center rounded-xl bg-primary px-5 text-sm !text-white" to={`/don-hang/${encodeURIComponent(payment.data.orderId)}`}>Theo dõi đơn hàng</Link>{status !== 'paid' && <Button variant="outline" disabled={busy} onClick={() => payment.reload({ background: true })}>Kiểm tra lại trạng thái</Button>}{!cancelled && payment.data.gateway === 'paypal' && ['pending', 'capturing'].includes(status) && <Button disabled={busy} onClick={() => verify(true)}>Xác nhận giao dịch PayPal</Button>}{pending && ['stripe', 'paypal', 'vnpay'].includes(payment.data.gateway) && <Button variant="outline" disabled={busy} onClick={() => verify()}>Đối chiếu với cổng</Button>}</div>
+      {pending && <p className="!mt-4 flex items-center justify-center gap-2 text-xs leading-6 text-stone-500" role="status"><LoaderCircle size={14} className="shrink-0 animate-spin motion-reduce:animate-none" />{busy ? 'Đang tự xác minh và cập nhật thanh toán…' : 'Trạng thái thanh toán được cập nhật tự động.'}</p>}
+      <div className="!mt-6 flex flex-wrap justify-center gap-3"><Link className="inline-flex min-h-11 items-center rounded-xl bg-primary px-5 text-sm !text-white" to={`/don-hang/${encodeURIComponent(payment.data.orderId)}`}>Theo dõi đơn hàng</Link></div>
       <p className="!mt-5 flex items-center justify-center gap-2 text-[10px] text-stone-400"><ShieldCheck size={13} />Chỉ xác nhận thành công theo kết quả đã xác minh từ hệ thống</p></>}
       {(error || payment.refreshError) && <p className="!mt-4 text-xs leading-6 text-red-700" role="alert">{error || `Chưa lấy được trạng thái mới: ${payment.refreshError}`}</p>}
       <Link className="!mt-6 inline-block text-xs text-primary underline" to="/don-hang">Xem danh sách đơn hàng</Link>

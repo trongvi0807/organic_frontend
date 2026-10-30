@@ -28,12 +28,13 @@ export const CANCEL_REASONS = [
 export const REFUND_BANKS = ['Vietcombank', 'BIDV', 'VietinBank', 'Agribank', 'Techcombank', 'MB Bank', 'ACB', 'VPBank', 'TPBank', 'Sacombank', 'HDBank', 'VIB', 'SHB', 'OCB', 'NCB', 'MSB', 'SeABank', 'Eximbank', 'LPBank', 'Nam A Bank', 'Bac A Bank', 'Khác'];
 export const RETURN_STATES = {
   submitted: 'Chờ tiếp nhận', pending: 'Chờ xét duyệt', under_review: 'Đang xét duyệt', reviewing: 'Đang xét duyệt',
-  awaiting_customer: 'Chờ xác nhận phương án', awaiting_information: 'Chờ bổ sung thông tin', approved: 'Đã duyệt, chờ xử lý',
-  waiting_customer: 'Chờ khách hàng phản hồi', accepted: 'Chờ thực hiện phương án', processing: 'Đang xử lý', completed: 'Đã xử lý yêu cầu', rejected: 'Đã từ chối', cancelled: 'Đã hủy yêu cầu',
+  awaiting_customer: 'Chờ xác nhận phương án', awaiting_information: 'Chờ bổ sung thông tin', approved: 'Chờ khách xác nhận phương án',
+  waiting_customer: 'Chờ bổ sung thông tin', accepted: 'Chờ thực hiện phương án', processing: 'Đã đồng ý · Chờ thực hiện', completed: 'Đã xử lý yêu cầu', rejected: 'Đã từ chối', cancelled: 'Đã hủy yêu cầu',
 };
 export const orderDateTime = (value) => adminDate(value, true).replace(/ (\d{2}:\d{2})$/, ' • $1');
 export const orderItems = (order) => order?.pricing?.items || [];
 export const isCompleted = (order) => order?.status === 'completed';
+export const mayRequestReturn = (order) => order?.paymentMethod !== 'exchange' && (['delivered', 'completed'].includes(order?.status) || order?.status === 'cancelled' && ['paid', 'partially_refunded'].includes(order?.paymentStatus));
 export const prepaid = (order) => ['paid', 'partially_refunded'].includes(order?.paymentStatus);
 export const latestShipment = (order) => [...(order?.shipments || [])].sort((a, b) => String(b.bookedAt || '').localeCompare(String(a.bookedAt || '')))[0];
 export function orderBadge(order) {
@@ -42,6 +43,7 @@ export function orderBadge(order) {
   return ORDER_STATES[order?.status] || ['Chưa xác định trạng thái', 'gray'];
 }
 export function paymentBadge(order) {
+  if (order?.paymentMethod === 'exchange') return ['Hàng đổi · Không thu thêm tiền', 'green'];
   if (order?.refundStatus === 'pending') return PAYMENT_STATES.refund_pending;
   if (order?.refundStatus === 'refunded') return PAYMENT_STATES.refunded;
   if (order?.paymentMethod === 'cod' && ['pending', 'unpaid'].includes(order?.paymentStatus)) return ['Chưa thu tiền · COD', 'amber'];
@@ -49,7 +51,7 @@ export function paymentBadge(order) {
 }
 export function cancellationEligibility(order, demo = false) {
   const shipment = latestShipment(order);
-  if (!order || !['pending_payment', 'pending_confirmation', 'confirmed'].includes(order.status)
+  if (!order || order.paymentMethod === 'exchange' || !['pending_payment', 'pending_confirmation', 'confirmed'].includes(order.status)
     || order.dispatchedAt || (order.shipments || []).some((s) => s.shippedAt || ['picked_up', 'in_transit', 'delivered'].includes(s.status))
     || shipment?.status === 'failed') return { visible: false, allowed: false };
   if (order.paymentStatus === 'requires_review') return { visible: false, allowed: false };

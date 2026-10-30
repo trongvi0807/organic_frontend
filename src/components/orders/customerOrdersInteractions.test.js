@@ -70,7 +70,7 @@ describe('Order cards and full demo pages', () => {
   it('submits only eligible return quantities and keeps the result awaiting review', async () => {
     const create = vi.spyOn(customerOrderService, 'requestReturn'), close = vi.fn(), changed = vi.fn();
     const order = createDemoOrders()[5];
-    await render(h(ReturnRequestModal, { order, demo: true, onClose: close, onChanged: changed }));
+    await render(h(MemoryRouter, {}, h(ReturnRequestModal, { order, demo: true, onClose: close, onChanged: changed })));
     await submit(); expect(create).not.toHaveBeenCalled();
     await type(document.querySelector('[aria-label="Lý do đổi trả"]'), 'hu hong');
     await click(document.querySelector('[role="option"] button'));

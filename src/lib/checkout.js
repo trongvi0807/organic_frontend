@@ -1,6 +1,7 @@
 export const paymentNames = { cod: 'Thanh toán khi nhận hàng (COD)', stripe: 'Thẻ quốc tế · Stripe', paypal: 'PayPal', vnpay: 'VNPay' };
+export const paymentDisplayNames = { ...paymentNames, exchange: 'Đổi hàng theo phương án · Không thu thêm tiền' };
 export const orderLabels = { pending_payment: 'Chờ thanh toán', confirmed: 'Đã xác nhận', paid: 'Đã thanh toán', preparing: 'Đang chuẩn bị', shipping: 'Đang giao', delivered: 'Đã giao', completed: 'Hoàn tất', cancelled: 'Đã hủy', expired: 'Hết hạn', returned: 'Đã trả hàng', requires_review: 'Cần đối soát' };
-export const paymentLabels = { pending: 'Chờ thanh toán', creating: 'Đang tạo phiên', capturing: 'Đang xác nhận', closing: 'Đang đóng phiên', paid: 'Đã thanh toán', failed: 'Không thành công', expired: 'Hết hạn', cancelled: 'Đã hủy', requires_review: 'Cần đối soát', unpaid: 'Chưa thanh toán' };
+export const paymentLabels = { pending: 'Chờ thanh toán', creating: 'Đang tạo phiên', capturing: 'Đang xác nhận', closing: 'Đang đóng phiên', paid: 'Đã thanh toán', failed: 'Không thành công', expired: 'Hết hạn', cancelled: 'Đã hủy', requires_review: 'Cần đối soát', unpaid: 'Chưa thanh toán', partially_refunded: 'Đã hoàn tiền một phần', refunded: 'Đã hoàn tiền', exchange: 'Hàng đổi · Không thu thêm tiền' };
 export const shipmentLabels = { pending: 'Chờ lấy hàng', picked_up: 'Đã lấy hàng', in_transit: 'Đang vận chuyển', delivered: 'Giao thành công', failed: 'Giao thất bại', returned: 'Đã trả về', cancelled: 'Đã hủy chuyến' };
 export const shipmentNext = { pending: ['picked_up', 'cancelled'], picked_up: ['in_transit', 'delivered', 'failed'], in_transit: ['delivered', 'failed'], failed: ['returned'] };
 export function cartFromServer(data, previous = []) {
@@ -31,8 +32,8 @@ export function paymentRedirect(payment) {
     return url.href;
   } catch { throw new Error('Chưa thể mở trang thanh toán. Vui lòng mở chi tiết đơn hàng để kiểm tra và thử lại.'); }
 }
-export const canCancelOrder = (order) => ['pending_payment', 'confirmed'].includes(order.status) && !['paid', 'requires_review'].includes(order.paymentStatus);
-export const canPayOrder = (order) => order.status === 'pending_payment' && !['paid', 'requires_review'].includes(order.paymentStatus);
+export const canCancelOrder = (order) => order.paymentMethod !== 'exchange' && ['pending_payment', 'confirmed'].includes(order.status) && !['paid', 'partially_refunded', 'refunded', 'requires_review'].includes(order.paymentStatus);
+export const canPayOrder = (order) => order.paymentMethod !== 'exchange' && order.status === 'pending_payment' && !['paid', 'partially_refunded', 'refunded', 'requires_review'].includes(order.paymentStatus);
 export const quoteFingerprint = (quote) => JSON.stringify({ subtotal: quote.subtotal, promotionDiscount: quote.promotionDiscount, pointsUsed: quote.pointsUsed, pointsDiscount: quote.pointsDiscount, shippingFee: quote.shippingFee, totalAmount: quote.totalAmount, items: quote.items.map(({ variantId, quantity, unitPrice, discountAmount }) => ({ variantId, quantity, unitPrice, discountAmount })) });
 export function promotionPayload(values, { automaticCode = false } = {}) {
   const payload = { ...values, promotionCode: automaticCode ? null : values.promotionCode.trim().toUpperCase(), name: values.name.trim(), description: values.description.trim() || null,

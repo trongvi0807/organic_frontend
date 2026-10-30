@@ -13,3 +13,8 @@ it('rejects external redirects, unrelated paths and a customer return for staff'
   }
   expect(loginReturnPath({ roles: ['ADMIN'] }, '/payment/result?vnp_ResponseCode=00')).toBe('/admin/products');
 });
+it('restores customer support and order links after signing in', () => {
+  const user = { roles: ['CUSTOMER'] };
+  for (const path of ['/phan-hoi?feedbackId=f', '/doi-tra?requestId=r', '/don-hang/order-1']) expect(loginReturnPath(user, path)).toBe(path);
+  expect(loginReturnPath(user, '/phan-hoi\\evil.example')).toBe('/');
+});

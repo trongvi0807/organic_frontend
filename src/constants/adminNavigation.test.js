@@ -12,7 +12,7 @@ describe('Role-based admin navigation', () => {
   it('gives sales only overview and sales, including authorized promotions', () => {
     const nav = groups('SALES_STAFF');
     expect(nav.map((g) => g.id)).toEqual(['dashboard', 'sales']);
-    expect(nav[1].children.map((t) => t.path)).toEqual(['sales-orders', 'payment-review', 'promotions', 'customers']);
+    expect(nav[1].children.map((t) => t.path)).toEqual(['sales-orders', 'payment-review', 'promotions', 'customers', 'feedbacks', 'return-requests', 'return-receipts']);
   });
   it('gives admin all six groups, four supply tabs and all existing support functions', () => {
     const nav = groups('ADMIN');
@@ -22,6 +22,9 @@ describe('Role-based admin navigation', () => {
   });
   it('combines roles without duplicate groups and normalizes ROLE_ prefixes', () => {
     expect(groups('ROLE_WAREHOUSE_STAFF', 'ROLE_SALES_STAFF').map((g) => g.id)).toEqual(['dashboard', 'transparency', 'catalog', 'sales', 'supply-chain']);
+    for (const roles of [['WAREHOUSE_STAFF'], ['ADMIN', 'WAREHOUSE_STAFF'], ['WAREHOUSE_STAFF', 'SALES_STAFF']]) {
+      expect(flattenAdminLinks(groups(...roles)).filter((item) => item.path === 'return-receipts')).toHaveLength(1);
+    }
   });
   it('never grants access to customer, absent or unsupported roles', () => {
     for (const roles of [[], ['CUSTOMER'], ['QUAN_LY_CAO_CAP']]) expect(groups(...roles)).toEqual([]);

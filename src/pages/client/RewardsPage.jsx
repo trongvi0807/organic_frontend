@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { dateText } from '@/lib/apiData';
 import { currency } from '@/lib/utils';
 
-const labels = { reserve: 'Giữ điểm', redeem: 'Dùng điểm', release: 'Hoàn điểm đang giữ', earn: 'Tích điểm' };
+const labels = { reserve: 'Giữ điểm', redeem: 'Dùng điểm', release: 'Hoàn điểm đang giữ', earn: 'Tích điểm', return_restore: 'Hoàn điểm đã dùng khi trả hàng', return_reverse: 'Điều chỉnh điểm tích từ đơn đã hoàn tiền' };
 export default function RewardsPage() {
   const [page, setPage] = useState(0);
   const rewards = useResource(checkoutService.rewards, []), history = useResource(() => checkoutService.transactions({ page, size: 20 }), [page]);

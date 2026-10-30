@@ -1,4 +1,5 @@
 import { today } from './apiData';
+import { addReceiptDays } from './receiptDefaults';
 
 export const orderStatuses = { pending_approval: 'Chờ duyệt', approved: 'Đã duyệt', partially_received: 'Giao hàng một phần', rejected: 'Từ chối', received: 'Đã nhập kho', closed: 'Đã đóng', cancelled: 'Đã hủy' };
 export const receiptStatuses = { draft: 'Bản nháp', pending_approval: 'Chờ duyệt', confirmed: 'Đã nhập kho', rejected: 'Từ chối', cancelled: 'Đã hủy' };
@@ -20,13 +21,16 @@ export function orderPayload(values) {
   });
   return { supplierId: values.supplierId, expectedDeliveryDate: values.expectedDeliveryDate || null, note: values.note.trim() || null, items };
 }
-export function receiptLines(order, receipt) {
+export function receiptLines(order, receipt, documentDate = today()) {
   return order.items.map((line) => {
     const saved = receipt?.items.find((item) => item.purchaseOrderDetailId === line.id);
     const capacity = line.quantityAvailableToReceive ?? line.quantityOrdered;
+    const manufactureDate = saved?.batch?.manufactureDate || documentDate.slice(0, 10);
     return { purchaseOrderDetailId: line.id, variant: line.variant, quantityOrdered: line.quantityOrdered, quantityReceivedPreviously: line.quantityReceived ?? 0, quantityAvailableToReceive: capacity, unitPrice: line.unitPrice,
       quantityReceived: saved?.quantityReceived ?? capacity, quantityRejected: saved?.quantityRejected ?? 0,
-      discrepancyReason: saved?.discrepancyReason || '', batchCode: saved?.batch?.batchCode || '', manufactureDate: saved?.batch?.manufactureDate || '', expiryDate: saved?.batch?.expiryDate || '', originDescription: saved?.batch?.originDescription || '' };
+      discrepancyReason: saved?.discrepancyReason || '', batchCode: saved?.batch?.batchCode || '', manufactureDate,
+      expiryDate: saved?.batch?.expiryDate || addReceiptDays(manufactureDate), expiryDateAutomatic: !saved?.batch?.expiryDate,
+      originDescription: saved?.batch?.originDescription || '', originEdited: !!saved?.batch?.originDescription };
   });
 }
 export function receiptPayload(values) {

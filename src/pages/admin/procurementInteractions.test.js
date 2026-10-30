@@ -27,7 +27,7 @@ it('approves with no reason and closes both decision popup and purchase detail a
   await act(async () => root.render(h(MemoryRouter, {}, h(ProcurementPage, { approval: true }))));
   await clickText('Xem'); await clickText('Duyệt đơn');
   expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(2);
-  expect(document.querySelector('textarea').required).toBe(false);
+  expect(document.querySelector('textarea')).toBeNull();
   await clickText('Xác nhận');
   expect(purchaseOrderService.decide).toHaveBeenCalledWith('po', 'approve', '');
   expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(0);

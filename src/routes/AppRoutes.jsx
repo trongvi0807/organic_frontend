@@ -36,6 +36,9 @@ const MyReviewsPage = lazy(() => import('@/pages/client/MyReviewsPage'));
 const SalesOrdersPage = lazy(() => import('@/pages/admin/SalesOrdersPage'));
 const PromotionsPage = lazy(() => import('@/pages/admin/PromotionsPage'));
 const PaymentReviewPage = lazy(() => import('@/pages/admin/PaymentReviewPage'));
+const FeedbackPage = lazy(() => import('@/pages/shared/FeedbackPage'));
+const ReturnRequestsPage = lazy(() => import('@/pages/shared/ReturnRequestsPage'));
+const ReturnWarehousePage = lazy(() => import('@/pages/admin/ReturnWarehousePage'));
 function DashboardRedirect() { return <Navigate to="/admin/dashboard" replace />; }
 function CatalogRedirect() { const { search } = useLocation(); const params = new URLSearchParams(search); if (params.has('categoryId') && !params.has('category')) { params.set('category', params.get('categoryId')); params.delete('categoryId'); } return <Navigate to={`/san-pham${params.size ? `?${params}` : ''}`} replace />; }
 function ProductRedirect() { const { slug } = useParams(); const { hash } = useLocation(); return <Navigate to={`/san-pham/${encodeURIComponent(slug)}${hash}`} replace />; }
@@ -53,6 +56,8 @@ export function AppRoutes() {
     if (pathname.startsWith('/dat-hang-thanh-cong/')) document.title = 'Đơn hàng đã ghi nhận | Mộc Organic';
     if (pathname === '/admin/business-forms') document.title = 'Biểu mẫu & bản in | Mộc Organic';
     if (pathname === '/admin/dashboard') document.title = 'Trang tổng quan | Mộc Organic';
+    const support = { '/phan-hoi': 'Phản hồi & hỗ trợ', '/doi-tra': 'Đổi trả & hỗ trợ sau mua', '/admin/feedbacks': 'Phản hồi khách hàng', '/admin/return-requests': 'Yêu cầu đổi trả', '/admin/return-receipts': 'Hàng thu hồi' };
+    if (support[pathname]) document.title = `${support[pathname]} | Mộc Organic`;
   }, [pathname]);
   return <Suspense fallback={<ResourceState loading />}><Routes>
     <Route element={<StoreLayout />}>
@@ -70,6 +75,8 @@ export function AppRoutes() {
         <Route path="don-hang/:id" element={<OrderPage />} />
         <Route path="diem-thuong" element={<RewardsPage />} />
         <Route path="danh-gia-cua-toi" element={<MyReviewsPage />} />
+        <Route path="phan-hoi" element={<FeedbackPage />} />
+        <Route path="doi-tra" element={<ReturnRequestsPage />} />
         <Route path="payment/result" element={<PaymentResultPage />} />
         <Route path="payment/cancel" element={<PaymentResultPage cancelled />} />
       </Route>
@@ -85,6 +92,7 @@ export function AppRoutes() {
       <Route path="admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="business-forms" element={<BusinessFormsPage />} />
+        <Route path="return-receipts" element={<ReturnWarehousePage />} />
         <Route path="sales-orders" element={<SalesOrdersPage />} />
         <Route index element={<DashboardRedirect />} />
         <Route element={<ProtectedRoute admin />}>
@@ -103,6 +111,10 @@ export function AppRoutes() {
         </Route>
         <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}><Route path="customers" element={<RecordsPage key="customers" module="customers" />} /></Route>
         <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}><Route path="payment-review" element={<PaymentReviewPage />} /></Route>
+        <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}>
+          <Route path="feedbacks" element={<FeedbackPage management />} />
+          <Route path="return-requests" element={<ReturnRequestsPage management />} />
+        </Route>
         <Route path="suppliers" element={<RecordsPage key="suppliers" module="suppliers" />} />
         <Route path="origins" element={<RecordsPage key="origins" module="origins" />} />
         <Route path="certifications" element={<RecordsPage key="certifications" module="certifications" />} />
