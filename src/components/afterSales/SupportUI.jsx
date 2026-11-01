@@ -7,6 +7,7 @@ import { adminDate } from '@/lib/adminFormat';
 import { errorMessage } from '@/lib/utils';
 import { historyActions, returnStates, supportHistoryText, validateSupportFiles } from '@/lib/afterSales';
 import '@/styles/customer-orders.css';
+import '@/styles/after-sales.css';
 
 export const supportPanel = 'min-w-0 rounded-2xl border border-emerald-900/10 bg-white p-5 sm:p-6';
 export function SupportBadge({ value, labels }) {
@@ -14,17 +15,17 @@ export function SupportBadge({ value, labels }) {
   return <span className={`inline-flex rounded-full px-3 py-1.5 text-xs font-medium ${color}`}>{labels[value] || 'Chờ cập nhật'}</span>;
 }
 export function SupportError({ children }) { return children ? <p className="rounded-xl bg-red-50 p-3 text-sm leading-6 text-red-800" role="alert">{children}</p> : null; }
-export function SupportNoteDialog({ title, description, children, maxLength = 5000, onSubmit, onClose, submitLabel = 'Xác nhận' }) {
+export function SupportNoteDialog({ title, description, children, maxLength = 5000, onSubmit, onClose, submitLabel = 'Xác nhận', collectNote = true }) {
   const [note, setNote] = useState(''), [touched, setTouched] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const lock = useRef(false);
   async function submit(e) {
-    e.preventDefault(); setTouched(true); if (!note.trim() || lock.current) return;
+    e.preventDefault(); setTouched(true); if ((collectNote && !note.trim()) || lock.current) return;
     lock.current = true; setBusy(true); setError('');
-    try { await onSubmit(note.trim()); onClose(); }
+    try { await onSubmit(collectNote ? note.trim() : undefined); onClose(); }
     catch (err) { setError(errorMessage(err)); }
     finally { lock.current = false; setBusy(false); }
   }
-  return <Modal open title={title} description={description} onOpenChange={(open) => { if (!open && !lock.current) onClose(); }}><form onSubmit={submit} noValidate className="space-y-4"><fieldset disabled={busy} className="space-y-4">{children}<Field label="Nội dung xác nhận *" error={touched && !note.trim() ? 'Vui lòng nhập nội dung xác nhận.' : ''}><Textarea value={note} maxLength={maxLength} onChange={(e) => { setNote(e.target.value); setTouched(true); }} required /></Field></fieldset><SupportError>{error}</SupportError><div className="flex justify-end gap-3"><Button variant="outline" onClick={onClose} disabled={busy}>Đóng</Button><Button type="submit" disabled={busy}>{busy ? 'Đang lưu…' : submitLabel}</Button></div></form></Modal>;
+  return <Modal open className="support-form-dialog" title={title} description={description} onOpenChange={(open) => { if (!open && !lock.current) onClose(); }}><form onSubmit={submit} noValidate className="support-form"><fieldset disabled={busy} className="support-fields">{children}{collectNote && <Field label="Nội dung xác nhận *" error={touched && !note.trim() ? 'Vui lòng nhập nội dung xác nhận.' : ''}><Textarea value={note} maxLength={maxLength} onChange={(e) => { setNote(e.target.value); setTouched(true); }} required /></Field>}</fieldset><SupportError>{error}</SupportError><div className="support-form-actions"><Button variant="outline" onClick={onClose} disabled={busy}>Đóng</Button><Button type="submit" disabled={busy}>{busy ? 'Đang lưu…' : submitLabel}</Button></div></form></Modal>;
 }
 export function EvidenceList({ items = [], onRemove, disabled }) {
   const [error, setError] = useState(''), [deleting, setDeleting] = useState('');

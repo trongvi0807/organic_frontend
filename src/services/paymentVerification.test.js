@@ -5,6 +5,17 @@ import { mayCapturePaypal, verifyReturnedPayment } from './client/paymentVerific
 let index = 0;
 const attempt = (gateway = 'stripe', status = 'pending') => ({ id: `payment-${index}`, orderId: `order-${index}`, gateway, status });
 beforeEach(() => { vi.resetAllMocks(); index++; });
+it('synchronizes a VietQR return through the backend without trusting payOS URL result flags', async () => {
+  const payment = attempt('payos'); checkoutService.sync.mockResolvedValue(payment);
+  const result = await verifyReturnedPayment({ username: 'khach', payment, returnQuery: 'gateway=payos&code=00&status=PAID&cancel=false' });
+  expect(result.status).toBe('pending'); expect(checkoutService.sync).toHaveBeenCalledWith(payment.id);
+  expect(checkoutService.capture).not.toHaveBeenCalled();
+});
+it('accepts a verified payOS payment even on a cancel return and preserves reconciliation states', async () => {
+  const payment = attempt('payos'); checkoutService.sync.mockResolvedValue({ ...payment, status: 'paid' });
+  expect((await verifyReturnedPayment({ username: 'khach', payment, cancelled: true })).status).toBe('paid');
+  expect(checkoutService.capture).not.toHaveBeenCalled();
+});
 it('automatically uses backend synchronization for Stripe and keeps its authoritative result', async () => {
   const payment = attempt(); checkoutService.sync.mockResolvedValue({ ...payment, status: 'paid' });
   expect((await verifyReturnedPayment({ username: 'khach', payment })).status).toBe('paid');

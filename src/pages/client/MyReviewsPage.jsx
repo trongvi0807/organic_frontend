@@ -3,40 +3,82 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useResource } from '@/hooks/useResource';
 import { reviewService } from '@/services/client/reviewService';
-import { reviewMedia, validateReviewFiles, productHref } from '@/lib/productDetail';
+import { productHref } from '@/lib/productDetail';
 import { errorMessage } from '@/lib/utils';
 import { CommerceHeader, commercePanel } from '@/components/checkout/OrderUI';
 import { ResourceState } from '@/components/common/ResourceState';
 import { Pagination } from '@/components/common/Pagination';
 import { Modal } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Field, Input, Select, Textarea } from '@/components/ui/field';
+import { StarRating } from '@/components/products/StarRating';
+import { ReviewAttachments } from '@/components/products/ReviewAttachments';
 
 export default function MyReviewsPage() {
   const [params] = useSearchParams();
-  const [tab, setTab] = useState(params.get('tab') === 'eligible' ? 'eligible' : 'mine'), [page, setPage] = useState(0), [id, setId] = useState(null), [remove, setRemove] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState('');
+  const [tab, setTab] = useState(params.get('tab') === 'eligible' ? 'eligible' : 'mine');
+  const [page, setPage] = useState(0);
+  const [id, setId] = useState(null);
+  const [remove, setRemove] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
   const list = useResource(() => (tab === 'mine' ? reviewService.mine : reviewService.eligibleItems)({ page, size: 10 }), [tab, page]);
-  async function confirmDelete() { if (busy) return; setBusy(true); setError(''); try { await reviewService.remove(remove.id); setRemove(null); list.reload(); toast.success('Đã xóa đánh giá.'); } catch (err) { setError(errorMessage(err)); } finally { setBusy(false); } }
-  return <div className="container py-10"><CommerceHeader title="Trải nghiệm của bạn" description="Quản lý đánh giá và chia sẻ cảm nhận về những sản phẩm đã nhận." /><div className="!mb-6 flex flex-wrap gap-3"><Button variant={tab === 'mine' ? 'default' : 'outline'} onClick={() => { setTab('mine'); setPage(0); }}>Đánh giá của tôi</Button><Button variant={tab === 'eligible' ? 'default' : 'outline'} onClick={() => { setTab('eligible'); setPage(0); }}>Sản phẩm có thể đánh giá</Button></div><ResourceState loading={list.loading} error={list.error} empty={!list.data?.items.length} onRetry={list.reload} /><div className="space-y-4">{!list.loading && !list.error && list.data?.items.map((item) => <article key={item.id || item.orderDetailId} className={commercePanel}><div className="flex flex-wrap justify-between gap-4"><div><h2 className="text-base font-semibold">{item.productName}</h2><p className="!mt-2 text-xs text-stone-500">{item.variantName} {item.orderCode && `· ${item.orderCode}`}</p></div>{tab === 'mine' && <span className="text-sm text-amber-700">{'★'.repeat(Number(item.rating))} · {item.published ? 'Đang công khai' : 'Không công khai'}</span>}</div>{tab === 'mine' && <><h3 className="!mt-4 !text-sm !font-medium">{item.title}</h3><p className="!mt-2 whitespace-pre-wrap text-sm leading-7 text-stone-600">{item.content}</p></>}<div className="!mt-5 flex flex-wrap gap-3">{tab === 'mine' ? <><Button size="sm" variant="outline" onClick={() => setId(item.id)}>Chi tiết / sửa / ảnh & video</Button><Button size="sm" variant="ghost" onClick={() => { setRemove(item); setError(''); }}>Xóa đánh giá</Button></> : <Link className="text-sm underline" to={`${productHref({ id: item.productId, slug: item.productSlug })}#danh-gia`}>Viết đánh giá sản phẩm →</Link>}</div></article>)}</div><Pagination page={page} size={10} totalPages={list.data?.totalPages || 0} totalElements={list.data?.totalElements || 0} onChange={setPage} />{id && <ReviewEditor id={id} onClose={() => setId(null)} onChanged={list.reload} />}<Modal open={!!remove} onOpenChange={(open) => { if (!open && !busy) setRemove(null); }} title="Xóa đánh giá?" description="Đánh giá và các ảnh/video liên quan sẽ bị xóa. Thao tác không thể khôi phục.">{error && <p className="form-error" role="alert">{error}</p>}<div className="form-actions"><Button variant="outline" disabled={busy} onClick={() => setRemove(null)}>Giữ lại</Button><Button disabled={busy} onClick={confirmDelete}>Xác nhận xóa</Button></div></Modal></div>;
-}
-function ReviewEditor({ id, onClose, onChanged }) {
-  const detail = useResource(() => reviewService.get(id), [id]);
-  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [remove, setRemove] = useState(null);
-  async function run(task) { if (busy) return; setBusy(true); setError(''); try { const review = await task(); detail.setData(review); onChanged(); toast.success('Đã cập nhật đánh giá.'); return true; } catch (err) { setError(errorMessage(err)); return false; } finally { setBusy(false); } }
-  async function upload(event) {
-    const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
-    try { validateReviewFiles([...(detail.data.media || []).map((m) => ({ type: m.contentType || (m.mediaType === 'video' ? 'video/mp4' : 'image/jpeg'), size: m.fileSize || 1 })), file]); }
-    catch (err) { setError(errorMessage(err)); return; }
-    await run(() => reviewService.uploadMedia(id, file));
+
+  async function confirmDelete() {
+    if (busy || !remove) return;
+    setBusy(true);
+    setError('');
+    try {
+      await reviewService.remove(remove.id);
+      setRemove(null);
+      setId(null);
+      setPage(0);
+      list.reload();
+      toast.success('Đã xóa đánh giá thành công. Bạn có thể đánh giá lại sản phẩm.');
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
   }
-  return <><Modal open onOpenChange={(open) => { if (!open && !busy) onClose(); }} title="Đánh giá của bạn" description="Chỉ sửa và tải tệp khi đơn vẫn ở trạng thái đã giao hoặc hoàn tất." className="!max-w-[850px]"><ResourceState loading={detail.loading} error={detail.error} onRetry={detail.reload} />{detail.data && !detail.loading && !detail.error && <div className="space-y-6"><ReviewText key={detail.data.id} review={detail.data} busy={busy} onSave={(v) => run(() => reviewService.update(id, v))} />{!detail.data.published && <p className="text-sm text-amber-800">Đánh giá hiện chưa được công khai. Bạn có thể chỉnh sửa khi đơn đã giao hoặc hoàn tất, hoặc xóa đánh giá nếu muốn.</p>}<div className="grid grid-cols-1 gap-5 sm:grid-cols-2">{reviewMedia(detail.data).map((media) => { const source = detail.data.media.find((m) => m.id === media.id); return <div className="min-w-0 rounded-xl border border-line p-4" key={media.id}>{media.type === 'video' ? <video className="!mb-4 aspect-video w-full rounded-lg object-contain" src={media.url} controls playsInline preload="metadata" /> : <img className="!mb-4 aspect-video w-full rounded-lg object-contain" src={media.url} alt={media.alt} />}<MediaMetadata key={`${source.id}:${source.sortOrder}:${source.altText}`} media={source} busy={busy} onSave={(values) => run(() => reviewService.updateMedia(id, media.id, values))} /><Button size="sm" variant="ghost" disabled={busy} onClick={() => setRemove(media.id)}>Xóa tệp</Button></div>; })}</div><Field label="Tải thêm ảnh/video (mỗi lần 1 tệp)" hint="Bạn có thể thêm tối đa 5 ảnh, mỗi ảnh 5 MB, và 1 video tối đa 50 MB."><Input disabled={busy} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" onChange={upload} /></Field></div>}{error && <p className="form-error" role="alert">{error}</p>}</Modal><Modal open={!!remove} onOpenChange={(open) => { if (!open && !busy) setRemove(null); }} title="Xóa tệp khỏi đánh giá?" description="Ảnh/video này sẽ bị xóa và không thể khôi phục."><div className="form-actions"><Button variant="outline" disabled={busy} onClick={() => setRemove(null)}>Giữ tệp</Button><Button disabled={busy} onClick={async () => { if (await run(() => reviewService.removeMedia(id, remove))) setRemove(null); }}>Xác nhận xóa</Button></div></Modal></>;
-}
-function ReviewText({ review, busy, onSave }) {
-  const [values, setValues] = useState({ rating: review.rating, title: review.title || '', content: review.content || '' });
-  return <form onSubmit={(e) => { e.preventDefault(); onSave(values); }}><fieldset disabled={busy} className="space-y-4"><Field label="Số sao"><Select value={values.rating} onChange={(e) => setValues((old) => ({ ...old, rating: e.target.value }))}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n} sao</option>)}</Select></Field><Field label="Tiêu đề"><Input maxLength={200} value={values.title} onChange={(e) => setValues((old) => ({ ...old, title: e.target.value }))} /></Field><Field label="Nội dung"><Textarea maxLength={10000} value={values.content} onChange={(e) => setValues((old) => ({ ...old, content: e.target.value }))} /></Field><Button type="submit">Lưu nội dung</Button></fieldset></form>;
-}
-function MediaMetadata({ media, busy, onSave }) {
-  const [values, setValues] = useState({ altText: media.altText || '', sortOrder: media.sortOrder || 0 });
-  return <form onSubmit={(e) => { e.preventDefault(); onSave(values); }} className="space-y-3"><Field label="Mô tả tệp"><Input disabled={busy} maxLength={255} value={values.altText} onChange={(e) => setValues((old) => ({ ...old, altText: e.target.value }))} /></Field><Field label="Thứ tự"><Input disabled={busy} required type="number" min="0" max="100000" step="1" value={values.sortOrder} onChange={(e) => setValues((old) => ({ ...old, sortOrder: e.target.value }))} /></Field><Button disabled={busy} size="sm" variant="outline" type="submit">Lưu mô tả / thứ tự</Button></form>;
+
+  return <div className="container py-10">
+    <CommerceHeader title="Trải nghiệm của bạn" description="Xem đánh giá đã gửi và chia sẻ cảm nhận về sản phẩm đã nhận." />
+    <div className="!mb-6 flex flex-wrap gap-3">{[['mine', 'Đánh giá của tôi'], ['eligible', 'Sản phẩm đã nhận']].map(([value, label]) => <Button key={value} variant={tab === value ? 'default' : 'outline'} onClick={() => { setTab(value); setPage(0); }}>{label}</Button>)}</div>
+    <ResourceState loading={list.loading} error={list.error} empty={!list.data?.items.length} onRetry={list.reload} />
+    {!list.loading && !list.error && <div className="space-y-4">{list.data?.items.map((item) => <CustomerReviewCard key={item.id || item.orderDetailId} item={item} submitted={tab === 'mine'} onView={() => setId(item.id)} onDelete={() => { setRemove(item); setError(''); }} />)}</div>}
+    <Pagination page={page} size={10} totalPages={list.data?.totalPages || 0} totalElements={list.data?.totalElements || 0} onChange={setPage} />
+    {id && <ReviewDetail id={id} onClose={() => setId(null)} />}
+    <Modal open={!!remove} onOpenChange={(open) => { if (!open && !busy) setRemove(null); }} title="Xóa đánh giá?" description="Đánh giá và ảnh/video sẽ bị xóa. Bạn chỉ có thể viết lại khi hệ thống xác nhận xóa thành công.">
+      {error && <p className="form-error" role="alert">{error}</p>}
+      <div className="form-actions"><Button variant="outline" disabled={busy} onClick={() => setRemove(null)}>Giữ lại</Button><Button disabled={busy} onClick={confirmDelete}>{busy ? 'Đang xóa…' : 'Xác nhận xóa'}</Button></div>
+    </Modal>
+  </div>;
 }
 
+function CustomerReviewCard({ item, submitted, onView, onDelete }) {
+  return <article className={commercePanel}>
+    <div className="flex flex-wrap justify-between gap-4">
+      <div><h2 className="text-base font-semibold">{item.productName}</h2><p className="!mt-2 text-xs text-stone-500">{item.variantName}{item.orderCode ? ` · ${item.orderCode}` : ''}</p></div>
+      {submitted && <span className="text-sm text-amber-700">{'★'.repeat(Number(item.rating))} · {item.published ? 'Đang công khai' : 'Không công khai'}</span>}
+    </div>
+    {submitted && <><h3 className="!mt-4 !text-sm !font-medium">{item.title}</h3><p className="!mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-stone-600">{item.content}</p></>}
+    <div className="!mt-5 flex flex-wrap gap-3">
+      {submitted ? <><Button size="sm" variant="outline" onClick={onView}>Xem đánh giá</Button><Button size="sm" variant="ghost" onClick={onDelete}>Xóa đánh giá</Button></>
+        : Number(item.reviewCount || 0) > 0 ? <span className="text-sm text-stone-500">Bạn đã đánh giá sản phẩm này. Xóa đánh giá cũ để viết lại.</span>
+          : <Link className="text-sm underline" to={`${productHref({ id: item.productId, slug: item.productSlug })}#danh-gia`}>Viết đánh giá sản phẩm →</Link>}
+    </div>
+  </article>;
+}
+
+function ReviewDetail({ id, onClose }) {
+  const detail = useResource(() => reviewService.get(id), [id]);
+  return <Modal open onOpenChange={(open) => { if (!open) onClose(); }} title="Đánh giá của bạn" description="Đánh giá đã gửi được giữ nguyên nội dung. Bạn có thể xóa và viết lại nếu muốn." className="!max-w-[850px]">
+    <ResourceState loading={detail.loading} error={detail.error} onRetry={detail.reload} />
+    {!detail.loading && !detail.error && detail.data && <div className="space-y-5">
+      <StarRating value={detail.data.rating} />
+      <h3 className="!text-lg">{detail.data.title}</h3>
+      <p className="whitespace-pre-wrap break-words text-sm leading-7">{detail.data.content}</p>
+      <ReviewAttachments review={detail.data} />
+    </div>}
+  </Modal>;
+}

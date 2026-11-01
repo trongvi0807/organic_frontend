@@ -1,5 +1,5 @@
 import {
-  Bell, Boxes, FileInput, FileText, Home, LayoutDashboard, Link2, MapPin, MessageCircle, RotateCcw,
+  Bell, Boxes, FileInput, FileText, Home, LayoutDashboard, Link2, MapPin, MessageCircle, MessageSquare, RotateCcw,
   Package, Settings2, Shapes, ShieldCheck, ShoppingBag, Sprout, Tag, Truck, Users, WalletCards, Warehouse,
 } from 'lucide-react';
 import { hasRole, STAFF_ROLES, PRODUCT_MANAGERS, PROMOTION_MANAGERS } from '@/lib/permissions';
@@ -30,6 +30,7 @@ const navigation = [
       { path: 'payment-review', name: 'Đối soát thanh toán', icon: WalletCards },
       { path: 'promotions', name: 'Khuyến mãi', icon: Tag, roles: PROMOTION_MANAGERS },
       { path: 'customers', name: 'Khách hàng', icon: Users },
+      { path: 'reviews', name: 'Đánh giá sản phẩm', icon: MessageSquare },
       { path: 'feedbacks', name: 'Phản hồi', icon: MessageCircle },
       { path: 'return-requests', name: 'Đổi trả', icon: RotateCcw },
       { path: 'return-receipts', name: 'Hàng thu hồi', icon: FileInput },

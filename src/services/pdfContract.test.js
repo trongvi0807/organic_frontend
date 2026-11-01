@@ -57,7 +57,10 @@ add(106,()=>orderService.reviewPayments(paging));add(107,()=>orderService.list(p
 add(120,()=>purchaseOrderService.list(paging));add(121,()=>purchaseOrderService.get(A));add(122,()=>purchaseOrderService.save(null,purchase));add(123,()=>purchaseOrderService.save(A,purchase));add(124,()=>purchaseOrderService.decide(A,'approve','QA'));add(125,()=>purchaseOrderService.decide(A,'reject','QA'));add(126,()=>purchaseOrderService.decide(A,'cancel','QA'));
 add(127,()=>goodsReceiptService.list(paging));add(128,()=>goodsReceiptService.get(A));add(129,()=>goodsReceiptService.save(null,receipt));add(130,()=>goodsReceiptService.save(A,receipt));add(131,()=>goodsReceiptService.submit(A));add(132,()=>goodsReceiptService.decide(A,'approve','QA'));add(133,()=>goodsReceiptService.decide(A,'reject','QA'));add(134,()=>inventoryService.batches(paging));add(135,()=>inventoryService.batch(A));add(136,()=>inventoryService.list(paging));add(137,()=>inventoryService.get(A));add(138,()=>inventoryService.threshold(A,10));
 add(139,()=>notificationService.list(paging));add(140,()=>notificationService.read(A));add(141,()=>notificationService.retry(A));add(142,()=>notificationService.register('qa-device'));add(143,()=>notificationService.unregister('qa-device'));
-add(144,()=>reviewService.eligibleItems(paging));add(145,()=>reviewService.mine(paging));add(146,()=>reviewService.get(A));add(147,()=>reviewService.submit(A,{rating:5,title:'QA',content:'Sản phẩm kiểm thử'}));add(148,()=>reviewService.update(A,{rating:5,title:'QA',content:'Sản phẩm kiểm thử'}));add(149,()=>reviewService.remove(A));add(150,()=>reviewService.uploadMedia(A,file));add(151,()=>reviewService.updateMedia(A,B,{altText:'QA',sortOrder:0}));add(152,()=>reviewService.removeMedia(A,B));
+// Review submission now uses an atomic multipart endpoint; customer edits are forbidden.
+// Updated submission/immutability contracts are covered in productDetail.test.js and backend review tests.
+const replacedReviewEndpoints = new Set([147, 148, 150, 151, 152]);
+add(144,()=>reviewService.eligibleItems(paging));add(145,()=>reviewService.mine(paging));add(146,()=>reviewService.get(A));add(149,()=>reviewService.remove(A));
 const captured=[];
 beforeEach(()=>{
   vi.clearAllMocks();captured.length=0;
@@ -80,8 +83,8 @@ function checkFields(shape,data,label){
     for(const key of Object.keys(data))checkFields(shape[key],data[key],label+'.'+key);
   }
 }
-it('covers all 152 browser-callable endpoints; provider callbacks stay outside frontend services',()=>{
-  expect(cases.map(c=>c.number).sort((a,b)=>a-b)).toEqual(contract.endpoints.filter(e=>e.frontend).map(e=>e.number));
+it('covers unchanged PDF endpoints; revised review policy has its own contract tests',()=>{
+  expect(cases.map(c=>c.number).sort((a,b)=>a-b)).toEqual(contract.endpoints.filter(e=>e.frontend&&!replacedReviewEndpoints.has(e.number)).map(e=>e.number));
   expect(contract.endpoints.filter(e=>!e.frontend).map(e=>e.number)).toEqual([153,154,155]);
 });
 for(const testCase of cases) it(`PDF API ${String(testCase.number).padStart(3,'0')}: method/path/input`,async()=>{

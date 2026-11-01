@@ -1,6 +1,12 @@
 import { expect, it } from 'vitest';
 import { loginReturnPath } from './loginReturn';
 
+it('preserves checkout/cart destinations when a Google customer finishes their profile', () => {
+  const user = { roles: ['CUSTOMER'] };
+  for (const path of ['/thanh-toan', '/gio-hang']) expect(loginReturnPath(user, path)).toBe(path);
+  expect(loginReturnPath(user, '/thanh-toan-evil')).toBe('/');
+});
+
 it('restores the complete signed payment URL after customer login', () => {
   const path = '/payment/result?vnp_TxnRef=abc&vnp_ResponseCode=00&vnp_SecureHash=signature';
   expect(loginReturnPath({ roles: ['CUSTOMER'] }, path)).toBe(path);

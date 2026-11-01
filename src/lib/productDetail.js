@@ -33,7 +33,7 @@ export function variantDisplayName(variant) {
   const name = String(variant.variantName || '').trim();
   const quantity = Number(variant.netQuantity);
   if (!Number.isFinite(quantity) || quantity <= 0 || !variant.unitId || /\d\s*(?:[.,]\d+)?\s*(?:kg|g|ml|l)\b/i.test(name)) return name;
-  return `${name}${name ? ' · ' : ''}${quantity.toLocaleString('vi-VN')} ${variant.unitId}`;
+  return `${name}${name ? ' · ' : ''}${quantity.toLocaleString('vi-VN', { signDisplay: 'negative' })} ${variant.unitId}`;
 }
 
 export function reviewMedia(review) {

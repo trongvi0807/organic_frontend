@@ -11,6 +11,7 @@ import { customerOrderService } from '@/services/client/customerOrderService';
 import { canPayOrder, paymentNames, paymentDisplayNames, paymentRedirect } from '@/lib/checkout';
 import { rememberPayment } from '@/lib/checkoutAttempt';
 import { customerOrderError, latestShipment, orderDateTime } from '@/lib/customerOrders';
+import { PaymentBrand } from '@/components/checkout/PaymentBrand';
 import { currency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/field';
@@ -28,7 +29,7 @@ export function OrderPaymentSummary({ order }) {
     ['Tạm tính', money(quote?.subtotal)], ['Phí giao hàng', money(quote?.shippingFee)],
     ['Giảm giá / Khuyến mãi', money(quote?.promotionDiscount == null ? null : -quote.promotionDiscount)],
     [`Điểm thành viên đã dùng${quote?.pointsUsed != null ? ` (${quote.pointsUsed} điểm)` : ''}`, money(quote?.pointsDiscount == null ? null : -quote.pointsDiscount)],
-  ].map(([label, value]) => <div className="flex flex-wrap justify-between gap-2" key={label}><dt className="text-stone-500">{label}</dt><dd className="text-right font-medium">{value}</dd></div>)}<div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-200 pt-5"><dt className="font-semibold text-[#1B4D2E]">Tổng thanh toán</dt><dd className="text-right text-2xl font-semibold text-[#1B4D2E]">{money(quote?.totalAmount)}</dd></div></dl><div className="!mt-5 space-y-3 rounded-xl bg-[#F7FAF5] p-4 text-xs"><p className="flex flex-wrap justify-between gap-2"><span className="text-stone-500">Phương thức</span><strong className="font-medium">{paymentDisplayNames[order.paymentMethod] || 'Chưa có thông tin'}</strong></p><div className="flex flex-wrap items-center justify-between gap-3"><span className="text-stone-500">Trạng thái</span><OrderBadge order={order} payment /></div>{quote?.vatIncluded && <p className="text-stone-500">Đã bao gồm VAT.</p>}</div></section>;
+  ].map(([label, value]) => <div className="flex flex-wrap justify-between gap-2" key={label}><dt className="text-stone-500">{label}</dt><dd className="text-right font-medium">{value}</dd></div>)}<div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-200 pt-5"><dt className="font-semibold text-[#1B4D2E]">Tổng thanh toán</dt><dd className="text-right text-2xl font-semibold text-[#1B4D2E]">{money(quote?.totalAmount)}</dd></div></dl><div className="!mt-5 space-y-3 rounded-xl bg-[#F7FAF5] p-4 text-xs"><p className="flex flex-wrap justify-between gap-2"><span className="text-stone-500">Phương thức</span><span className="flex items-center gap-2"><PaymentBrand gateway={order.paymentMethod} className="!h-11 !w-16" /><strong className="font-medium">{paymentDisplayNames[order.paymentMethod] || 'Chưa có thông tin'}</strong></span></p><div className="flex flex-wrap items-center justify-between gap-3"><span className="text-stone-500">Trạng thái</span><OrderBadge order={order} payment /></div>{quote?.vatIncluded && <p className="text-stone-500">Đã bao gồm VAT.</p>}</div></section>;
 }
 export function OrderDeliveryInfo({ order, demo }) {
   const shipment = latestShipment(order), phone = shipment?.driverPhone?.replace(/[^\d+]/g, ''), canCall = !demo && /^\+?\d{7,15}$/.test(phone || '');

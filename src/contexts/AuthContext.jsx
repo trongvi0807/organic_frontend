@@ -22,11 +22,13 @@ export function AuthProvider({ children }) {
     window.addEventListener('moc:session-refreshed', refreshed);
     return () => { window.removeEventListener('moc:session-expired', expired); window.removeEventListener('moc:session-refreshed', refreshed); };
   }, []);
-  async function login(values) {
-    const next = { ...await authService.login(values), sessionId: crypto.randomUUID() };
+  function finishLogin(result) {
+    if (!result?.accessToken || !result.refreshToken || !result.user?.username || !Array.isArray(result.user.roles)) throw new Error('Chưa nhận đủ thông tin đăng nhập. Vui lòng thử lại.');
+    const next = { ...result, sessionId: crypto.randomUUID() };
     setSession(next); updateSession(next);
     return next.user;
   }
+  async function login(values) { return finishLogin(await authService.login(values)); }
   async function logout() {
     if (!DEMO_MODE && hasRole(session?.user, 'ADMIN', 'WAREHOUSE_STAFF')) {
       try { await disablePush(session.user, false); }
@@ -40,10 +42,10 @@ export function AuthProvider({ children }) {
   function updateProfile(profile) {
     updateSession((old) => {
       if (!old) return old;
-      const next = { ...old, user: { ...old.user, fullName: profile.fullName, email: profile.email, phoneNumber: profile.phoneNumber, avatarUrl: profile.avatarUrl } };
+      const next = { ...old, user: { ...old.user, fullName: profile.fullName, email: profile.email, phoneNumber: profile.phoneNumber, avatarUrl: profile.avatarUrl, profileCompletionRequired: !profile.phoneNumber?.trim() } };
       setSession(next); return next;
     });
   }
-  return <AuthContext.Provider value={{ user, isAdmin, isStaff: hasRole(user, ...STAFF_ROLES), login, logout, updateProfile }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, isAdmin, isStaff: hasRole(user, ...STAFF_ROLES), login, finishLogin, logout, updateProfile }}>{children}</AuthContext.Provider>;
 }
 export const useAuth = () => useContext(AuthContext);

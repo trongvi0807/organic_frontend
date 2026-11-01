@@ -25,6 +25,12 @@ it('never combines an exchange with a refund or allows collecting cancelled orde
   expect(decisionPayload(detail, exchange, 'Đổi cùng hàng', 'Có căn cứ').items[0]).toEqual(expect.objectContaining({ resolutionType: 'exchange', refundAmount: null, returnRequired: true }));
   expect(() => decisionPayload({ ...detail, request: { ...detail.request, order: { status: 'cancelled', paymentStatus: 'paid' } } }, values, 'Kiểm tra', 'Có căn cứ')).toThrow('Đơn đã hủy');
 });
+it('requests authoritative automatic amounts even if an old editor passes a manual value', () => {
+  const input = { ...values, 'request-line': { ...values['request-line'], amount: 1 } };
+  expect(decisionPayload(detail, input, '', 'Đã xác minh').items[0].refundAmount).toBeNull();
+  expect(decisionPayload(detail, values, '', '', { preview: true }).note).toBe('');
+  expect(() => decisionPayload(detail, values, '', '')).toThrow('chính sách');
+});
 
 const line = { returnRequestDetailId: 'request-detail', returnRequired: true, remainingToReceive: 3, originalAllocations: [{ id: 'allocation', batchCode: 'LOT-01', availableToIdentify: 2 }] };
 const item = { version: 7, uninspectedQuantity: 3, passedHeldQuantity: 2, failedHeldQuantity: 1 };
@@ -34,11 +40,13 @@ it('uses original shipment allocation and request-detail IDs when receiving retu
   expect(() => warehousePayload('receive', { note: 'Đã nhận', quantity: 1, allocation: 'batch-id' }, null, line)).toThrow('không thuộc');
 });
 it('validates incremental inspection and disposal quantities with the latest receipt version', () => {
-  expect(warehousePayload('inspect', { passed: 2, failed: 1, note: 'Đã kiểm' }, item)).toEqual({ expectedVersion: 7, note: 'Đã kiểm', passedQuantity: 2, failedQuantity: 1 });
+  expect(warehousePayload('inspect', { passed: 2, failed: 1 }, item)).toEqual({ expectedVersion: 7, note: 'Kết quả kiểm tra lần này: đạt 2, không đạt 1.', passedQuantity: 2, failedQuantity: 1 });
+  expect(warehousePayload('identify-batch', { allocation: 'allocation' }, item, line)).toEqual({ expectedVersion: 7, note: 'Đã đối chiếu lô gốc của sản phẩm đã giao.', originalOrderDetailBatchId: 'allocation' });
+  expect(warehousePayload('dispose', { passed: 0, failed: 1 }, item)).toEqual({ expectedVersion: 7, note: 'Đã ghi nhận loại bỏ trong lần này: 0 sản phẩm đạt, 1 sản phẩm không đạt.', passedQuantity: 0, failedQuantity: 1 });
   expect(() => warehousePayload('inspect', { passed: 2, failed: 2, note: 'Đã kiểm' }, item)).toThrow('Tổng số lượng');
   expect(() => warehousePayload('dispose', { passed: 0, failed: 2, note: 'Đã loại bỏ' }, item)).toThrow('Số lượng');
   expect(() => warehousePayload('restock', { quantity: -1, note: 'Nhập lại' }, item)).toThrow('Số lượng');
-  expect(warehousePayload('reinspect', { from: 'failed', quantity: 1, note: 'Kiểm tra lại' }, item)).toEqual({ expectedVersion: 7, note: 'Kiểm tra lại', from: 'failed', quantity: 1 });
+  expect(warehousePayload('reinspect', { from: 'failed', quantity: 1 }, item)).toEqual({ expectedVersion: 7, note: 'Đã kiểm tra lại 1 sản phẩm: Không đạt → Đạt.', from: 'failed', quantity: 1 });
 });
 it('keeps an uncertain operation key instead of sending a changed operation under a new key', () => {
   vi.stubGlobal('crypto', { randomUUID: () => 'same-key' });

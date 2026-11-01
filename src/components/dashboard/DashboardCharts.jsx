@@ -6,7 +6,7 @@ import { currency } from '@/lib/utils';
 import { adminDate } from '@/lib/adminFormat';
 
 const colors = ['#32846B', '#91B8A0', '#C5AB78', '#7E9EBA', '#A89CBE', '#CBD7D0'];
-const shortMoney = (value) => Math.abs(value) >= 1e6 ? `${(value / 1e6).toLocaleString('vi-VN', { maximumFractionDigits: 1 })}tr` : Math.abs(value) >= 1000 ? `${(value / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })}k` : String(value);
+const shortMoney = (value) => Math.abs(value) >= 1e6 ? `${(value / 1e6).toLocaleString('vi-VN', { signDisplay: 'negative', maximumFractionDigits: 1 })}tr` : Math.abs(value) >= 1000 ? `${(value / 1000).toLocaleString('vi-VN', { signDisplay: 'negative', maximumFractionDigits: 0 })}k` : String(value);
 
 function RevenueTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
@@ -42,7 +42,7 @@ export function DashboardCharts({ model, granularity, onGranularityChange, loadi
         <div className="adk-category-chart"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 300, height: 195 }}><PieChart accessibilityLayer><Pie data={categories} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={65} outerRadius={87} paddingAngle={3} cornerRadius={3} strokeWidth={0} isAnimationActive={false} /><Tooltip formatter={(value) => currency(value)} contentStyle={{ borderRadius: 8, borderColor: '#E6EAF0', fontSize: 12 }} /></PieChart></ResponsiveContainer><div className="adk-donut-label"><span>Tiền hàng</span><strong>{shortMoney(model.categories.total)} ₫</strong></div></div>
         <ul className="adk-category-breakdown">{categories.map((category) => {
           const percent = model.categories.total > 0 ? category.value / model.categories.total * 100 : 0;
-          return <li key={category.key}><div><span><i style={{ background: category.fill }} />{category.name}</span><strong title={currency(category.value)}>{percent.toLocaleString('vi-VN', { maximumFractionDigits: 1 })}%</strong></div><div className="adk-category-track"><span style={{ background: category.fill, width: `${Math.min(100, Math.max(0, percent))}%` }} /></div></li>;
+          return <li key={category.key}><div><span><i style={{ background: category.fill }} />{category.name}</span><strong title={currency(category.value)}>{percent.toLocaleString('vi-VN', { signDisplay: 'negative', maximumFractionDigits: 1 })}%</strong></div><div className="adk-category-track"><span style={{ background: category.fill, width: `${Math.min(100, Math.max(0, percent))}%` }} /></div></li>;
         })}</ul>
         {model.categories.unclassified > 0 && <p className="adk-panel-note is-warning">Có {currency(model.categories.unclassified)} chưa nối được danh mục.</p>}<p className="adk-panel-note">Không gồm phí giao hàng. Phân loại theo hồ sơ sản phẩm hiện tại.</p>
       </> : <ChartEmpty message="Chưa phát sinh tiền hàng đã thanh toán trong kỳ." />}

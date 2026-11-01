@@ -17,7 +17,7 @@ export const printDate = (value) => {
 };
 export function printNumber(value, fractionDigits = 0) {
   if (value == null || value === '' || !Number.isFinite(Number(value))) return '—';
-  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: fractionDigits }).format(Number(value));
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: fractionDigits, signDisplay: 'negative' }).format(Number(value));
 }
 
 function clearPrintCopy(owner) {

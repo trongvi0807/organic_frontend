@@ -4,6 +4,7 @@ import { checkoutService } from './checkoutService';
 import { allPages, normalizePage } from '@/lib/apiData';
 import { cancellationEligibility, isCompleted } from '@/lib/customerOrders';
 import { createDemoOrders } from '@/constants/demoOrders';
+import { validateReturnImages } from '@/lib/afterSales';
 
 const key = 'moc.customer-orders.demo.v1';
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -56,8 +57,14 @@ export const customerOrderService = {
     if (!demo) return get('/return-requests/eligible-items', { orderId: order.id });
     return { canSubmit: isCompleted(order), items: order.pricing.items.map((item) => ({ ...item, availableQuantity: item.quantity })) };
   },
-  async requestReturn(order, payload, idempotencyKey, demo = false) {
-    if (!demo) { requireBackend(); return unwrap(await api.post('/return-requests', payload, { headers: { 'Idempotency-Key': idempotencyKey } })); }
+  async requestReturn(order, payload, idempotencyKey, demo = false, images = []) {
+    const issue = validateReturnImages(images); if (issue) throw new Error(issue);
+    if (!demo) {
+      requireBackend();
+      const body = new FormData(); body.append('request', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+      images.forEach((file) => body.append('images', file));
+      return unwrap(await api.post('/return-requests', body, { headers: { 'Idempotency-Key': idempotencyKey, 'Content-Type': undefined }, timeout: 180000 }));
+    }
     const orders = demoOrders(), stored = orders.find((item) => item.id === order.id);
     if (!isCompleted(stored)) throw new Error('Chỉ gửi yêu cầu sau khi đơn đã hoàn tất.');
     const request = { id: `demo-return-${Date.now()}`, requestCode: 'DT-MOCPHONG', status: 'submitted', requestType: payload.requestType, requestedAt: new Date().toISOString() };

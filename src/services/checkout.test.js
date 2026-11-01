@@ -28,9 +28,11 @@ it('reads reward history as a list and keeps COD reconciliation separate from co
   await orderService.collect('o'); await orderService.reconcile('o');
   expect(api.post).toHaveBeenCalledWith('/management/orders/o/cod/collect', undefined); expect(api.post).toHaveBeenCalledWith('/management/orders/o/cod/reconcile', undefined);
 });
-it('writes review media metadata without leaking ownership fields', async () => {
-  await reviewService.updateMedia('r', 'm', { altText: '  Tươi  ', sortOrder: '0', customerId: 'other' });
-  expect(api.patch).toHaveBeenCalledWith('/reviews/r/media/m', { altText: 'Tươi', sortOrder: 0 });
+it('does not expose review content/media editing to customers', () => {
+  expect(reviewService.update).toBeUndefined();
+  expect(reviewService.updateMedia).toBeUndefined();
+  expect(reviewService.removeMedia).toBeUndefined();
+  expect(reviewService.uploadMedia).toBeUndefined();
 });
 it('reads the documented authenticated payment endpoint without submitting browser parameters to IPN', async () => {
   api.get.mockResolvedValue({data:{data:{id:'p',status:'pending'}}});

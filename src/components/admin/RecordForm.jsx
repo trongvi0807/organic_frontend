@@ -8,7 +8,7 @@ import { modules } from '@/constants/management';
 import { useResource } from '@/hooks/useResource';
 import { ResourceState } from '@/components/common/ResourceState';
 import { allPages, today } from '@/lib/apiData';
-import { supplierService } from '@/services/admin/managementService';
+import { supplierService, originService } from '@/services/admin/managementService';
 import { AdminForm, AdminDateInput } from './AdminForm';
 import { SearchSelect } from './SearchSelect';
 import { AdminAddressFields } from './AdminAddressFields';
@@ -21,6 +21,7 @@ export function RecordForm({ module, item, service, onClose, onSaved }) {
   const resource = useResource(async () => {
     const detail = item.id ? await service.get(item.id) : { ...item };
     if (module === 'suppliers' && !item.id) detail.supplierCode = nextRecordCode(await allPages(supplierService.list), 'supplierCode', 'NCC');
+    if (module === 'origins' && !item.id) detail.originCode = (await originService.nextCode()).originCode;
     return { item: detail, suppliers: module === 'origins' ? await allPages(supplierService.list) : [] };
   }, [module, item.id]);
   return <Modal open onOpenChange={(value) => { if (!value && !busy) onClose(); }} title={`${item.id ? 'Chỉnh sửa' : 'Thêm'} ${config.singular}`} description={config.description} className="catalog-form-modal"><ResourceState loading={resource.loading} error={resource.error} onRetry={resource.reload} />{!resource.loading && !resource.error && <RecordEditor module={module} initial={resource.data.item} suppliers={resource.data.suppliers} service={service} onClose={onClose} onSaved={onSaved} busy={busy} setBusy={setBusy} />}</Modal>;
@@ -50,7 +51,7 @@ function RecordEditor({ module, initial, suppliers, service, onClose, onSaved, b
       const controlProps = { name, defaultValue: initial[name] ?? (defaultToday ? today() : defaultValue ?? ''), ...props };
       if (name === 'address') return <AdminAddressFields key={name} name={name} initialValue={initial[name] || ''} required={props.required} />;
       return <Field key={name} label={`${label}${props.required ? ' *' : ''}`} hint={hint} className={type === 'textarea' || name === 'accountId' ? 'full-width' : ''}>
-        {supplier ? <SearchSelect name={name} value={supplierId} onChange={setSupplierId} aria-label="Nhà cung cấp" options={[{ value: '', label: 'Không liên kết' }, ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.supplierName, disabled: supplier.status === 'inactive' && supplier.id !== initial.supplierId }))]} /> : options ? <Select {...controlProps}>{options.map(([value, title]) => <option key={value} value={value}>{title}</option>)}</Select> : type === 'date' ? <AdminDateInput name={name} {...props} value={dates[name]} onChange={(e) => setDates((old) => ({ ...old, [name]: e.target.value }))} min={name === 'expiresAt' ? dates.issuedAt || undefined : undefined} max={past ? today() : name === 'issuedAt' ? dates.expiresAt || undefined : undefined} /> : type === 'textarea' ? <Textarea {...controlProps} /> : <Input {...controlProps} type={type || 'text'} max={past ? today() : undefined} pattern={uuid ? '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' : props.pattern} />}
+        {supplier ? <SearchSelect name={name} required={props.required} value={supplierId} onChange={setSupplierId} aria-label="Nhà cung cấp" options={[{ value: '', label: 'Chọn nhà cung cấp' }, ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.supplierName, disabled: supplier.status === 'inactive' && supplier.id !== initial.supplierId }))]} /> : options ? <Select {...controlProps}>{options.map(([value, title]) => <option key={value} value={value}>{title}</option>)}</Select> : type === 'date' ? <AdminDateInput name={name} {...props} value={dates[name]} onChange={(e) => setDates((old) => ({ ...old, [name]: e.target.value }))} min={name === 'expiresAt' ? dates.issuedAt || undefined : undefined} max={past ? today() : name === 'issuedAt' ? dates.expiresAt || undefined : undefined} /> : type === 'textarea' ? <Textarea {...controlProps} /> : <Input {...controlProps} type={type || 'text'} max={past ? today() : undefined} pattern={uuid ? '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' : props.pattern} />}
       </Field>;
     })}</div>
     {error && <p className="form-error" role="alert">{error}</p>}

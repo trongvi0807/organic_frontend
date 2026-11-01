@@ -30,9 +30,17 @@ describe('Customer order API boundary', () => {
   it('uses exact return eligibility and idempotent create contracts', async () => {
     api.get.mockResolvedValue(reply({ canSubmit: true })); api.post.mockResolvedValue(reply({ request: { requestCode: 'DT001' } }));
     const order = { id: 'order-uuid' }, payload = { orderId: order.id, requestType: 'return_refund', reason: 'damaged', description: 'Hàng hỏng', items: [{ orderDetailId: 'line-uuid', quantity: 1, reason: 'damaged' }] };
-    await customerOrderService.eligible(order); await customerOrderService.requestReturn(order, payload, 'idempotent');
+    const image = new File(['image-content'], 'hang-hong.png', { type: 'image/png' });
+    await customerOrderService.eligible(order); await customerOrderService.requestReturn(order, payload, 'idempotent', false, [image]);
     expect(api.get).toHaveBeenCalledWith('/return-requests/eligible-items', { params: { orderId: order.id } });
-    expect(api.post).toHaveBeenCalledWith('/return-requests', payload, { headers: { 'Idempotency-Key': 'idempotent' } });
+    const [url, body, config] = api.post.mock.calls[0];
+    expect(url).toBe('/return-requests'); expect(body).toBeInstanceOf(FormData);
+    expect(body.get('request').type).toBe('application/json'); expect(body.getAll('images')).toHaveLength(1);
+    expect(config.headers).toEqual({ 'Idempotency-Key': 'idempotent', 'Content-Type': undefined });
+  });
+  it('does not create a return without an evidence image', async () => {
+    await expect(customerOrderService.requestReturn({ id: 'order' }, {}, 'key')).rejects.toThrow('ít nhất một ảnh');
+    expect(api.post).not.toHaveBeenCalled();
   });
   it('cancels prepaid mocks as refund-pending without any real API or stored bank data', async () => {
     const { orders } = await customerOrderService.list(true), order = orders.find((item) => item.id === 'demo-order-3');

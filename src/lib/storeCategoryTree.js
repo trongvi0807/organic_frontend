@@ -24,3 +24,32 @@ export function storeCategoryOptions(categories = []) {
   return unique.map((item) => ({ ...item, label: storeCategoryLabel(unique, item.id, nameOf(item)) }))
     .sort((left, right) => left.label.localeCompare(right.label, 'vi'));
 }
+
+// Build actual nested nodes for the category explorer; never merge distinct category IDs.
+export function buildStoreCategoryTree(categories = []) {
+  const byId = new Map(categories.filter((item) => item?.id).map((item) => [String(item.id), item]));
+  const children = new Map(), visited = new Set();
+  for (const item of byId.values()) {
+    const parent = String(item.parentId || '');
+    if (!children.has(parent)) children.set(parent, []);
+    children.get(parent).push(item);
+  }
+  function node(item, ancestors = new Set()) {
+    const id = String(item.id);
+    if (ancestors.has(id)) return null;
+    visited.add(id);
+    const path = new Set([...ancestors, id]);
+    return { ...item, name: nameOf(item), children: (children.get(id) || []).map((child) => node(child, path)).filter(Boolean) };
+  }
+  const roots = [...byId.values()].filter((item) => !item.parentId || !byId.has(String(item.parentId))).map((item) => node(item));
+  // Orphan/cyclic records cannot hang the menu or hide every category.
+  for (const item of byId.values()) if (!visited.has(String(item.id))) roots.push(node(item));
+  return roots;
+}
+
+// A single umbrella category remains a visible link, while its children are immediately selectable.
+export function storeCategoryMenuEntries(categories = []) {
+  const roots = buildStoreCategoryTree(categories);
+  const parent = roots.length === 1 && roots[0].children.length ? roots[0] : null;
+  return { parent, items: parent ? parent.children : roots };
+}

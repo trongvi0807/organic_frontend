@@ -10,7 +10,7 @@ import { inspectionStates } from '@/lib/afterSales';
 
 export function ReturnTotals({ totals }) {
   if (!totals) return null;
-  return <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[['Cần thu hồi', totals.approvedReturnQuantity], ['Đã nhận', totals.receivedQuantity], ['Còn cần nhận', totals.remainingToReceive], ['Chưa kiểm', totals.uninspectedQuantity], ['Đạt', totals.passedQuantity], ['Không đạt', totals.failedQuantity], ['Đã nhập lại', totals.restockedQuantity], ['Đã loại bỏ', totals.disposedQuantity]].map(([label, value]) => <div key={label} className="rounded-xl bg-[#F7FAF5] p-3"><p className="text-xs text-stone-500">{label}</p><strong className="!mt-1 block text-lg text-primary">{Number(value || 0).toLocaleString('vi-VN')}</strong></div>)}</div>;
+  return <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[['Cần thu hồi', totals.approvedReturnQuantity], ['Đã nhận', totals.receivedQuantity], ['Còn cần nhận', totals.remainingToReceive], ['Chưa kiểm', totals.uninspectedQuantity], ['Hàng tốt đã kiểm', totals.passedQuantity], ['Hàng hỏng đã kiểm', totals.failedQuantity], ['Đã nhập lại', totals.restockedQuantity], ['Đã loại bỏ', totals.disposedQuantity]].map(([label, value]) => <div key={label} className="rounded-xl bg-[#F7FAF5] p-3"><p className="text-xs text-stone-500">{label}</p><strong className="!mt-1 block text-lg text-primary">{Number(value || 0).toLocaleString('vi-VN', { signDisplay: 'negative' })}</strong></div>)}</div>;
 }
 export function ReturnWarehouseProgress({ id, management }) {
   const [page, setPage] = useState(0), customer = returnService();

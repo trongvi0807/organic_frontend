@@ -7,7 +7,7 @@ export const inspectionStates = { pending: 'Chưa kiểm tra', inspecting: 'Đan
 export const feedbackTransitions = { processing: ['waiting_customer', 'resolved'], waiting_customer: ['processing', 'resolved'], resolved: ['processing', 'closed'] };
 export const historyActions = { created: 'Tạo yêu cầu', submitted: 'Gửi yêu cầu', claimed: 'Tiếp nhận', approved: 'Duyệt phương án', rejected: 'Từ chối', cancelled: 'Hủy yêu cầu', customer_accepted: 'Khách đồng ý', customer_declined: 'Khách yêu cầu xét lại', proposal_accepted: 'Khách đồng ý', proposal_declined: 'Khách yêu cầu xét lại', information_requested: 'Yêu cầu bổ sung', information_submitted: 'Bổ sung thông tin', goods_received: 'Nhận hàng', goods_inspected: 'Kiểm tra', goods_restocked: 'Nhập lại tồn', goods_disposed: 'Loại bỏ', batch_identified: 'Đối chiếu lô', goods_reinspected: 'Kiểm tra lại' };
 
-Object.assign(historyActions, { refund_requested: 'Gửi yêu cầu hoàn tiền', refund_succeeded: 'Đã hoàn tiền', refund_updated: 'Cập nhật kết quả hoàn tiền', refund_reconciled: 'Đối soát khoản hoàn', replacement_created: 'Tạo đơn hàng đổi', replacement_preparing: 'Chuẩn bị hàng đổi', replacement_shipment_booked: 'Tạo chuyến giao hàng đổi', replacement_shipment_updated: 'Cập nhật giao hàng đổi', execution_completed: 'Hoàn tất hồ sơ' });
+Object.assign(historyActions, { refund_account_saved: 'Lưu tài khoản nhận tiền', refund_requested: 'Gửi yêu cầu hoàn tiền', refund_succeeded: 'Đã hoàn tiền', refund_updated: 'Cập nhật kết quả hoàn tiền', refund_reconciled: 'Đối soát khoản hoàn', replacement_created: 'Tạo đơn hàng đổi', replacement_preparing: 'Chuẩn bị hàng đổi', replacement_shipment_booked: 'Tạo chuyến giao hàng đổi', replacement_shipment_updated: 'Cập nhật giao hàng đổi', execution_completed: 'Hoàn tất hồ sơ' });
 
 // Audit snapshots contain technical IDs. Show the explanation and numeric results,
 // keeping the untouched snapshot at the server for auditing.
@@ -19,10 +19,10 @@ export function supportHistoryText(raw = '') {
     if (!snapshot.proposal && !snapshot.receiptItemId && !snapshot.execution) return text;
     const lines = [typeof snapshot.note === 'string' ? snapshot.note : 'Đã ghi nhận xử lý.'];
     if (snapshot.proposal) {
-      lines.push(`Phương án lần ${snapshot.proposalVersion}: tiền hoàn dự kiến ${Number(snapshot.proposal.approvedRefundAmount || 0).toLocaleString('vi-VN')} ₫.`);
+      lines.push(`Phương án lần ${snapshot.proposalVersion}: tiền hoàn dự kiến ${Number(snapshot.proposal.approvedRefundAmount || 0).toLocaleString('vi-VN', { signDisplay: 'negative' })} ₫.`);
       if (snapshot.policyNote) lines.push(`Căn cứ xét duyệt: ${snapshot.policyNote}`);
     } else if (snapshot.receiptItemId) {
-      lines.push([['received', 'Đã nhận'], ['passed', 'Đạt'], ['failed', 'Không đạt'], ['restocked', 'Đã nhập lại'], ['disposed', 'Đã loại bỏ'], ['pending', 'Còn giữ riêng']].filter(([key]) => snapshot[key] != null).map(([key, label]) => `${label}: ${Number(snapshot[key]).toLocaleString('vi-VN')}`).join(' · '));
+      lines.push([['received', 'Đã nhận'], ['passed', 'Đạt'], ['failed', 'Không đạt'], ['restocked', 'Đã nhập lại'], ['disposed', 'Đã loại bỏ'], ['pending', 'Còn giữ riêng']].filter(([key]) => snapshot[key] != null).map(([key, label]) => `${label}: ${Number(snapshot[key]).toLocaleString('vi-VN', { signDisplay: 'negative' })}`).join(' · '));
     }
     return text.slice(0, start) + lines.join('\n');
   } catch { return 'Đã ghi nhận lịch sử xử lý. Xem phương án hoặc chi tiết hàng thu hồi để đối chiếu.'; }
@@ -44,10 +44,16 @@ export function validateSupportFiles(files) {
   }
   return images > 5 || videos > 1 ? 'Mỗi nội dung tối đa 5 ảnh và 1 video.' : '';
 }
+export function validateReturnImages(files) {
+  if (!files?.length) return 'Vui lòng thêm ít nhất một ảnh minh chứng trước khi gửi yêu cầu.';
+  if (files.length > 5) return 'Mỗi yêu cầu được gửi tối đa 5 ảnh minh chứng.';
+  if (files.some((file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) return 'Ảnh minh chứng chỉ nhận JPG, PNG hoặc WebP.';
+  if (files.some((file) => !file.size || file.size > 5 * 1024 * 1024)) return 'Mỗi ảnh phải có nội dung và không vượt quá 5 MB.';
+  return '';
+}
 export const whole = (value, min = 0, max = 999999999) => value !== '' && value != null && Number.isInteger(Number(value)) && Number(value) >= min && Number(value) <= max;
 
-export function decisionPayload(detail, values, note, policyNote) {
-  if (!note.trim()) throw new Error('Vui lòng ghi rõ nội dung phương án.');
+export function decisionPayload(detail, values, note = '', policyNote = '', { preview = false } = {}) {
   let approved = false;
   const items = detail.items.map((line) => {
     const value = values[line.id];
@@ -55,14 +61,13 @@ export function decisionPayload(detail, values, note, policyNote) {
     const quantity = Number(value.quantity);
     if (!quantity) return { detailId: line.id, approvedQuantity: 0, resolutionType: null, returnRequired: false, refundAmount: null };
     approved = true;
-    if (line.policyReviewRequired && !policyNote.trim()) throw new Error('Vui lòng ghi căn cứ xét duyệt chính sách cho các sản phẩm cần xác minh.');
+    if (!preview && line.policyReviewRequired && !policyNote.trim()) throw new Error('Vui lòng ghi căn cứ xét duyệt chính sách cho các sản phẩm cần xác minh.');
     if (!returnTypes[value.type]) throw new Error('Vui lòng chọn phương án xử lý.');
     if (detail.request.order.status === 'cancelled' && value.type !== 'refund') throw new Error('Đơn đã hủy chỉ được hoàn tiền không thu hồi.');
     if (value.type !== 'exchange' && !['paid', 'partially_refunded'].includes(detail.request.order.paymentStatus)) throw new Error('Đơn chưa ghi nhận thanh toán nên chưa thể duyệt hoàn tiền.');
-    if (value.amount !== '' && value.type !== 'exchange' && !whole(value.amount, 0, 999999999999)) throw new Error('Số tiền hoàn phải là số nguyên không âm.');
     return { detailId: line.id, approvedQuantity: quantity, resolutionType: value.type,
       returnRequired: value.type === 'return_refund' || value.type === 'exchange' && !!value.returnRequired,
-      refundAmount: value.type === 'exchange' ? null : value.amount === '' ? null : Number(value.amount) };
+      refundAmount: null };
   });
   if (!approved) throw new Error('Phải duyệt ít nhất một sản phẩm. Nếu không chấp nhận, dùng Từ chối yêu cầu.');
   return { expectedProposalVersion: detail.request.proposalVersion, note: note.trim(), policyNote: policyNote.trim() || null, items };
@@ -83,8 +88,9 @@ export function keyedOperation() {
 }
 
 export function warehousePayload(action, values, item, line) {
-  if (!values.note?.trim()) throw new Error('Vui lòng ghi chú kết quả thực hiện.');
-  const note = values.note.trim();
+  const automaticNote = ['identify-batch', 'inspect', 'reinspect', 'dispose'].includes(action);
+  if (!automaticNote && !values.note?.trim()) throw new Error('Vui lòng ghi chú kết quả thực hiện.');
+  const note = values.note?.trim() || '';
   const quantity = (field, min, max) => {
     if (!whole(values[field], min, max)) throw new Error(`Số lượng phải là số nguyên từ ${min} đến ${max}.`);
     return Number(values[field]);
@@ -101,17 +107,21 @@ export function warehousePayload(action, values, item, line) {
   const base = { expectedVersion: item.version, note };
   if (action === 'identify-batch') {
     if (!line?.originalAllocations.some((entry) => entry.id === values.allocation)) throw new Error('Vui lòng chọn lô đã xuất của đúng sản phẩm.');
-    return { ...base, originalOrderDetailBatchId: values.allocation };
+    return { ...base, originalOrderDetailBatchId: values.allocation, note: 'Đã đối chiếu lô gốc của sản phẩm đã giao.' };
   }
   if (action === 'inspect' || action === 'dispose') {
     const passed = quantity('passed', 0, action === 'inspect' ? item.uninspectedQuantity : item.passedHeldQuantity);
     const failed = quantity('failed', 0, action === 'inspect' ? item.uninspectedQuantity : item.failedHeldQuantity);
     if (!passed && !failed || action === 'inspect' && passed + failed > item.uninspectedQuantity) throw new Error('Tổng số lượng phải lớn hơn 0 và không vượt phần còn được xử lý.');
-    return { ...base, passedQuantity: passed, failedQuantity: failed };
+    return { ...base, passedQuantity: passed, failedQuantity: failed,
+      note: action === 'inspect' ? `Kết quả kiểm tra lần này: đạt ${passed}, không đạt ${failed}.`
+        : `Đã ghi nhận loại bỏ trong lần này: ${passed} sản phẩm đạt, ${failed} sản phẩm không đạt.` };
   }
   if (action === 'reinspect') {
     if (!['passed', 'failed'].includes(values.from)) throw new Error('Vui lòng chọn phần cần kiểm tra lại.');
-    return { ...base, from: values.from, quantity: quantity('quantity', 1, values.from === 'passed' ? item.passedHeldQuantity : item.failedHeldQuantity) };
+    const amount = quantity('quantity', 1, values.from === 'passed' ? item.passedHeldQuantity : item.failedHeldQuantity);
+    return { ...base, from: values.from, quantity: amount,
+      note: `Đã kiểm tra lại ${amount} sản phẩm: ${values.from === 'passed' ? 'Đạt → Không đạt' : 'Không đạt → Đạt'}.` };
   }
   if (action === 'restock') return { ...base, quantity: quantity('quantity', 1, item.passedHeldQuantity) };
   throw new Error('Thao tác kho không hợp lệ.');

@@ -12,7 +12,7 @@ describe('Role-based admin navigation', () => {
   it('gives sales only overview and sales, including authorized promotions', () => {
     const nav = groups('SALES_STAFF');
     expect(nav.map((g) => g.id)).toEqual(['dashboard', 'sales']);
-    expect(nav[1].children.map((t) => t.path)).toEqual(['sales-orders', 'payment-review', 'promotions', 'customers', 'feedbacks', 'return-requests', 'return-receipts']);
+    expect(nav[1].children.map((t) => t.path)).toEqual(['sales-orders', 'payment-review', 'promotions', 'customers', 'reviews', 'feedbacks', 'return-requests', 'return-receipts']);
   });
   it('gives admin all six groups, four supply tabs and all existing support functions', () => {
     const nav = groups('ADMIN');

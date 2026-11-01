@@ -4,6 +4,10 @@ import { supportHistoryText } from './afterSales';
 
 const data = { proposalVersion: 4, remainingRefundAmount: 50000, payments: [{ id: 'paid-vnpay', canRefundToOriginal: true }] };
 const online = { amount: 20000, refundMethod: 'original_payment', paymentId: 'paid-vnpay', note: 'Khách đã đồng ý' };
+it('completes a case without a note and keeps notes required for other operations', () => {
+  expect(executionPayload('complete', {}, data)).toEqual({ proposalVersion: 4 });
+  expect(() => executionPayload('prepare', {}, data)).toThrow('ghi chú thực hiện');
+});
 it('does not require a fictitious bank-transfer attestation for an automatic VNPay refund', () => {
   expect(executionPayload('refund', online, data)).toEqual({ proposalVersion: 4, amount: 20000, refundMethod: 'original_payment', originalPaymentId: 'paid-vnpay', confirmedTransferred: false, note: 'Khách đã đồng ý' });
 });

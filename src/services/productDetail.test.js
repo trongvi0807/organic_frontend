@@ -32,32 +32,38 @@ describe('Public product-detail API contracts', () => {
     expect(publicApi.get).toHaveBeenCalledWith('/products/p/reviews', { params });
     expect(REVIEW_WRITE_AVAILABLE).toBe(true);
   });
-  it('checks purchase eligibility through the authenticated client', async () => {
-    api.get.mockResolvedValue({ data: { data: { content:[], totalPages:0 } } });
+  it('uses product-level eligibility and does not load purchases when already reviewed', async () => {
+    api.get.mockResolvedValue({ data: { data: { canReview: false, message: 'Bạn đã đánh giá sản phẩm này.' } } });
     expect((await reviewService.eligibility('p')).canReview).toBe(false);
-    expect(api.get).toHaveBeenCalledWith('/reviews/eligible-items', { params: { page:0, size:100 } });
+    expect(api.get).toHaveBeenCalledExactlyOnceWith('/reviews/eligibility', { params: { productId: 'p' } });
     expect(publicApi.get).not.toHaveBeenCalled();
   });
-  it('uses the eligible order detail from backend, ignoring forged ownership fields', async () => {
-    api.get.mockResolvedValue({ data:{data:{content:[{orderDetailId:'own-order-detail',productId:'p',reviewCount:0}],totalPages:1}} });
-    api.post.mockResolvedValue({ data: { data: { id: 'review-id', productId: 'p' } } });
-    expect(await reviewService.submit('p', { rating: 5, title: '  Tươi  ', content: '  Sản phẩm rất tươi  ', customerId: 'forged', verifiedPurchase: true, orderDetailId: 'other-order' }))
-      .toEqual({ id: 'review-id', productId: 'p' });
-    expect(api.post).toHaveBeenCalledWith('/reviews', { orderDetailId: 'own-order-detail', rating: 5, title: 'Tươi', content: 'Sản phẩm rất tươi' });
+  it('only offers received order lines for the requested product and no active review', async () => {
+    api.get.mockResolvedValueOnce({ data: { data: { canReview: true } } })
+      .mockResolvedValueOnce({ data: { data: { content: [{ productId: 'p', orderDetailId: 'a', reviewCount: 0 }, { productId: 'other', reviewCount: 0 }], totalPages: 2 } } })
+      .mockResolvedValueOnce({ data: { data: { content: [{ productId: 'p', orderDetailId: 'b', reviewCount: 0 }], totalPages: 2 } } });
+    expect((await reviewService.eligibility('p')).purchases.map((p) => p.orderDetailId)).toEqual(['a', 'b']);
+    expect(api.get).toHaveBeenLastCalledWith('/reviews/eligible-items', { params: { productId: 'p', page: 1, size: 50 } });
   });
-  it('preserves a forbidden response and its message for the form instead of fabricating success', async () => {
-    api.get.mockResolvedValue({ data:{data:{content:[{orderDetailId:'own-order-detail',productId:'p',reviewCount:0}],totalPages:1}} });
-    const error = { response: { status: 403, data: { message: 'Bạn cần mua và nhận sản phẩm này trước khi có thể đánh giá' } } };
-    api.post.mockRejectedValue(error);
-    await expect(reviewService.submit('p', { rating: 5, content: 'Chưa mua sản phẩm' })).rejects.toBe(error);
+  it('submits text without images and leaves title/ownership to backend', async () => {
+    api.post.mockResolvedValue({ data: { data: { id: 'review-id' } } });
+    await reviewService.submit('p', { rating: '5', title: 'forged', content: '  Sản phẩm rất tươi  ', orderDetailId: 'own-line', customerId: 'forged' });
+    const [url, data, config] = api.post.mock.calls[0];
+    expect(url).toBe('/reviews/submission');
+    expect(JSON.parse(await data.get('review').text())).toEqual({ productId: 'p', orderDetailId: 'own-line', rating: 5, content: 'Sản phẩm rất tươi' });
+    expect(data.getAll('files')).toHaveLength(0);
+    expect(config.headers['Content-Type']).toBeUndefined();
   });
-  it('uploads attachments with the authenticated client without setting a multipart boundary', async () => {
-    api.post.mockResolvedValue({ data: { data: { id: 'review-id', media: [{ id: 'image-id' }] } } });
+  it('sends optional media with initial review in a single submission', async () => {
+    api.post.mockResolvedValue({ data: { data: { id: 'review-id' } } });
     const image = new Blob(['image'], { type: 'image/png' });
-    expect((await reviewService.uploadMedia('review-id', image)).media).toHaveLength(1);
-    const [url, body, config] = api.post.mock.calls[0];
-    expect(url).toBe('/reviews/review-id/media');
-    expect(body.get('file').size).toBe(image.size);
-    expect(config).toEqual({ timeout: 120000, headers: { 'Content-Type': undefined } });
+    await reviewService.submit('p', { rating: 5, content: 'Sản phẩm rất tươi', orderDetailId: 'line', files: [image] });
+    expect(api.post).toHaveBeenCalledTimes(1);
+    expect(api.post.mock.calls[0][1].getAll('files')[0].size).toBe(image.size);
+  });
+  it('preserves rejection so the form cannot report false success', async () => {
+    const error = { response: { status: 409, data: { message: 'Bạn đã đánh giá sản phẩm này.' } } };
+    api.post.mockRejectedValue(error);
+    await expect(reviewService.submit('p', { rating: 5, content: 'Sản phẩm rất tươi', orderDetailId: 'line' })).rejects.toBe(error);
   });
 });

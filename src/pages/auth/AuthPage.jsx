@@ -10,23 +10,32 @@ import { authService } from '@/services/auth/authService';
 import { DEMO_MODE } from '@/services/api';
 import { errorMessage } from '@/lib/utils';
 import { loginReturnPath } from '@/lib/loginReturn';
+import { GoogleIdentityButton } from '@/components/auth/GoogleIdentityButton';
 
 export default function AuthPage({ mode = 'login' }) {
   const register = mode === 'register';
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [verify, setVerify] = useState(false);
   const [cooldown, setCooldown] = useState(0);
-  const { login, user } = useAuth();
+  const { login, finishLogin, user } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
   useEffect(() => { setError(''); setVerify(false); }, [mode]);
   useEffect(() => { if (!cooldown) return; const timer = setTimeout(() => setCooldown((value) => value - 1), 1000); return () => clearTimeout(timer); }, [cooldown]);
-  if (user) return <Navigate to={loginReturnPath(user, state?.from)} replace />;
+  if (user) return <Navigate to={user.profileCompletionRequired ? '/tai-khoan' : loginReturnPath(user, state?.from)} replace />;
+  function googleSignedIn(result) {
+    const signedIn = finishLogin(result);
+    const destination = loginReturnPath(signedIn, state?.from);
+    toast.success(signedIn.profileCompletionRequired ? 'Đăng nhập thành công. Bổ sung số điện thoại để đặt hàng nhé.' : `Chào mừng ${signedIn.fullName || signedIn.username}!`, { position: 'top-left' });
+    navigate(signedIn.profileCompletionRequired ? '/tai-khoan' : destination, { replace: true, state: signedIn.profileCompletionRequired ? { profileReturnTo: destination } : undefined });
+  }
   async function submit(event) {
-    event.preventDefault(); setError(''); setBusy(true);
+    event.preventDefault(); if (busy || googleBusy) return; setError(''); setBusy(true);
     const values = Object.fromEntries(new FormData(event.currentTarget));
     try {
       if (verify) { await authService.verifyOtp({ email, otp: values.otp }); toast.success('Xác thực thành công. Bạn có thể đăng nhập.'); setVerify(false); navigate('/dang-nhap'); }
@@ -49,10 +58,10 @@ export default function AuthPage({ mode = 'login' }) {
       {register && <div className="form-grid"><Field label="Địa chỉ email"><Input name="email" type="email" autoComplete="email" placeholder="ban@email.com" required maxLength={255} /></Field><Field label="Số điện thoại"><Input name="phoneNumber" type="tel" autoComplete="tel" placeholder="0901 234 567" required maxLength={255} /></Field></div>}
       <Field label="Mật khẩu"><div className="password-input"><Input name="password" type={showPassword ? 'text' : 'password'} autoComplete={register ? 'new-password' : 'current-password'} placeholder={register ? 'Tối thiểu 8 ký tự' : 'Nhập mật khẩu'} required minLength={register ? 8 : undefined} /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div></Field>
       {register && <Field label="Xác nhận mật khẩu"><Input name="confirmPassword" type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Nhập lại mật khẩu" required minLength={8} /></Field>}
-      {!register && <label className="checkbox-label"><input name="rememberMe" type="checkbox" /> Ghi nhớ đăng nhập</label>}
+      {!register && <label className="checkbox-label"><input name="rememberMe" type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} /> Ghi nhớ đăng nhập</label>}
     </>}
     {error && <p className="form-error" role="alert">{error}</p>}
-    <Button type="submit" className="w-full" disabled={busy}>{busy ? <LoaderCircle className="animate-spin" size={17} /> : verify ? <Mail size={17} /> : null}{busy ? 'Đang xử lý…' : verify ? 'Xác thực tài khoản' : register ? 'Tạo tài khoản' : 'Đăng nhập'}{!busy && <ArrowRight size={17} />}</Button>
+    <Button type="submit" className="w-full" disabled={busy || googleBusy}>{busy ? <LoaderCircle className="animate-spin" size={17} /> : verify ? <Mail size={17} /> : null}{busy ? 'Đang xử lý…' : verify ? 'Xác thực tài khoản' : register ? 'Tạo tài khoản' : 'Đăng nhập'}{!busy && <ArrowRight size={17} />}</Button>
     {verify && <Button variant="ghost" className="w-full" disabled={busy || cooldown > 0} onClick={resend}>Gửi lại mã {cooldown > 0 ? `(${cooldown}s)` : ''}</Button>}
-  </form><p className="auth-switch">{register ? 'Đã là bạn của Mộc?' : 'Lần đầu đến với Mộc?'} <Link to={register ? '/dang-nhap' : '/dang-ky'}>{register ? 'Đăng nhập' : 'Tạo tài khoản'}</Link></p>{DEMO_MODE && <div className="demo-credentials"><span><Leaf size={14} /> ĐANG Ở CHẾ ĐỘ DEMO</span><p>Admin: <code>admin / Admin@123</code><br />Khách hàng: <code>khachhang / Khach@123</code></p>{register && <small>Chức năng đăng ký hiện chưa sẵn sàng. Vui lòng thử lại sau.</small>}</div>}<p className="auth-bottom-note"><ShieldCheck size={14} /> Thông tin của bạn được Mộc trân trọng.</p></div></section></div>;
+  </form>{!verify && <div className="!my-6 space-y-4"><div className="flex items-center gap-3 text-xs text-stone-400"><span className="h-px flex-1 bg-line" />hoặc tiếp tục với<span className="h-px flex-1 bg-line" /></div><GoogleIdentityButton key={mode} rememberMe={rememberMe} disabled={busy} onBusyChange={setGoogleBusy} onSuccess={googleSignedIn} /></div>}<p className="auth-switch">{register ? 'Đã là bạn của Mộc?' : 'Lần đầu đến với Mộc?'} <Link to={register ? '/dang-nhap' : '/dang-ky'}>{register ? 'Đăng nhập' : 'Tạo tài khoản'}</Link></p>{DEMO_MODE && <div className="demo-credentials"><span><Leaf size={14} /> ĐANG Ở CHẾ ĐỘ DEMO</span><p>Admin: <code>admin / Admin@123</code><br />Khách hàng: <code>khachhang / Khach@123</code></p>{register && <small>Chức năng đăng ký hiện chưa sẵn sàng. Vui lòng thử lại sau.</small>}</div>}<p className="auth-bottom-note"><ShieldCheck size={14} /> Thông tin của bạn được Mộc trân trọng.</p></div></section></div>;
 }

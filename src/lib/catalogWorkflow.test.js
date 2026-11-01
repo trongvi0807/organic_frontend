@@ -20,6 +20,7 @@ describe('Catalog multi-step save using documented APIs', () => {
     await saveCatalogWorkflow({ values, price, originId: 'origin', state }, api);
     expect(api.calls).toEqual([['product', null, 'draft'], ['price', 'p', null], ['origin', 'p', 'origin'], ['product', 'p', 'active']]);
     expect(state).toEqual({ productId: 'p', variantId: 'v', currentStatus: 'active' });
+    expect(api.products.save.mock.calls.every(([, body]) => body.originId === 'origin')).toBe(true);
   });
   it('does not activate a draft when the user requested draft', async () => {
     const api = services();

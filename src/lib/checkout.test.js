@@ -5,6 +5,13 @@ import { clearAttempt, readAttempt, saveAttempt, rememberPayment, paymentByRefer
 const values = { receiverName: ' An ', receiverPhone: '0901234567', shippingAddress: '36 Đường A, TP.HCM', note: '', paymentMethod: 'cod', promotionCode: ' organic10 ', points: '2' };
 const items = [{ variantId: 'v', quantity: 3, unitPrice: 1, customerId: 'fake', selected: true }];
 describe('Checkout contracts and safeguards', () => {
+  it('uses the payos gateway for VietQR checkout and allows only its official hosted payment URL', () => {
+    expect(checkoutPayload({ ...values, paymentMethod: 'payos' }, items).paymentMethod).toBe('payos');
+    expect(paymentRedirect({ gateway: 'payos', status: 'pending', paymentUrl: 'https://pay.payos.vn/web/link-1' })).toBe('https://pay.payos.vn/web/link-1');
+    for (const paymentUrl of ['https://pay.payos.vn.evil.example/web/1', 'https://payos.vn.evil.example/', 'http://pay.payos.vn/web/1', 'https://someone:password@pay.payos.vn/web/1', 'https://checkout.stripe.com/x']) {
+      expect(() => paymentRedirect({ gateway: 'payos', status: 'pending', paymentUrl })).toThrow();
+    }
+  });
   it('only sends variant/quantity, address, method, promotion and points; never client prices or identity', () => {
     expect(checkoutPayload(values, items)).toEqual({ items: [{ variantId: 'v', quantity: 3 }], receiverName: 'An', receiverPhone: values.receiverPhone, shippingAddress: values.shippingAddress, note: null, paymentMethod: 'cod', promotionCode: 'ORGANIC10', points: 2 });
   });

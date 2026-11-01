@@ -1,13 +1,36 @@
 import { whole } from './afterSales';
 
 export const refundStates = { pending: 'Chờ thực hiện', processing: 'Đang xử lý hoàn tiền', succeeded: 'Đã hoàn tiền', failed: 'Hoàn tiền không thành công', requires_review: 'Cần đối soát' };
-export const refundMethods = { original_payment: 'Hoàn qua VNPay', bank_transfer: 'Chuyển khoản đã thực hiện', cash: 'Tiền mặt đã hoàn' };
+export const refundMethods = { original_payment: 'Hoàn qua VNPay', bank_transfer: 'Chuyển khoản ngân hàng', cash: 'Tiền mặt đã hoàn' };
 export const replacementStates = { confirmed: 'Đã giữ hàng', paid: 'Đã giữ hàng', preparing: 'Đang chuẩn bị', shipping: 'Đang giao hàng đổi', delivered: 'Đã giao hàng đổi', completed: 'Hoàn tất hàng đổi', returned: 'Giao không thành công · Hàng trả về', cancelled: 'Đã hủy' };
 export const shipmentStates = { pending: 'Chờ bàn giao', picked_up: 'Đã bàn giao', in_transit: 'Đang giao', delivered: 'Đã giao', failed: 'Giao không thành công', returned: 'Đã trả về', cancelled: 'Đã hủy chuyến' };
 export const shipmentNext = { pending: ['picked_up', 'cancelled'], picked_up: ['in_transit', 'delivered', 'failed'], in_transit: ['delivered', 'failed'], failed: ['returned'] };
 export const executionTitles = { refund: 'Thực hiện hoàn tiền', reconcile: 'Xác nhận kết quả đối soát', replacement: 'Tạo đơn giao hàng đổi', prepare: 'Chuẩn bị hàng đổi', book: 'Tạo chuyến giao hàng đổi', shipmentStatus: 'Cập nhật giao hàng đổi', complete: 'Hoàn tất hồ sơ' };
 
+export function bankAccountErrors(values) {
+  const errors = {};
+  if (!values.recipientName.trim() || values.recipientName.trim().length > 100) errors.recipientName = 'Vui lòng nhập tên chủ tài khoản, tối đa 100 ký tự.';
+  if (!values.bankName.trim() || values.bankName === 'Khác' || values.bankName.trim().length > 200) errors.bankName = 'Vui lòng nhập tên ngân hàng.';
+  if (!/^[0-9]{6,34}$/.test(values.bankAccountNumber)) errors.bankAccountNumber = 'Số tài khoản cần từ 6 đến 34 chữ số.';
+  if (values.recipientPhone && !/^[+0-9 ()-]{8,20}$/.test(values.recipientPhone)) errors.recipientPhone = 'Số điện thoại chưa hợp lệ.';
+  if (values.bankBranch.length > 200) errors.bankBranch = 'Chi nhánh tối đa 200 ký tự.';
+  return errors;
+}
+export function bankAccountPayload(values, data) {
+  const errors = bankAccountErrors(values);
+  if (Object.keys(errors).length) throw new Error(Object.values(errors)[0]);
+  return { proposalVersion: data.proposalVersion, recipientName: values.recipientName.trim(), bankName: values.bankName.trim(), bankAccountNumber: values.bankAccountNumber, bankBranch: values.bankBranch.trim() || null, recipientPhone: values.recipientPhone.trim() || null };
+}
+export function transferPayload(values, data, refund) {
+  if (!refund?.canConfirmTransfer || !refund.bankAccountFingerprint) throw new Error('Khoản hoàn chưa đủ điều kiện xác nhận. Vui lòng tải lại tiến độ.');
+  const referenceCode = values.referenceCode.trim();
+  if (!referenceCode || referenceCode.length > 200) throw new Error('Vui lòng nhập mã giao dịch chuyển khoản, tối đa 200 ký tự.');
+  if (!values.confirmed) throw new Error('Vui lòng xác nhận đã chuyển đúng tiền và kiểm tra chứng từ.');
+  return { proposalVersion: data.proposalVersion, referenceCode, confirmedTransferred: true, bankAccountFingerprint: refund.bankAccountFingerprint, note: values.note.trim() || null };
+}
+
 export function executionPayload(action, values, data, refund, shipment) {
+  if (action === 'complete') return { proposalVersion: data.proposalVersion };
   const required = (key, label, max = 3000) => { const value = String(values[key] || '').trim(); if (!value || value.length > max) throw new Error(`Vui lòng nhập ${label} (tối đa ${max} ký tự).`); return value; };
   const note = required('note', 'ghi chú thực hiện');
   const base = { proposalVersion: data.proposalVersion, note };
@@ -49,6 +72,6 @@ export function executionPayload(action, values, data, refund, shipment) {
     if (!shipmentNext[shipment?.status]?.includes(values.shipmentStatus)) throw new Error('Trạng thái chuyến giao đã thay đổi; vui lòng tải lại để đối chiếu.');
     return { proposalVersion: data.proposalVersion, shipment: { status: values.shipmentStatus, note: note.slice(0, 1000) } };
   }
-  if (!['prepare', 'complete'].includes(action)) throw new Error('Thao tác chưa hợp lệ.');
+  if (action !== 'prepare') throw new Error('Thao tác chưa hợp lệ.');
   return base;
 }

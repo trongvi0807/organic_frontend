@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { HomeProvider, useHome } from '@/contexts/HomeContext';
 import { dashboardPath } from '@/lib/permissions';
 import { NotificationBell } from '@/components/layout/NotificationBell';
+import { StoreCategoryMenu } from '@/components/layout/StoreCategoryMenu';
 import { StoreSearch } from '@/components/layout/StoreSearch';
 import { StoreAccountMenu } from '@/components/layout/StoreAccountMenu';
 import { StoreCartButton } from '@/components/layout/StoreCartButton';
@@ -24,7 +25,7 @@ function StoreContent() {
   return <>
     <a href="#main-content" className="skip-link">Bỏ qua đến nội dung</a>
     <div className="announcement"><span><Leaf size={12} /> Một chút xanh, một đời lành.</span><span>Khám phá sản phẩm và nguồn gốc được công bố <ArrowRight size={12} /></span></div>
-    <header className={`store-header ${searchExpanded ? 'is-searching' : ''}`}><div className="container header-inner"><Logo /><nav className="store-primary-nav" aria-label="Điều hướng chính">{links.map((link) => <NavLink key={link.to} to={link.to} end={link.end}>{link.label}</NavLink>)}</nav><div className="header-actions"><NotificationBell storefront /><StoreSearch onExpandedChange={setSearchExpanded} /><StoreAccountMenu /><StoreCartButton onClick={cart} /><button type="button" className="icon-button mobile-menu-toggle" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Mở menu" aria-expanded={mobileOpen}>{mobileOpen ? <X size={21} /> : <Menu size={21} />}</button></div></div>{mobileOpen && <nav className="mobile-nav" aria-label="Menu di động">{links.map((link) => <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)}>{link.label}</Link>)}<Link to={user ? dashboardPath(user) : '/dang-nhap'} onClick={() => setMobileOpen(false)}>Tài khoản</Link>{!user && <Link to="/dang-ky" onClick={() => setMobileOpen(false)}>Đăng ký</Link>}</nav>}</header>
+    <header className={`store-header ${searchExpanded ? 'is-searching' : ''}`}><div className="container header-inner"><Logo /><nav className="store-primary-nav" aria-label="Điều hướng chính">{links.map((link) => link.to === "/san-pham" ? <div key={link.to} className="store-catalog-nav"><NavLink to={link.to}>{link.label}</NavLink><StoreCategoryMenu iconOnly /></div> : <NavLink key={link.to} to={link.to} end={link.end}>{link.label}</NavLink>)}</nav><div className="header-actions"><NotificationBell storefront /><StoreSearch onExpandedChange={setSearchExpanded} /><StoreAccountMenu /><StoreCartButton onClick={cart} /><button type="button" className="icon-button mobile-menu-toggle" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Mở menu" aria-expanded={mobileOpen}>{mobileOpen ? <X size={21} /> : <Menu size={21} />}</button></div></div>{mobileOpen && <nav className="mobile-nav" aria-label="Menu di động">{links.map((link) => link.to === "/san-pham" ? <StoreCategoryMenu key={link.to} onNavigate={() => setMobileOpen(false)} /> : <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)}>{link.label}</Link>)}<Link to={user ? dashboardPath(user) : '/dang-nhap'} onClick={() => setMobileOpen(false)}>Tài khoản</Link>{!user && <Link to="/dang-ky" onClick={() => setMobileOpen(false)}>Đăng ký</Link>}</nav>}</header>
     <main id="main-content"><Outlet /></main>
     <StoreFooter content={content} user={user} />
   </>;

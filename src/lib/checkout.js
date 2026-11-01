@@ -1,4 +1,4 @@
-export const paymentNames = { cod: 'Thanh toán khi nhận hàng (COD)', stripe: 'Thẻ quốc tế · Stripe', paypal: 'PayPal', vnpay: 'VNPay' };
+export const paymentNames = { cod: 'Thanh toán khi nhận hàng (COD)', payos: 'Chuyển khoản ngân hàng · VietQR', vnpay: 'VNPay', stripe: 'Thẻ quốc tế · Stripe', paypal: 'PayPal' };
 export const paymentDisplayNames = { ...paymentNames, exchange: 'Đổi hàng theo phương án · Không thu thêm tiền' };
 export const orderLabels = { pending_payment: 'Chờ thanh toán', confirmed: 'Đã xác nhận', paid: 'Đã thanh toán', preparing: 'Đang chuẩn bị', shipping: 'Đang giao', delivered: 'Đã giao', completed: 'Hoàn tất', cancelled: 'Đã hủy', expired: 'Hết hạn', returned: 'Đã trả hàng', requires_review: 'Cần đối soát' };
 export const paymentLabels = { pending: 'Chờ thanh toán', creating: 'Đang tạo phiên', capturing: 'Đang xác nhận', closing: 'Đang đóng phiên', paid: 'Đã thanh toán', failed: 'Không thành công', expired: 'Hết hạn', cancelled: 'Đã hủy', requires_review: 'Cần đối soát', unpaid: 'Chưa thanh toán', partially_refunded: 'Đã hoàn tiền một phần', refunded: 'Đã hoàn tiền', exchange: 'Hàng đổi · Không thu thêm tiền' };
@@ -25,7 +25,7 @@ export function checkoutPayload(values, items) {
 }
 // Only backend-issued HTTPS links to the selected gateway can leave the application.
 export function paymentRedirect(payment) {
-  const hosts = { stripe: ['checkout.stripe.com'], paypal: ['www.paypal.com', 'www.sandbox.paypal.com', 'paypal.com', 'sandbox.paypal.com'], vnpay: ['sandbox.vnpayment.vn', 'pay.vnpay.vn', 'vnpayment.vn'] };
+  const hosts = { payos: ['pay.payos.vn'], stripe: ['checkout.stripe.com'], paypal: ['www.paypal.com', 'www.sandbox.paypal.com', 'paypal.com', 'sandbox.paypal.com'], vnpay: ['sandbox.vnpayment.vn', 'pay.vnpay.vn', 'vnpayment.vn'] };
   try {
     const url = new URL(payment.paymentUrl);
     if (payment.status !== 'pending' || url.protocol !== 'https:' || url.username || url.password || !hosts[payment.gateway]?.includes(url.hostname)) throw new Error();

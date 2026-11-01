@@ -56,6 +56,8 @@ export function returnService(management = false) {
 
 const executionBase = (requestId) => `/management/return-requests/${id(requestId)}`;
 export const returnExecutionService = {
+  bankAccount: (requestId, body, key) => keyed(`${executionBase(requestId)}/refund-bank-account`, body, key),
+  confirmTransfer: (requestId, refundId, body, key) => keyed(`${executionBase(requestId)}/refunds/${id(refundId)}/confirm-transfer`, body, key),
   refund: (requestId, body, key) => post(`${executionBase(requestId)}/refunds`, body, { headers: { 'Idempotency-Key': key }, timeout: 60000 }),
   sync: (requestId, refundId) => post(`${executionBase(requestId)}/refunds/${id(refundId)}/sync`, undefined, { timeout: 60000 }),
   reconcile: (requestId, refundId, body, key) => keyed(`${executionBase(requestId)}/refunds/${id(refundId)}/reconcile`, body, key),

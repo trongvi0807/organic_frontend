@@ -35,6 +35,7 @@ const PaymentResultPage = lazy(() => import('@/pages/client/PaymentResultPage'))
 const MyReviewsPage = lazy(() => import('@/pages/client/MyReviewsPage'));
 const SalesOrdersPage = lazy(() => import('@/pages/admin/SalesOrdersPage'));
 const PromotionsPage = lazy(() => import('@/pages/admin/PromotionsPage'));
+const ReviewManagementPage = lazy(() => import('@/pages/admin/ReviewManagementPage'));
 const PaymentReviewPage = lazy(() => import('@/pages/admin/PaymentReviewPage'));
 const FeedbackPage = lazy(() => import('@/pages/shared/FeedbackPage'));
 const ReturnRequestsPage = lazy(() => import('@/pages/shared/ReturnRequestsPage'));
@@ -56,7 +57,7 @@ export function AppRoutes() {
     if (pathname.startsWith('/dat-hang-thanh-cong/')) document.title = 'Đơn hàng đã ghi nhận | Mộc Organic';
     if (pathname === '/admin/business-forms') document.title = 'Biểu mẫu & bản in | Mộc Organic';
     if (pathname === '/admin/dashboard') document.title = 'Trang tổng quan | Mộc Organic';
-    const support = { '/phan-hoi': 'Phản hồi & hỗ trợ', '/doi-tra': 'Đổi trả & hỗ trợ sau mua', '/admin/feedbacks': 'Phản hồi khách hàng', '/admin/return-requests': 'Yêu cầu đổi trả', '/admin/return-receipts': 'Hàng thu hồi' };
+    const support = { '/admin/reviews': 'Đánh giá sản phẩm', '/phan-hoi': 'Phản hồi & hỗ trợ', '/doi-tra': 'Đổi trả & hỗ trợ sau mua', '/admin/feedbacks': 'Phản hồi khách hàng', '/admin/return-requests': 'Yêu cầu đổi trả', '/admin/return-receipts': 'Hàng thu hồi' };
     if (support[pathname]) document.title = `${support[pathname]} | Mộc Organic`;
   }, [pathname]);
   return <Suspense fallback={<ResourceState loading />}><Routes>
@@ -112,6 +113,7 @@ export function AppRoutes() {
         <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}><Route path="customers" element={<RecordsPage key="customers" module="customers" />} /></Route>
         <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}><Route path="payment-review" element={<PaymentReviewPage />} /></Route>
         <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}>
+          <Route path="reviews" element={<ReviewManagementPage />} />
           <Route path="feedbacks" element={<FeedbackPage management />} />
           <Route path="return-requests" element={<ReturnRequestsPage management />} />
         </Route>

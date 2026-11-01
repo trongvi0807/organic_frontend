@@ -1,6 +1,6 @@
 import { checkoutService } from './checkoutService';
 
-export const gatewayVerificationDelay = { stripe: 15000, paypal: 20000, vnpay: 300000 };
+export const gatewayVerificationDelay = { payos: 20000, stripe: 15000, paypal: 20000, vnpay: 300000 };
 const checks = new Map();
 export const awaitingPayment = (payment) => ['pending', 'creating', 'capturing', 'closing'].includes(payment?.status);
 

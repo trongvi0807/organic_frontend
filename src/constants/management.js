@@ -30,13 +30,13 @@ export const modules = {
   origins: {
     title: 'Xuất xứ organic', singular: 'xuất xứ', description: 'Kết nối sản phẩm với vùng trồng và cơ sở sản xuất rõ ràng.', nameKey: 'originName', codeKey: 'originCode', active: 'active', inactive: 'inactive',
     fields: [
-      { name: 'originCode', label: 'Mã xuất xứ', required: true, maxLength: 50 },
+      { name: 'originCode', label: 'Mã xuất xứ tự động', readOnly: true, maxLength: 50, hint: 'Dạng XX01, XX02… Mã chính thức được cấp khi lưu và giữ nguyên sau đó.' },
       { name: 'originName', label: 'Tên vùng / cơ sở sản xuất', required: true, maxLength: 200 },
       { name: 'countryCode', label: 'Mã quốc gia', required: true, maxLength: 2, pattern: '[A-Za-z]{2}', hint: 'ISO alpha-2, ví dụ VN, US, AU.', defaultValue: 'VN' },
       { name: 'country', label: 'Quốc gia', required: true, maxLength: 100, defaultValue: 'Việt Nam' },
       { name: 'region', label: 'Tỉnh / vùng', maxLength: 150 },
       { name: 'producerName', label: 'Cơ sở sản xuất', maxLength: 200 },
-      { name: 'supplierId', label: 'Nhà cung cấp', supplier: true },
+      { name: 'supplierId', label: 'Nhà cung cấp', supplier: true, required: true },
       { name: 'status', label: 'Trạng thái', options: [['active', 'Hoạt động'], ['inactive', 'Ngừng hoạt động']], defaultValue: 'active' },
       { name: 'address', label: 'Địa chỉ', type: 'textarea', maxLength: 500 },
       { name: 'description', label: 'Mô tả', type: 'textarea', maxLength: 5000 },

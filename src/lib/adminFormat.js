@@ -30,5 +30,5 @@ export function inDateRange(value, from, to) {
   return !!day && (!from || day >= from) && (!to || day <= to);
 }
 export const productMeasure = (product) => product?.netQuantity != null && product?.unitId
-  ? `${Number(product.netQuantity).toLocaleString('vi-VN')} ${product.unitId}` : product?.variantName || 'Chưa công bố';
+  ? `${Number(product.netQuantity).toLocaleString('vi-VN', { signDisplay: 'negative' })} ${product.unitId}` : product?.variantName || 'Chưa công bố';
 export const orderCreator = (order) => order.createdByEmployee?.fullName || order.createdByName || order.createdByAccount?.fullName || 'Chưa có thông tin người lập';

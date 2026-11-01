@@ -10,8 +10,8 @@ export const productService = {
   async get(id) { return DEMO_MODE ? demoList('products').find((item) => item.id === id) : unwrap(await api.get(`/admin/products/${id}`)); },
   async save(id, values) {
     if (DEMO_MODE) return demoSave('products', id, values);
-    const { productCode, productName, slug, categoryId, brandId, description, status, organicClaimStatus, certificationIds } = values;
-    const payload = { productCode, productName, slug, categoryId, brandId: brandId || null, description, status, organicClaimStatus, certificationIds: certificationIds || [] };
+    const { productCode, productName, slug, categoryId, brandId, description, status, organicClaimStatus, certificationIds, originId } = values;
+    const payload = { productCode, productName, slug, categoryId, brandId: brandId || null, description, status, organicClaimStatus, certificationIds: certificationIds || [], ...(originId ? { originId } : {}) };
     return unwrap(await (id ? api.put(`/admin/products/${id}`, payload) : api.post('/admin/products', payload)));
   },
   async remove(id) { return DEMO_MODE ? demoDelete('products', id) : unwrap(await api.delete(`/admin/products/${id}`)); },

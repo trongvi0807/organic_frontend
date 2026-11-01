@@ -1,7 +1,7 @@
 import { ArrowDownRight, ArrowUpRight, Banknote, Boxes, Clock3, Truck } from 'lucide-react';
 import { currency } from '@/lib/utils';
 
-const count = (value) => value == null ? '—' : value.toLocaleString('vi-VN');
+const count = (value) => value == null ? '—' : value.toLocaleString('vi-VN', { signDisplay: 'negative' });
 
 export function DashboardMetrics({ model, loading }) {
   const growth = model.growth;
@@ -12,7 +12,7 @@ export function DashboardMetrics({ model, loading }) {
       hint: model.revenue == null ? 'Chưa tải được dữ liệu đơn bán' : 'Theo ngày đặt đơn trong kỳ',
       extra: model.revenue != null && <span className={`adk-metric-change ${growth == null ? 'is-neutral' : growth < 0 ? 'is-down' : 'is-up'}`}>
         {growth != null && <GrowthIcon size={14} />}
-        {growth == null ? 'Chưa có kỳ trước để so sánh' : growth === 0 ? 'Không đổi so với kỳ trước' : <><strong>{Math.abs(growth).toLocaleString('vi-VN', { maximumFractionDigits: 1 })}%</strong><span>so với kỳ trước</span></>}
+        {growth == null ? 'Chưa có kỳ trước để so sánh' : growth === 0 ? 'Không đổi so với kỳ trước' : <><strong>{Math.abs(growth).toLocaleString('vi-VN', { signDisplay: 'negative', maximumFractionDigits: 1 })}%</strong><span>so với kỳ trước</span></>}
       </span>,
     },
     {
@@ -21,7 +21,7 @@ export function DashboardMetrics({ model, loading }) {
       extra: <span className="adk-metric-detail">Toàn bộ đơn mở · không gồm chờ thanh toán</span>,
     },
     {
-      label: 'Giao hàng thành công', value: model.deliveryRate == null ? '—' : `${model.deliveryRate.toLocaleString('vi-VN', { maximumFractionDigits: 1 })}%`, icon: Truck, tone: 'teal',
+      label: 'Giao hàng thành công', value: model.deliveryRate == null ? '—' : `${model.deliveryRate.toLocaleString('vi-VN', { signDisplay: 'negative', maximumFractionDigits: 1 })}%`, icon: Truck, tone: 'teal',
       hint: model.deliveryTotal ? `${model.delivered}/${model.deliveryTotal} đơn có kết quả giao trong kỳ` : 'Chưa có đơn giao xong trong kỳ',
       extra: <span className="adk-metric-detail">Không tính đơn đang vận chuyển</span>,
     },

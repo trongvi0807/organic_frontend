@@ -22,7 +22,7 @@ export function cartTotals(items, code = '') {
   let promoError = '';
   if (normalizedCode && !offer) promoError = 'Mã ưu đãi không hợp lệ. Vui lòng kiểm tra lại.';
   else if (offer && !selected.length) promoError = 'Hãy chọn sản phẩm trước khi áp dụng mã.';
-  else if (offer && subtotal < offer.minimum) promoError = `Đơn hàng đã chọn chưa đạt mức tối thiểu ${offer.minimum.toLocaleString('vi-VN')}đ.`;
+  else if (offer && subtotal < offer.minimum) promoError = `Đơn hàng đã chọn chưa đạt mức tối thiểu ${offer.minimum.toLocaleString('vi-VN', { signDisplay: 'negative' })}đ.`;
   const discount = offer && !promoError ? Math.min(subtotal, offer.amount ?? Math.min(Math.round(subtotal * offer.percent / 100), offer.maximum)) : 0;
   return { selected, subtotal, discount, total: Math.max(0, subtotal - discount), quantity: selected.reduce((sum, item) => sum + item.quantity, 0), promoError, offer: offer && !promoError ? offer : null };
 }

@@ -18,12 +18,12 @@ import { Field, Input } from '@/components/ui/field';
 export function ProfilePanel({ id = 'me', self = false, onChanged = () => {} }) {
   const service = useMemo(() => createProfileService(id), [id]);
   const resource = useResource(() => service.get(), [id]);
-  const { updateProfile } = useAuth();
+  const { updateProfile, user } = useAuth();
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [error, setError] = useState('');
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(self && user?.profileCompletionRequired === true);
   const [address, setAddress] = useState(null);
   const [removing, setRemoving] = useState(null);
   const data = resource.data;

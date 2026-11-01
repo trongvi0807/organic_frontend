@@ -23,7 +23,7 @@ export function createManagementService(module) {
 }
 export const customerService = createManagementService('customers');
 export const supplierService = createManagementService('suppliers');
-export const originService = createManagementService('origins');
+export const originService = { ...createManagementService('origins'), async nextCode() { requireBackend(); return unwrap(await api.get('/origins/next-code')); } };
 export const certificationService = {
   ...createManagementService('certifications'),
   async review(id, values) { requireBackend(); return unwrap(await api.patch(`/certifications/${id}/status`, { status: values.status, note: optional(values.note) })); },
