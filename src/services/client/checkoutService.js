@@ -5,7 +5,13 @@ const get = async (url, params) => { requireBackend(); return unwrap(await api.g
 const post = async (url, data, config) => { requireBackend(); return unwrap(await api.post(url, data, config)); };
 export const checkoutService = {
   methods: () => get('/payments/methods'),
-  preview: (data) => post('/checkout/preview', data),
+  preview: async (data) => {
+    const quote = await post('/checkout/preview', data);
+    const voucherCode = String(data.voucherCode || '').trim().toUpperCase();
+    if (voucherCode && (quote.voucherCode !== voucherCode || !(Number(quote.voucherDiscount) > 0)))
+      throw new Error('Chưa xác nhận được tiền giảm từ voucher. Vui lòng thử lại hoặc liên hệ cửa hàng trước khi thanh toán.');
+    return quote;
+  },
   create: (data, key) => post('/orders', data, { headers: { 'Idempotency-Key': key }, timeout: 30000 }),
   orders: async (params) => normalizePage(await get('/orders', params)),
   order: (id) => get(`/orders/${encodeURIComponent(id)}`),
@@ -18,5 +24,8 @@ export const checkoutService = {
   capture: (id) => post(`/payments/${encodeURIComponent(id)}/paypal/capture`, undefined, { timeout: 60000 }),
   rewards: () => get('/customers/me/rewards'),
   transactions: (params) => get('/customers/me/reward-transactions', params),
+  voucherOffers: async (params) => normalizePage(await get('/customers/me/voucher-offers', params)),
+  vouchers: async (params) => normalizePage(await get('/customers/me/vouchers', params)),
+  exchangeVoucher: (data, key) => post('/customers/me/vouchers/exchange', data, { headers: { 'Idempotency-Key': key }, timeout: 30000 }),
   promotions: async (params) => normalizePage(await get('/promotions', params)),
 };

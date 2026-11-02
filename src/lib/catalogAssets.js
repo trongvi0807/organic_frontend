@@ -13,7 +13,7 @@ export function variantPayload(values) {
     barcode: nullable(values.barcode), reorderLevel: nullable(values.reorderLevel) === null ? null : decimal(values.reorderLevel, 'Ngưỡng cảnh báo', 11, 0, 0),
     status: values.status || 'active',
   };
-  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(payload.sku) || !payload.variantName || payload.variantName.length > 150 || !payload.unitId || payload.unitId.length > 20 || (payload.barcode?.length || 0) > 100 || !['active','inactive'].includes(payload.status)) throw new Error('Kiểm tra SKU, tên quy cách, đơn vị và trạng thái.');
+  if ((payload.sku && !/^[A-Za-z0-9][A-Za-z0-9_-]{0,79}$/.test(payload.sku)) || !payload.variantName || payload.variantName.length > 150 || !payload.unitId || payload.unitId.length > 20 || (payload.barcode?.length || 0) > 100 || !['active','inactive'].includes(payload.status)) throw new Error('Kiểm tra SKU, tên quy cách, đơn vị và trạng thái.');
   if (payload.compareAtPrice !== null && payload.compareAtPrice < payload.sellingPrice) throw new Error('Giá gốc phải lớn hơn hoặc bằng giá bán.');
   return payload;
 }

@@ -10,7 +10,7 @@ export function CategoryExplorer({ categories, selectedId = '', onNavigate, owne
   const { parent, items } = useMemo(() => storeCategoryMenuEntries(categories), [categories]);
   const selectedPath = useMemo(() => new Set(storeCategoryPath(categories, selectedId).map((entry) => String(entry.id))), [categories, selectedId]);
   const [path, setPath] = useState([]), [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 700px)').matches);
-  const anchors = useRef(new Map()), lists = useRef(new Map()), closing = useRef(null), skipFocus = useRef(false);
+  const anchors = useRef(new Map()), lists = useRef(new Map()), closing = useRef(null);
   useEffect(() => {
     const media = window.matchMedia('(max-width: 700px)');
     const resize = () => { setMobile(media.matches); setPath([]); };
@@ -26,7 +26,7 @@ export function CategoryExplorer({ categories, selectedId = '', onNavigate, owne
   }
   function back(depth) {
     setPath((old) => old.slice(0, Math.max(0, depth - 1)));
-    skipFocus.current = true; anchors.current.get(depth - 1)?.focus(); skipFocus.current = false;
+    anchors.current.get(depth - 1)?.focus();
   }
   function keydown(event, node, depth) {
     const options = [...(lists.current.get(depth)?.children || [])].map((li) => li.querySelector('.category-nav-item')).filter(Boolean);
@@ -48,9 +48,7 @@ export function CategoryExplorer({ categories, selectedId = '', onNavigate, owne
         const title = <>{depth === 0 && <Leaf size={17} aria-hidden="true" />}<span>{node.name}</span>{node.children.length > 0 && (mobile ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronRight size={15} aria-hidden="true" />)}</>;
         return <li key={node.id}>
           {node.children.length ? <button type="button" className={`category-nav-item ${expanded ? 'is-expanded' : ''} ${selected ? 'is-selected' : ''}`} aria-expanded={expanded} aria-controls={`${ownerId}-children-${node.id}`}
-            onMouseEnter={(event) => { if (!mobile) expand(node, depth, event.currentTarget); }}
-            onFocus={(event) => { if (!mobile && !skipFocus.current) expand(node, depth, event.currentTarget); }}
-            onClick={(event) => { if (mobile && expanded) setPath((old) => old.slice(0, depth)); else expand(node, depth, event.currentTarget); }}
+            onClick={(event) => { if (expanded) setPath((old) => old.slice(0, depth)); else expand(node, depth, event.currentTarget); }}
             onKeyDown={(event) => keydown(event, node, depth)}>{title}</button>
             : <Link className={`category-nav-item ${selected ? 'is-selected' : ''}`} to={href(node.id)} aria-current={selectedId === node.id ? 'page' : undefined} onClick={onNavigate}
               onMouseEnter={() => { if (!mobile) { keepOpen(); setPath((old) => old.slice(0, depth)); } }}

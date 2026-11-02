@@ -13,10 +13,13 @@ function CategoryImage({ src }) {
   return src && !failed ? <img src={src} alt="" loading="lazy" width="180" height="180" onError={() => setFailed(true)} /> : <Leaf size={38} strokeWidth={1.1} />;
 }
 export function HomeCategories({ categories, products }) {
-  if (!categories.length) return null;
+  const popular = [...categories].filter((item) => Number(item.productCount) > 0)
+    .sort((a, b) => Number(b.productCount) - Number(a.productCount) || String(a.name).localeCompare(String(b.name), 'vi'))
+    .slice(0, 8);
+  if (!popular.length) return null;
   return <section id="kham-pha-danh-muc" className="container moc-home-section moc-home-categories" aria-labelledby="home-category-title">
     <Reveal className="moc-home-section-heading"><div><span className="moc-home-kicker">ĐI CHỢ THEO CÁCH CỦA BẠN</span><h2 id="home-category-title">Hôm nay, mình chọn gì?</h2></div><Link to="/san-pham" className="moc-home-underlined-link">Toàn bộ danh mục<ArrowUpRight size={16} /></Link></Reveal>
-    <div className="moc-home-category-grid">{categories.map((item, index) => <Reveal key={item.id} delay={(index % 4) * 40}><Link to={categoryHref(item.id)} className={`moc-home-category-card moc-home-tone-${index % 4}`}><span className="moc-home-category-image"><CategoryImage key={imageFor(item, products)} src={imageFor(item, products)} /></span><h3>{item.name}</h3><span>{item.productCount != null ? `${item.productCount} sản phẩm` : 'Khám phá danh mục'}<ArrowUpRight size={14} /></span></Link></Reveal>)}</div>
+    <div className="moc-home-category-grid">{popular.map((item, index) => <Reveal key={item.id} delay={(index % 4) * 40}><Link to={categoryHref(item.id)} className={`moc-home-category-card moc-home-tone-${index % 4}`}><span className="moc-home-category-image"><CategoryImage key={imageFor(item, products)} src={imageFor(item, products)} /></span><h3>{item.name}</h3><span>{item.productCount} sản phẩm<ArrowUpRight size={14} /></span></Link></Reveal>)}</div>
   </section>;
 }
 
@@ -30,10 +33,18 @@ export function HomeOffers({ products, onView }) {
 }
 
 export function HomeCollections({ home, onView }) {
-  const [collection, setCollection] = useState('featuredProducts'), [category, setCategory] = useState('');
-  const collections = [{ key: 'featuredProducts', label: 'Mộc chọn lọc', icon: Leaf }, { key: 'newProducts', label: 'Mới tại cửa hàng', icon: ShoppingBag }, { key: 'certifiedProducts', label: 'Có chứng nhận hợp lệ', icon: ShieldCheck }].filter((item) => home[item.key].length);
+  const [collection, setCollection] = useState('availableProducts'), [category, setCategory] = useState('');
+  const availableProducts = [...new Map([...home.featuredProducts, ...home.newProducts, ...home.certifiedProducts]
+    .map((product) => [product.id, product])).values()];
+  const groups = { availableProducts, featuredProducts: home.featuredProducts, newProducts: home.newProducts, certifiedProducts: home.certifiedProducts };
+  const collections = [
+    { key: 'availableProducts', label: 'Sản phẩm còn hàng', icon: ShoppingBag },
+    { key: 'featuredProducts', label: 'Mộc chọn lọc', icon: Leaf },
+    { key: 'newProducts', label: 'Mới tại cửa hàng', icon: ShoppingBag },
+    { key: 'certifiedProducts', label: 'Có chứng nhận hợp lệ', icon: ShieldCheck },
+  ].filter((item) => groups[item.key].length);
   const current = collections.find((item) => item.key === collection)?.key || collections[0]?.key;
-  const items = current ? home[current] : [];
+  const items = current ? groups[current] : [];
   const availableCategories = home.categories.filter((item) => items.some((product) => product.categoryId === item.id));
   const chosenCategory = availableCategories.some((item) => item.id === category) ? category : '';
   const products = items.filter((item) => !chosenCategory || item.categoryId === chosenCategory).slice(0, 8);

@@ -9,6 +9,7 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import { ResourceState } from '@/components/common/ResourceState';
 import { useStoreScrollRestoration } from '@/hooks/useStoreScrollRestoration';
 
+const FavoritesPage = lazy(() => import('@/pages/client/FavoritesPage'));
 const ProductsPage = lazy(() => import('@/pages/client/ProductsPage'));
 const ProductDetailPage = lazy(() => import('@/pages/client/ProductDetailPage'));
 const CartPage = lazy(() => import('@/pages/client/CartPage'));
@@ -52,7 +53,7 @@ export function AppRoutes() {
     document.title = `${names[pathname] || (/^\/(san-pham|products)\//.test(pathname) ? 'Chi tiết sản phẩm' : 'Trang không tồn tại')} | Mộc Organic`;
     const operations = { 'purchase-orders': 'Đơn đặt mua', 'order-approvals': 'Duyệt đơn mua', 'goods-receipts': 'Phiếu nhập', 'receipt-approvals': 'Duyệt nhập', inventory: 'Tồn kho / lô', notifications: 'Thông báo' };
     if (operations[pathname.replace('/admin/', '')]) document.title = `${operations[pathname.replace('/admin/', '')]} | Mộc Organic`;
-    const commerce = { '/don-hang': 'Đơn hàng', '/diem-thuong': 'Điểm thưởng', '/danh-gia-cua-toi': 'Đánh giá của tôi', '/payment/result': 'Kết quả thanh toán', '/payment/cancel': 'Quay lại từ thanh toán', '/admin/sales-orders': 'Đơn bán & giao hàng', '/admin/promotions': 'Khuyến mãi', '/admin/payment-review': 'Đối soát thanh toán' };
+    const commerce = { '/don-hang': 'Đơn hàng', '/yeu-thich': 'Sản phẩm yêu thích', '/diem-thuong': 'Điểm thưởng', '/danh-gia-cua-toi': 'Đánh giá của tôi', '/payment/result': 'Kết quả thanh toán', '/payment/cancel': 'Quay lại từ thanh toán', '/admin/sales-orders': 'Đơn bán & giao hàng', '/admin/promotions': 'Khuyến mãi', '/admin/payment-review': 'Đối soát thanh toán' };
     if (commerce[pathname] || pathname.startsWith('/don-hang/')) document.title = `${commerce[pathname] || 'Chi tiết đơn hàng'} | Mộc Organic`;
     if (pathname.startsWith('/dat-hang-thanh-cong/')) document.title = 'Đơn hàng đã ghi nhận | Mộc Organic';
     if (pathname === '/admin/business-forms') document.title = 'Biểu mẫu & bản in | Mộc Organic';
@@ -67,6 +68,7 @@ export function AppRoutes() {
       <Route path="san-pham/:slug" element={<ProductDetailPage />} />
       <Route path="san-pham/id/:productId" element={<ProductDetailPage />} />
       <Route path="gio-hang" element={<CartPage />} />
+      <Route path="yeu-thich" element={<FavoritesPage />} />
       <Route path="thanh-toan" element={<CheckoutPage />} />
       <Route path="demo/don-hang" element={<Navigate to="/don-hang" replace />} />
       <Route path="demo/don-hang/:id" element={<Navigate to="/don-hang" replace />} />

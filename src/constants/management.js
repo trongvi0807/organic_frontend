@@ -2,7 +2,7 @@ export const modules = {
   customers: {
     title: 'Khách hàng', singular: 'khách hàng', description: 'Chăm sóc hồ sơ khách hàng, thông tin liên hệ và địa chỉ.', nameKey: 'fullName', codeKey: 'customerId', active: 'ACTIVE', inactive: 'INACTIVE',
     fields: [
-      { name: 'customerId', label: 'Mã khách hàng', required: true, maxLength: 50 },
+      { name: 'customerId', label: 'Mã khách hàng', readOnly: true, placeholder: 'Tự động khi lưu (KH000001)', maxLength: 50 },
       { name: 'fullName', label: 'Họ và tên', required: true, maxLength: 255 },
       { name: 'phoneNumber', label: 'Số điện thoại', required: true, type: 'tel', pattern: '\\+?[0-9]{9,15}', hint: '9–15 chữ số, có thể có dấu + ở đầu.' },
       { name: 'email', label: 'Email', type: 'email', maxLength: 255 },
@@ -11,13 +11,13 @@ export const modules = {
       { name: 'registrationDate', label: 'Ngày đăng ký', type: 'date', past: true, defaultToday: true },
       { name: 'rewardPoints', label: 'Điểm tích lũy', type: 'number', min: 0, step: 1, defaultValue: 0 },
       { name: 'status', label: 'Trạng thái', options: [['ACTIVE', 'Hoạt động'], ['INACTIVE', 'Ngừng hoạt động']], defaultValue: 'ACTIVE' },
-      { name: 'accountId', label: 'ID tài khoản liên kết (UUID)', uuid: true, hint: 'Chỉ liên kết tài khoản có quyền CUSTOMER. Bỏ trống sẽ gỡ liên kết; tạo hồ sơ không tạo tài khoản đăng nhập.' },
+      { name: 'accountId', label: 'Mã tài khoản liên kết', uuid: true, hint: 'Liên kết với tài khoản khách hàng đã có. Để trống nếu chưa có tài khoản.' },
     ],
   },
   suppliers: {
     title: 'Nhà cung cấp', singular: 'nhà cung cấp', description: 'Quản lý nguồn cung, người liên hệ, mã số thuế và địa chỉ nhà cung cấp.', nameKey: 'supplierName', codeKey: 'supplierCode', active: 'active', inactive: 'inactive',
     fields: [
-      { name: 'supplierCode', label: 'Mã nhà cung cấp tự động', required: true, readOnly: true, maxLength: 50, hint: 'Tự động theo thứ tự NCC01, NCC02… Mã đã lưu được giữ nguyên.' },
+      { name: 'supplierCode', label: 'Mã nhà cung cấp tự động', placeholder: 'Tự động khi lưu', readOnly: true, maxLength: 50, hint: 'Tự động theo thứ tự NCC000001, NCC000002… ' },
       { name: 'supplierName', label: 'Tên nhà cung cấp', required: true, maxLength: 200 },
       { name: 'taxCode', label: 'Mã số thuế', maxLength: 50 },
       { name: 'contactPerson', label: 'Người đại diện / liên hệ', maxLength: 100 },
@@ -30,7 +30,7 @@ export const modules = {
   origins: {
     title: 'Xuất xứ organic', singular: 'xuất xứ', description: 'Kết nối sản phẩm với vùng trồng và cơ sở sản xuất rõ ràng.', nameKey: 'originName', codeKey: 'originCode', active: 'active', inactive: 'inactive',
     fields: [
-      { name: 'originCode', label: 'Mã xuất xứ tự động', readOnly: true, maxLength: 50, hint: 'Dạng XX01, XX02… Mã chính thức được cấp khi lưu và giữ nguyên sau đó.' },
+      { name: 'originCode', label: 'Mã xuất xứ tự động', readOnly: true, maxLength: 50, hint: '' },
       { name: 'originName', label: 'Tên vùng / cơ sở sản xuất', required: true, maxLength: 200 },
       { name: 'countryCode', label: 'Mã quốc gia', required: true, maxLength: 2, pattern: '[A-Za-z]{2}', hint: 'ISO alpha-2, ví dụ VN, US, AU.', defaultValue: 'VN' },
       { name: 'country', label: 'Quốc gia', required: true, maxLength: 100, defaultValue: 'Việt Nam' },
@@ -43,7 +43,7 @@ export const modules = {
     ],
   },
   certifications: {
-    title: 'Chứng nhận organic', singular: 'chứng nhận', description: 'Quản lý hồ sơ, tài liệu minh chứng và hiệu lực chứng nhận.', nameKey: 'certificateName', codeKey: 'certificateNumber',
+    title: 'Chứng nhận organic', singular: 'chứng nhận', description: 'Quản lý hồ sơ, tài liệu minh chứng và hiệu lực chứng nhận.', nameKey: 'certificateName', codeKey: 'certificationCode',
     fields: [
       { name: 'certificateName', label: 'Tên chứng nhận', required: true, maxLength: 150 },
       { name: 'certificateNumber', label: 'Số chứng nhận', required: true, maxLength: 100 },

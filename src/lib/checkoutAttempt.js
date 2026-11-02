@@ -6,7 +6,7 @@ export function readAttempt(username) {
 export function saveAttempt(username, value) {
   // A durable key is mandatory before an order request can leave the browser.
   try { sessionStorage.setItem(storageKey(username), JSON.stringify(value)); }
-  catch { throw new Error('Trình duyệt không lưu được mã chống đặt trùng. Cho phép lưu trữ phiên rồi thử lại.'); }
+  catch { throw new Error('Chưa thể lưu thông tin đặt hàng. Vui lòng cho phép trình duyệt lưu dữ liệu rồi thử lại.'); }
 }
 export function clearAttempt(username) { try { sessionStorage.removeItem(storageKey(username)); } catch { /* Order already exists. */ } }
 export function rememberPayment(username, payment) {

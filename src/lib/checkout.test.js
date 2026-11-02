@@ -13,7 +13,13 @@ describe('Checkout contracts and safeguards', () => {
     }
   });
   it('only sends variant/quantity, address, method, promotion and points; never client prices or identity', () => {
-    expect(checkoutPayload(values, items)).toEqual({ items: [{ variantId: 'v', quantity: 3 }], receiverName: 'An', receiverPhone: values.receiverPhone, shippingAddress: values.shippingAddress, note: null, paymentMethod: 'cod', promotionCode: 'ORGANIC10', points: 2 });
+    expect(checkoutPayload(values, items)).toEqual({ items: [{ variantId: 'v', quantity: 3 }], receiverName: 'An', receiverPhone: values.receiverPhone, shippingAddress: values.shippingAddress, note: null, paymentMethod: 'cod', promotionCode: 'ORGANIC10', voucherCode: null, points: 2 });
+  });
+  it('keeps the public code with either direct points or an owned voucher, and blocks all three', () => {
+    expect(checkoutPayload(values, items)).toMatchObject({ promotionCode: 'ORGANIC10', points: 2, voucherCode: null });
+    expect(checkoutPayload({ ...values, points: 0, voucherCode: ' vc-20261102-000001 ' }, items))
+      .toMatchObject({ promotionCode: 'ORGANIC10', points: 0, voucherCode: 'VC-20261102-000001' });
+    expect(() => checkoutPayload({ ...values, voucherCode: 'VC-20261102-000001' }, items)).toThrow('không dùng cả hai');
   });
   it('rejects empty/duplicate variants, fractional/excess quantities and invalid points', () => {
     for (const rows of [[], [...items, ...items], [{ variantId: 'v', quantity: 1.5 }], [{ variantId: 'v', quantity: 1000 }]]) expect(() => checkoutPayload(values, rows)).toThrow();
@@ -38,7 +44,7 @@ describe('Checkout contracts and safeguards', () => {
   it('validates dates, percentage cap and active promotion scope', () => {
     const promo = { promotionCode: 'MOC10', name: 'Giảm giá', description: '', discountType: 'percentage', discountValue: '10', minOrderValue: 0, maxDiscountAmount: '', usageLimit: '', perUserLimit: '', startDate: '2026-01-01T00:00', endDate: '2027-01-01T00:00', status: 'active', productIds: ['p'], batchIds: [] };
     expect(promotionPayload(promo).usageLimit).toBeNull();
-    expect(() => promotionPayload({ ...promo, productIds: [] })).toThrow('sản phẩm hoặc lô');
+    expect(() => promotionPayload({ ...promo, productIds: [] })).toThrow('ít nhất một sản phẩm');
     expect(() => promotionPayload({ ...promo, discountValue: 101 })).toThrow('100');
   });
   it('detects monetary changes before order submission without depending on unrelated quote metadata', () => {
@@ -56,7 +62,7 @@ describe('Durable order attempt', () => {
   });
   it('blocks placing before a durable key can be saved', () => {
     sessionStorage.setItem = () => { throw new Error('quota'); };
-    expect(() => saveAttempt('an', { key: 'once' })).toThrow('chống đặt trùng');
+    expect(() => saveAttempt('an', { key: 'once' })).toThrow('Chưa thể lưu thông tin đặt hàng');
   });
   it('keeps separate VNPay reference mappings across attempts and accounts', () => {
     rememberPayment('an', { id:'first',orderId:'o1',gateway:'vnpay',paymentUrl:'https://sandbox.vnpayment.vn/?vnp_TxnRef=one' });

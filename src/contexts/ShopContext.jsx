@@ -12,6 +12,7 @@ import { sellableVariants } from '@/lib/productDetail';
 import { errorMessage } from '@/lib/utils';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { shoppingReturn, validShoppingReturn } from '@/lib/shoppingReturn';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const ShopContext = createContext(null);
 export function ShopProvider({ children }) {
@@ -25,15 +26,15 @@ export function ShopProvider({ children }) {
   const currentScope = useRef(scope); currentScope.current = scope;
   const [cart, setCart] = useState(() => DEMO_MODE ? readStorage('moc.cart', []) : []);
   const cartRef = useRef(cart); cartRef.current = cart;
-  const [favorites, setFavorites] = useState(() => readStorage('moc.favorites', []));
+  const { favorites, toggleFavorite } = useFavorites(user?.username);
   const [promoCode, setPromoCode] = useState('');
+  const [voucherCode, setVoucherCode] = useState('');
   const [rewardPoints, setRewardPoints] = useState(0);
   const [cartLoading, setLoading] = useState(!DEMO_MODE), [cartBusy, setBusy] = useState(false), [cartError, setError] = useState(''), [cartMeta, setMeta] = useState(null);
   const queue = useRef(Promise.resolve());
   const pending = useRef(0);
   const remoteVersion = useRef(0);
   useEffect(() => { if (DEMO_MODE) writeStorage('moc.cart', cart); }, [cart]);
-  useEffect(() => writeStorage('moc.favorites', favorites), [favorites]);
   useEffect(() => { setCartAdded(null); toast.dismiss('cart-added'); }, [scope]);
   const sameScope = () => currentScope.current === scope && `${getSession()?.user?.username || 'guest'}:${getSession()?.sessionId || getSession()?.accessToken || ''}` === scope;
   function accept(data) {
@@ -50,7 +51,7 @@ export function ShopProvider({ children }) {
   }, [scope, customer, allowed]);
   useEffect(() => {
     if (DEMO_MODE) return;
-    cartRef.current = []; pending.current = 0; setCart([]); setMeta(null); setPromoCode(''); setRewardPoints(0); setError(''); setBusy(false);
+    cartRef.current = []; pending.current = 0; setCart([]); setMeta(null); setPromoCode(''); setVoucherCode(''); setRewardPoints(0); setError(''); setBusy(false);
     if (allowed) refreshCart().catch(() => {}); else setLoading(false);
   }, [scope, allowed, refreshCart]);
   useEffect(() => {
@@ -120,8 +121,8 @@ export function ShopProvider({ children }) {
     } catch (e) { toast.error(e.message, { position: 'top-left', id: 'cart-quantity' }); return false; }
   }
   function clearCart() {
-    if (DEMO_MODE) { setCart([]); setPromoCode(''); setRewardPoints(0); return true; }
-    return mutate((service) => service.clear(), 'Đã xóa toàn bộ giỏ hàng.').then((success) => { if (success) { setPromoCode(''); setRewardPoints(0); } return success; });
+    if (DEMO_MODE) { setCart([]); setPromoCode(''); setVoucherCode(''); setRewardPoints(0); return true; }
+    return mutate((service) => service.clear(), 'Đã xóa toàn bộ giỏ hàng.').then((success) => { if (success) { setPromoCode(''); setVoucherCode(''); setRewardPoints(0); } return success; });
   }
   function removePurchased(items) {
     return mutate(async (service) => {
@@ -134,8 +135,7 @@ export function ShopProvider({ children }) {
       return data;
     });
   }
-  function toggleFavorite(id) { setFavorites((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id]); }
-  return <ShopContext.Provider value={{ cart, cartAdded, favorites, addToCart, updateQuantity, setQuantity, toggleFavorite, promoCode, setPromoCode, rewardPoints, setRewardPoints, clearCart, removeFromCart, refreshCart, removePurchased, cartLoading, cartBusy, cartError, cartMeta, cartAllowed: allowed,
+  return <ShopContext.Provider value={{ cart, cartAdded, favorites, addToCart, updateQuantity, setQuantity, toggleFavorite, promoCode, setPromoCode, voucherCode, setVoucherCode, rewardPoints, setRewardPoints, clearCart, removeFromCart, refreshCart, removePurchased, cartLoading, cartBusy, cartError, cartMeta, cartAllowed: allowed,
     setItemSelected: (key, selected) => { const next = selectCartItem(cartRef.current, key, selected); cartRef.current = next; setCart(next); },
     setAllSelected: (selected) => { const next = selectAllCartItems(cartRef.current, selected); cartRef.current = next; setCart(next); },
   }}>{children}</ShopContext.Provider>;

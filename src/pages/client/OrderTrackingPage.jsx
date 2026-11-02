@@ -1,3 +1,4 @@
+import { CustomerAccountNav } from '@/components/account/CustomerAccountNav';
 import { useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, CreditCard, Headphones, Leaf, MapPin, Package, Phone, RefreshCw, ShieldCheck, Truck } from 'lucide-react';
@@ -12,6 +13,7 @@ import { canPayOrder, paymentNames, paymentDisplayNames, paymentRedirect } from 
 import { rememberPayment } from '@/lib/checkoutAttempt';
 import { customerOrderError, latestShipment, orderDateTime } from '@/lib/customerOrders';
 import { PaymentBrand } from '@/components/checkout/PaymentBrand';
+import { promotionSavings } from '@/components/checkout/PromotionSavings';
 import { currency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/field';
@@ -27,7 +29,7 @@ export function OrderPaymentSummary({ order }) {
   const quote = order.pricing, money = (amount) => amount == null ? 'Chưa có thông tin' : currency(amount);
   return <section className="order-surface p-5 sm:p-6"><SectionHeading icon={CreditCard}>Thông tin thanh toán</SectionHeading><dl className="space-y-4 text-sm">{[
     ['Tạm tính', money(quote?.subtotal)], ['Phí giao hàng', money(quote?.shippingFee)],
-    ['Giảm giá / Khuyến mãi', money(quote?.promotionDiscount == null ? null : -quote.promotionDiscount)],
+    ...promotionSavings(quote).map(([label, amount, code]) => [`${label}${code ? ` · ${code}` : ''}`, money(amount == null ? null : -amount)]),
     [`Điểm thành viên đã dùng${quote?.pointsUsed != null ? ` (${quote.pointsUsed} điểm)` : ''}`, money(quote?.pointsDiscount == null ? null : -quote.pointsDiscount)],
   ].map(([label, value]) => <div className="flex flex-wrap justify-between gap-2" key={label}><dt className="text-stone-500">{label}</dt><dd className="text-right font-medium">{value}</dd></div>)}<div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-200 pt-5"><dt className="font-semibold text-[#1B4D2E]">Tổng thanh toán</dt><dd className="text-right text-2xl font-semibold text-[#1B4D2E]">{money(quote?.totalAmount)}</dd></div></dl><div className="!mt-5 space-y-3 rounded-xl bg-[#F7FAF5] p-4 text-xs"><p className="flex flex-wrap justify-between gap-2"><span className="text-stone-500">Phương thức</span><span className="flex items-center gap-2"><PaymentBrand gateway={order.paymentMethod} className="!h-11 !w-16" /><strong className="font-medium">{paymentDisplayNames[order.paymentMethod] || 'Chưa có thông tin'}</strong></span></p><div className="flex flex-wrap items-center justify-between gap-3"><span className="text-stone-500">Trạng thái</span><OrderBadge order={order} payment /></div>{quote?.vatIncluded && <p className="text-stone-500">Đã bao gồm VAT.</p>}</div></section>;
 }
@@ -63,6 +65,7 @@ function OrderTrackingContent({ id, demo }) {
   }
   function cancelled(result) { detail.setData({ ...detail.data, order: { ...order, ...result } }); detail.reload({ background: true }); }
   return <div className="customer-orders bg-[#F7FAF5] text-[#283C2D]"><div className="container py-8 sm:py-12">
+    {!demo && <CustomerAccountNav />}
     {demo && <DemoOrderNotice />}
     <nav className="!mb-7 flex flex-wrap items-center gap-2 text-xs text-stone-500" aria-label="Đường dẫn">{demo ? <span>Tài khoản mô phỏng</span> : <Link to="/tai-khoan">Tài khoản</Link>}<span>/</span><Link to={base}>Đơn hàng</Link><span>/</span><span aria-current="page" className="text-[#1B4D2E]">{order?.orderCode ? `#${order.orderCode}` : 'Chi tiết đơn hàng'}</span></nav>
     <ResourceState loading={detail.loading} error={detail.error ? customerOrderError({ message: detail.error }) : ''} onRetry={detail.reload} />

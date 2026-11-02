@@ -7,7 +7,7 @@ import { warehouseActionLabels } from './WarehouseOperationDialog';
 export function WarehouseReceiptCard({ item, onAction }) {
   const finished = item.pendingQuantity === 0;
   return <article className="space-y-4 rounded-2xl border border-line bg-white p-4 sm:p-5">
-    <div className="flex flex-wrap justify-between gap-3"><div><strong className="text-sm text-primary">{item.productName}</strong><p className="!mt-1 text-xs text-stone-500">{item.variantName} · Đã nhận {item.receivedQuantity} sản phẩm</p></div><SupportBadge labels={inspectionStates} value={item.inspectionStatus} /></div>
+    <div className="flex flex-wrap justify-between gap-3"><div><strong className="text-sm text-primary">{item.productName}</strong><p className="!mt-1 text-xs text-stone-500">{item.receiptItemCode && `${item.receiptItemCode} · `}{item.variantName} · Đã nhận {item.receivedQuantity} sản phẩm</p></div><SupportBadge labels={inspectionStates} value={item.inspectionStatus} /></div>
     <p className="text-xs leading-6 text-stone-500">Lô {item.batchCode || 'chưa đối chiếu'} · HSD {adminDate(item.expiryDate)}<br />Nhận bởi {item.receivedByEmployee?.fullName || 'nhân viên kho'} lúc {adminDate(item.receivedAt, true)}</p>
     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">{[
       ['Cần kiểm tra', item.uninspectedQuantity], ['Hàng tốt chờ xử lý', item.passedHeldQuantity],

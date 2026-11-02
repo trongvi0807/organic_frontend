@@ -20,7 +20,7 @@ describe('Receipt eligibility and warehouse quantities', () => {
   it('only offers approved orders with no receipt; editing retains its own receipt', () => {
     const orders = [{ id: 'a', status: 'approved' }, { id: 'b', status: 'approved', goodsReceiptId: 'g' }, { id: 'c', status: 'received' }, { id: 'd', status: 'pending_approval' }, { id: 'e', status: 'cancelled' }];
     expect(receiptCandidates(orders).map((o) => o.id)).toEqual(['a']);
-    expect(receiptCandidates(orders, { id: 'g' }).map((o) => o.id)).toEqual(['a', 'b']);
+    expect(receiptCandidates(orders, { id: 'g', purchaseOrderId: 'b' }).map((o) => o.id)).toEqual(['a', 'b']);
   });
   it('converts cartons to base packages without multiplying prices or fractional stock', () => {
     expect(convertPurchaseQuantity('3', '24')).toBe(72);

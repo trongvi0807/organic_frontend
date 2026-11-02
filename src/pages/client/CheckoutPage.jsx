@@ -1,3 +1,5 @@
+import { CheckoutBenefits } from '@/components/checkout/CheckoutBenefits';
+import { loadCheckoutVouchers } from '@/lib/customerVouchers';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Building2, MapPin, ShoppingBag, Truck, UserRound } from 'lucide-react';
@@ -33,13 +35,14 @@ export default function CheckoutPage() {
   return <CheckoutForm key={user.username} user={user} />;
 }
 function CheckoutForm({ user }) {
-  const { cart, cartLoading, cartError, cartBusy, refreshCart, removePurchased, promoCode, setPromoCode, rewardPoints, setRewardPoints } = useShop();
+  const { cart, cartLoading, cartError, cartBusy, refreshCart, removePurchased, promoCode, setPromoCode, voucherCode, setVoucherCode, rewardPoints, setRewardPoints } = useShop();
   const selected = selectedCartItems(cart), navigate = useNavigate();
   const [attempt, setAttempt] = useState(() => readAttempt(user.username));
-  const [values, setValues] = useState({ receiverName: user.fullName || '', receiverPhone: user.phoneNumber || '', email: user.email || '', note: '', paymentMethod: 'cod', promotionCode: promoCode || '' });
+  const [values, setValues] = useState({ receiverName: user.fullName || '', receiverPhone: user.phoneNumber || '', email: user.email || '', note: '', paymentMethod: 'cod', promotionCode: promoCode || '', voucherCode: voucherCode || '' });
   const [address, setAddress] = useState({ provinceCode: '', wardCode: '', street: '', search: '' }), [fulfillment, setFulfillment] = useState('delivery');
   const [quoted, setQuoted] = useState(null), [checking, setChecking] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const locked = useRef(false), initialized = useRef(false), touched = useRef(false);
+  const vouchers = useResource(loadCheckoutVouchers, []);
   const options = useResource(async () => {
     const [methods, rewards, profile, addresses] = await Promise.allSettled([checkoutService.methods(), checkoutService.rewards(), createProfileService().get(), loadAddresses()]);
     if (methods.status === 'rejected') throw methods.reason;
@@ -87,7 +90,7 @@ function CheckoutForm({ user }) {
       const order = await checkoutService.create(current.payload, current.key);
       window.dispatchEvent(new Event('moc:order-updated'));
       saveAttempt(user.username, { ...current, orderId: order.id }); setAttempt({ ...current, orderId: order.id });
-      await removePurchased(current.payload.items); clearAttempt(user.username); setRewardPoints(0); setPromoCode('');
+      await removePurchased(current.payload.items); clearAttempt(user.username); setRewardPoints(0); setPromoCode(''); setVoucherCode('');
       if (canPayOrder(order)) {
         try {
           const payment = await checkoutService.initiate(order.id, order.paymentMethod);
@@ -110,13 +113,29 @@ function CheckoutForm({ user }) {
       setError(message); toast.error(message, { position: 'top-left' });
     } finally { locked.current = false; setBusy(false); }
   }
+  function applyPromotion(code) {
+    field('promotionCode', code); setPromoCode(code);
+  }
+  function applyVoucher(code) {
+    if (code) setRewardPoints(0);
+    field('voucherCode', code); setVoucherCode(code);
+  }
+  function applyPoints(amount) {
+    if (amount > 0 && values.voucherCode) throw new Error('Chọn Trừ điểm trực tiếp để gỡ voucher đổi điểm trước.');
+    setRewardPoints(validateRewardPoints(amount, options.data?.rewards));
+    setError('');
+  }
   const blocked = busy || cartBusy || !!attempt;
   return <PurchaseFrame step={2} title="Thông tin & thanh toán" description="Chỉ còn một bước để mang những điều tươi lành về nhà.">
     <ResourceState loading={options.loading || (cartLoading && !cart.length)} error={options.error || cartError} onRetry={() => { options.reload(); refreshCart().catch(() => {}); }} />
-    {attempt && <section className={`${purchasePanel} !mb-6 border-amber-200 bg-amber-50 p-5`}><h2 className="font-semibold">{attempt.orderId ? 'Đơn hàng đã được tạo' : 'Lần đặt hàng trước cần được kiểm tra'}</h2><p className="!mt-2 text-xs leading-6">Giữ nguyên nội dung và mã chống đặt trùng để lấy lại kết quả, không tạo thêm đơn.</p><Button className="!mt-3" disabled={busy} onClick={() => place(true)}>{busy ? 'Đang kiểm tra…' : attempt.orderId ? 'Mở đơn đã tạo' : 'Khôi phục lần đặt trước'}</Button></section>}
+    {attempt && <section className={`${purchasePanel} !mb-6 border-amber-200 bg-amber-50 p-5`}><h2 className="font-semibold">{attempt.orderId ? 'Đơn hàng đã được tạo' : 'Lần đặt hàng trước cần được kiểm tra'}</h2><p className="!mt-2 text-xs leading-6">Bấm “Khôi phục lần đặt trước” để kiểm tra đơn hàng của bạn.</p><Button className="!mt-3" disabled={busy} onClick={() => place(true)}>{busy ? 'Đang kiểm tra…' : attempt.orderId ? 'Mở đơn đã tạo' : 'Khôi phục lần đặt trước'}</Button></section>}
     {!attempt && !cartLoading && !cartError && !selected.length && <section className={`${purchasePanel} p-8 text-center`}><ShoppingBag className="!mx-auto text-primary" size={35} /><h2 className="!mt-4 text-lg font-semibold">Bạn chưa chọn sản phẩm</h2><Link to="/gio-hang" className="!mt-4 inline-flex items-center gap-2 text-sm underline"><ArrowLeft size={14} />Về giỏ hàng</Link></section>}
     {!options.loading && !options.error && !!selected.length && <form id="checkout-form" onSubmit={(e) => { e.preventDefault(); place(); }} className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_370px]">
-      <div className="min-w-0 space-y-4"><CheckoutProducts items={selected} quote={quote} /><fieldset disabled={blocked} className="min-w-0 space-y-4">
+      <div className="min-w-0 space-y-4"><CheckoutProducts items={selected} quote={quote} /><section className={`${purchasePanel} p-5`}><CheckoutBenefits promotionCode={values.promotionCode} voucherCode={values.voucherCode} points={rewardPoints}
+        promotions={vouchers.data || []} loading={vouchers.loading} disabled={blocked}
+        onPromotion={applyPromotion} onVoucher={applyVoucher} onPoints={applyPoints}
+        rewards={options.data.rewards} rewardsLoading={options.loading} onRewardsReload={options.reload} />
+        {vouchers.error && <p role="alert" className="!mt-3 text-xs text-red-700">{vouchers.error}</p>}</section><fieldset disabled={blocked} className="min-w-0 space-y-4">
         <CheckoutSection number="1" title="Thông tin khách hàng" icon={UserRound}><div className="grid gap-4 sm:grid-cols-2"><Field label="Họ và tên *"><Input required maxLength={100} autoComplete="name" placeholder="Nguyễn Văn An" value={values.receiverName} onChange={(e) => field('receiverName', e.target.value)} /></Field><Field label="Số điện thoại *"><Input required type="tel" maxLength={20} minLength={8} autoComplete="tel" placeholder="Số điện thoại nhận hàng" value={values.receiverPhone} onChange={(e) => field('receiverPhone', e.target.value)} /></Field></div><div className="!mt-4"><Field label="Email nhận hóa đơn (tùy chọn)" hint="Gửi yêu cầu email kèm đơn; cửa hàng xác nhận việc phát hành hóa đơn."><Input type="email" maxLength={254} autoComplete="email" placeholder="ban@email.com" value={values.email} onChange={(e) => field('email', e.target.value)} /></Field></div></CheckoutSection>
         <CheckoutSection number="2" title="Hình thức nhận hàng" icon={Truck}><div className="!mb-5 grid grid-cols-2 gap-3">{[['delivery', Truck, 'Giao hàng tận nhà'], ['pickup', Building2, 'Nhận tại cửa hàng']].map(([key, Icon, label]) => <label key={key} className={`flex min-h-20 cursor-pointer items-center gap-2 rounded-xl border px-3 py-4 text-xs ${fulfillment === key ? 'border-[#7c9664] bg-sage text-primary' : 'border-line text-stone-500'}`}><input type="radio" name="fulfillment" value={key} checked={fulfillment === key} onChange={() => { touched.current = true; setFulfillment(key); setError(''); }} className="accent-primary" /><Icon size={18} className="shrink-0" /><span>{label}</span></label>)}</div>
         {fulfillment === 'delivery' ? <>{!!options.data.profile?.addresses?.length && <div className="!mb-4"><Field label="Địa chỉ đã lưu"><Select defaultValue="" onChange={(e) => { const a = options.data.profile.addresses.find((a) => a.id === e.target.value); if (a) { touched.current = true; setAddress(savedAddressToForm(a, options.data.addresses)); setValues((old) => ({ ...old, receiverName: a.receiverName || old.receiverName, receiverPhone: a.receiverPhone || old.receiverPhone })); } }}><option value="">Chọn địa chỉ hoặc nhập mới</option>{options.data.profile.addresses.map((a) => <option key={a.id} value={a.id}>{a.label || a.receiverName} · {a.streetAddress}</option>)}</Select></Field></div>}<AddressForm data={options.data.addresses} value={address} disabled={blocked} onChange={(a) => { touched.current = true; setAddress(a); setError(''); }} /></> : <div className="rounded-xl border border-[#c5d2b8] bg-[#f7faf3] p-4"><p className="flex items-center gap-2 text-sm font-semibold text-primary"><MapPin size={18} />{PICKUP_STORE.name}</p><p className="!mt-2 text-xs leading-6 text-stone-500">{PICKUP_STORE.address}</p><a className="!mt-2 inline-block text-xs text-primary" href={`tel:${PICKUP_STORE.phone}`}>{PICKUP_STORE.phone}</a><p className="!mt-3 border-t border-line pt-3 text-[11px] leading-6 text-amber-800">Đây là yêu cầu nhận tại cửa hàng, được gửi kèm ghi chú đơn. Vui lòng chờ cửa hàng liên hệ xác nhận lịch nhận.</p></div>}

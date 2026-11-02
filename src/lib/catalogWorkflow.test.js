@@ -47,7 +47,7 @@ describe('Catalog multi-step save using documented APIs', () => {
   });
   it('stops subsequent writes when an API omits a required ID', async () => {
     const api = services(); api.products.save.mockResolvedValue({ status: 'draft' });
-    await expect(saveCatalogWorkflow({ values, price, originId: 'origin', state: {} }, api)).rejects.toThrow('mã định danh');
+    await expect(saveCatalogWorkflow({ values, price, originId: 'origin', state: {} }, api)).rejects.toThrow('Chưa nhận được kết quả lưu sản phẩm');
     expect(api.products.saveVariant).not.toHaveBeenCalled();
     expect(api.traceability.setOrigin).not.toHaveBeenCalled();
   });

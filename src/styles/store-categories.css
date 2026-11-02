@@ -4,6 +4,8 @@
 .category-menu-trigger span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .category-menu-trigger > svg { flex-shrink: 0; }
 .icon-only .category-menu-trigger { padding: 8px; min-height: 36px; border: 0; background: transparent; }
+.mobile-nav .store-catalog-nav { justify-content: space-between; }
+.mobile-nav .store-catalog-nav > a { flex: 1; padding: 12px; font-size: 11px; }
 .category-menu-trigger[aria-expanded=true] { background: #e7f0df; }
 .category-menu-trigger[aria-expanded=true] > svg:last-child { transform: rotate(180deg); }
 .category-menu-trigger:focus-visible, .category-dropdown-panel :is(a,button):focus-visible, .category-flyout :is(a,button):focus-visible { outline: 2px solid #4b7e36; outline-offset: -3px; }

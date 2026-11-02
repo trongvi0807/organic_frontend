@@ -35,7 +35,7 @@ export function ProductReviewDetail({ id, from, to, onBack }) {
     {!list.loading && !list.error && <div className="space-y-4">{list.data?.items.map((review) => {
       const group = reviewSentiment(review.rating);
       return <article key={review.id} className="rounded-2xl border border-emerald-900/10 bg-white p-5 sm:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3"><div><strong>{review.customerName || 'Khách hàng'}</strong><p className="!mt-1 text-xs text-stone-500">{review.orderCode ? `Đơn ${review.orderCode} · ` : ''}{adminDate(review.createdAt, true)}</p></div><span className={`rounded-full px-3 py-1 text-xs font-medium ${group.color}`}>{group.label}</span></div>
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><strong>{review.customerName || 'Khách hàng'}</strong><p className="!mt-1 text-xs text-stone-500">{review.reviewCode && `${review.reviewCode} · `}{review.orderCode ? `Đơn ${review.orderCode} · ` : ''}{adminDate(review.createdAt, true)}</p></div><span className={`rounded-full px-3 py-1 text-xs font-medium ${group.color}`}>{group.label}</span></div>
         <div className="my-4"><StarRating value={review.rating} /></div>
         <h3 className="!text-base !font-semibold">{review.title}</h3><p className="!my-4 whitespace-pre-wrap break-words text-sm leading-7 text-stone-600">{review.content}</p>
         {!review.published && <p className="!mb-4 text-xs text-amber-800">Đánh giá hiện không công khai do trạng thái đơn hàng.</p>}

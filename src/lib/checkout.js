@@ -1,3 +1,5 @@
+import { voucherExchangeValueError } from './promotionRules';
+
 export const paymentNames = { cod: 'Thanh toán khi nhận hàng (COD)', payos: 'Chuyển khoản ngân hàng · VietQR', vnpay: 'VNPay', stripe: 'Thẻ quốc tế · Stripe', paypal: 'PayPal' };
 export const paymentDisplayNames = { ...paymentNames, exchange: 'Đổi hàng theo phương án · Không thu thêm tiền' };
 export const orderLabels = { pending_payment: 'Chờ thanh toán', confirmed: 'Đã xác nhận', paid: 'Đã thanh toán', preparing: 'Đang chuẩn bị', shipping: 'Đang giao', delivered: 'Đã giao', completed: 'Hoàn tất', cancelled: 'Đã hủy', expired: 'Hết hạn', returned: 'Đã trả hàng', requires_review: 'Cần đối soát' };
@@ -20,8 +22,10 @@ export function checkoutPayload(values, items) {
   if (!receiverName || receiverName.length > 100 || !/^[+0-9 ()-]{8,20}$/.test(receiverPhone) || !shippingAddress || shippingAddress.length > 500) throw new Error('Kiểm tra tên, số điện thoại và địa chỉ nhận hàng.');
   const points = Number(values.points);
   if (!Number.isInteger(points) || points < 0 || points > 50) throw new Error('Điểm sử dụng phải là số nguyên từ 0 đến 50.');
+  const voucherCode = String(values.voucherCode || '').trim().toUpperCase() || null;
+  if (voucherCode && points > 0) throw new Error('Chọn voucher đổi điểm hoặc trừ điểm trực tiếp, không dùng cả hai trong cùng đơn.');
   if (!paymentNames[values.paymentMethod]) throw new Error('Chọn phương thức thanh toán hợp lệ.');
-  return { items: lines, receiverName, receiverPhone, shippingAddress, note: values.note.trim() || null, paymentMethod: values.paymentMethod, promotionCode: values.promotionCode.trim().toUpperCase() || null, points };
+  return { items: lines, receiverName, receiverPhone, shippingAddress, note: values.note.trim() || null, paymentMethod: values.paymentMethod, promotionCode: values.promotionCode.trim().toUpperCase() || null, voucherCode, points };
 }
 // Only backend-issued HTTPS links to the selected gateway can leave the application.
 export function paymentRedirect(payment) {
@@ -34,13 +38,20 @@ export function paymentRedirect(payment) {
 }
 export const canCancelOrder = (order) => order.paymentMethod !== 'exchange' && ['pending_payment', 'confirmed'].includes(order.status) && !['paid', 'partially_refunded', 'refunded', 'requires_review'].includes(order.paymentStatus);
 export const canPayOrder = (order) => order.paymentMethod !== 'exchange' && order.status === 'pending_payment' && !['paid', 'partially_refunded', 'refunded', 'requires_review'].includes(order.paymentStatus);
-export const quoteFingerprint = (quote) => JSON.stringify({ subtotal: quote.subtotal, promotionDiscount: quote.promotionDiscount, pointsUsed: quote.pointsUsed, pointsDiscount: quote.pointsDiscount, shippingFee: quote.shippingFee, totalAmount: quote.totalAmount, items: quote.items.map(({ variantId, quantity, unitPrice, discountAmount }) => ({ variantId, quantity, unitPrice, discountAmount })) });
+export const quoteFingerprint = (quote) => JSON.stringify({ subtotal: quote.subtotal, promotionCode: quote.promotionCode, voucherCode: quote.voucherCode, publicPromotionDiscount: quote.publicPromotionDiscount, voucherDiscount: quote.voucherDiscount, promotionDiscount: quote.promotionDiscount, pointsUsed: quote.pointsUsed, pointsDiscount: quote.pointsDiscount, shippingFee: quote.shippingFee, totalAmount: quote.totalAmount, items: quote.items.map(({ variantId, quantity, unitPrice, discountAmount }) => ({ variantId, quantity, unitPrice, discountAmount })) });
 export function promotionPayload(values, { automaticCode = false } = {}) {
   const payload = { ...values, promotionCode: automaticCode ? null : values.promotionCode.trim().toUpperCase(), name: values.name.trim(), description: values.description.trim() || null,
     discountValue: Number(values.discountValue), minOrderValue: Number(values.minOrderValue), maxDiscountAmount: values.maxDiscountAmount === '' ? null : Number(values.maxDiscountAmount), usageLimit: values.usageLimit === '' ? null : Number(values.usageLimit), perUserLimit: values.perUserLimit === '' ? null : Number(values.perUserLimit) };
   if ((!automaticCode && !/^[A-Z0-9_-]{1,50}$/.test(payload.promotionCode)) || !payload.name) throw new Error('Kiểm tra mã khuyến mãi và tên chương trình.');
   if (!(payload.discountValue > 0) || (payload.discountType === 'percentage' && payload.discountValue > 100)) throw new Error('Giá trị giảm phải dương, phần trăm tối đa 100.');
   if (!payload.startDate || !payload.endDate || payload.endDate <= payload.startDate) throw new Error('Ngày kết thúc phải sau ngày bắt đầu.');
-  if (payload.status === 'active' && !payload.productIds.length && !payload.batchIds.length) throw new Error('Mã hoạt động cần ít nhất một sản phẩm hoặc lô áp dụng.');
+  if (payload.status === 'active' && !payload.productIds.length && !payload.batchIds.length) throw new Error('Vui lòng chọn ít nhất một sản phẩm áp dụng trước khi bật hoạt động.');
+  const redeemable = values.pointsCost !== '' && values.pointsCost != null;
+  payload.pointsCost = redeemable ? Number(values.pointsCost) : null;
+  payload.voucherValidDays = redeemable ? Number(values.voucherValidDays) : null;
+  if (redeemable && (!Number.isInteger(payload.pointsCost) || payload.pointsCost < 1 || payload.pointsCost > 2147483647)) throw new Error('Số điểm cần đổi phải là số nguyên từ 1 đến 2.147.483.647.');
+  if (redeemable && (!Number.isInteger(payload.voucherValidDays) || payload.voucherValidDays < 1 || payload.voucherValidDays > 365)) throw new Error('Hạn dùng voucher phải từ 1 đến 365 ngày.');
+  const valueError = redeemable ? voucherExchangeValueError(payload) : '';
+  if (valueError) throw new Error(valueError);
   return payload;
 }

@@ -1,4 +1,5 @@
 export function canCreateReceipt(order) {
+  if (order.goodsReceiptId || order.receiptCount > 0 || order.receiptIds?.length) return false;
   if (!['approved', 'partially_received'].includes(order.status)) return false;
   if (typeof order.canCreateReceipt === 'boolean') return order.canCreateReceipt;
   return !order.goodsReceiptId;

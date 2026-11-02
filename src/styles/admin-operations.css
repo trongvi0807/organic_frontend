@@ -8,9 +8,41 @@
 .status-filter .searchable-select { width: 180px; }
 .filter-select .searchable-select { min-width: 180px; }
 .reviews-toolbar .searchable-select { width: 180px; }
-.calendar-picker .searchable-select { width: auto; }
+.calendar-picker-header { display: grid; grid-template-columns: 28px minmax(0, 1.15fr) minmax(0, 1fr) 28px; align-items: center; gap: 6px; margin-bottom: 12px; }
+.calendar-picker .calendar-picker-header .searchable-select { width: 100%; min-width: 0; }
+.calendar-picker-header .searchable-select:focus-within { z-index: 1; }
+.calendar-picker .calendar-picker-header .input { width: 100%; min-width: 0; min-height: 36px; height: 36px; padding: 7px 25px 7px 8px !important; font-size: 12px; }
+.calendar-picker-header .searchable-select > div > svg { right: 6px; width: 14px; }
+.calendar-picker-arrow { display: grid; place-items: center; width: 28px; height: 36px; padding: 0; }
 .calendar-picker .searchable-select ul { min-width: 110px; }
+.calendar-picker-year ul { right: 0; }
 .calendar-picker .searchable-select li button { padding: 5px 8px; }
+.calendar-picker .searchable-select li button > span { white-space: nowrap; }
+.admin-category-select { position: relative; min-width: 0; width: 100%; }
+.category-tree-toggle { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 7px; color: #7c8d79; }
+.category-tree-toggle:hover { background: #eef4e8; }
+.category-tree-panel { position: absolute; z-index: 60; top: calc(100% + 8px); left: 0; right: 0; min-width: 0; overflow: hidden; border: 1px solid #dbe5d6; border-radius: 12px; background: #fff; box-shadow: 0 14px 35px #203b2920; }
+.category-tree-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 13px; border-bottom: 1px solid #e6ece1; font-size: 11px; color: #6c7d68; }
+.category-tree-heading > button { display: grid; place-items: center; flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: #f1f6ec; color: #315b38; }
+.category-tree-columns { display: flex; align-items: stretch; overflow-x: auto; overscroll-behavior: contain; }
+.category-tree-column { flex: 0 0 33.333%; min-width: 190px; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; border-right: 1px solid #e6ece1; padding: 4px; }
+.category-tree-column:last-child { border-right: 0; }
+.category-tree-parent { display: flex; align-items: center; gap: 6px; padding: 8px 6px; border-bottom: 1px solid #e6ece1; background: #f7faf4; font-size: 12px; color: #315b38; }
+.category-tree-parent > button { display: grid; place-items: center; flex-shrink: 0; width: 24px; height: 26px; border-radius: 5px; }
+.category-tree-parent strong { overflow-wrap: anywhere; }
+.category-tree-option { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 42px; padding: 10px; border-radius: 7px; font-size: 12px; line-height: 1.6; text-align: left; color: #40583c; }
+.category-tree-option > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.category-tree-option > svg { flex-shrink: 0; }
+.category-tree-option > svg:last-child { margin-left: auto; }
+.category-tree-option:hover, .category-tree-option:focus-visible, .category-tree-option.is-expanded { background: #eaf2e2; color: #1b4d2e; }
+.category-tree-option.is-selected { font-weight: 600; color: #1b4d2e; }
+.category-tree-option:disabled { opacity: .5; cursor: not-allowed; }
+.category-tree-option small { display: block; color: #8b9785; font-size: 10px; }
+.category-tree-choose-parent { margin-block: 3px; border-bottom: 1px solid #e6ece1; color: #688446; font-size: 11px; }
+.category-tree-search { flex: 1 1 100%; }
+.category-tree-search-result strong { display: block; font-size: 12px; }
+.category-tree-empty { padding: 14px 10px; color: #88947e; font-size: 12px; }
+@media (max-width: 640px) { .category-tree-column { display: none; }.category-tree-column:last-child { display: block; flex-basis: 100%; min-width: 0; }.category-tree-heading { font-size: 10px; } }
 @media (max-width: 640px) { .table-filters > .searchable-select, .status-filter .searchable-select { width: 100%; flex: 1 1 150px; } }
 .admin-shell .operations-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); align-items: end; gap: 14px; padding: 20px; }
 .operations-filters .field { margin: 0; min-width: 0; }

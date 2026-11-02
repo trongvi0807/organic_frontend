@@ -13,7 +13,7 @@ import { storeCategoryLabel } from '@/lib/storeCategoryTree';
 import { catalogService } from '@/services/client/catalogService';
 import { useResource } from '@/hooks/useResource';
 
-export function ProductCard({ product, onView, index = 0, categories }) {
+export function ProductCard({ product, onView, index = 0, categories, hideWhenUnavailable = true }) {
   const { favorites, toggleFavorite, addToCart } = useShop();
   const home = useHome();
   const categoryTree = useResource(() => categories ? Promise.resolve(categories) : catalogService.categoryTree(), [categories]);
@@ -33,6 +33,7 @@ export function ProductCard({ product, onView, index = 0, categories }) {
   const currentPrice = Number(product.minPrice), originalPrice = Number(product.compareAtPrice);
   const discount = Number.isFinite(currentPrice) && Number.isFinite(originalPrice) && currentPrice > 0 && originalPrice > currentPrice ? Math.floor((originalPrice - currentPrice) / originalPrice * 100) : 0;
   const badge = discount > 0 ? `-${discount}%` : product.badge;
+  if (hideWhenUnavailable && stock === 0 && availability.quantities) return null;
   return <Reveal as="article" className="product-card" delay={(index % 4) * 45}>
     <div className="product-image">
       <Link className="product-image-link" to={productHref(product)} aria-label={`Xem ${product.productName}`}><img src={product.imageUrl || '/images/vegetables.jpg'} alt={product.productName} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = '/images/vegetables.jpg'; }} /></Link>

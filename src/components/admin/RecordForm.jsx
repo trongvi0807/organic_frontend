@@ -1,3 +1,4 @@
+import { BusinessCodeInput } from './BusinessCodeInput';
 import { useState } from 'react';
 import { Save, LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -13,15 +14,14 @@ import { AdminForm, AdminDateInput } from './AdminForm';
 import { SearchSelect } from './SearchSelect';
 import { AdminAddressFields } from './AdminAddressFields';
 import { errorMessage } from '@/lib/utils';
-import { nextRecordCode } from '@/lib/recordCodes';
 
 export function RecordForm({ module, item, service, onClose, onSaved }) {
   const config = modules[module];
   const [busy, setBusy] = useState(false);
   const resource = useResource(async () => {
     const detail = item.id ? await service.get(item.id) : { ...item };
-    if (module === 'suppliers' && !item.id) detail.supplierCode = nextRecordCode(await allPages(supplierService.list), 'supplierCode', 'NCC');
-    if (module === 'origins' && !item.id) detail.originCode = (await originService.nextCode()).originCode;
+
+
     return { item: detail, suppliers: module === 'origins' ? await allPages(supplierService.list) : [] };
   }, [module, item.id]);
   return <Modal open onOpenChange={(value) => { if (!value && !busy) onClose(); }} title={`${item.id ? 'Chỉnh sửa' : 'Thêm'} ${config.singular}`} description={config.description} className="catalog-form-modal"><ResourceState loading={resource.loading} error={resource.error} onRetry={resource.reload} />{!resource.loading && !resource.error && <RecordEditor module={module} initial={resource.data.item} suppliers={resource.data.suppliers} service={service} onClose={onClose} onSaved={onSaved} busy={busy} setBusy={setBusy} />}</Modal>;
@@ -37,7 +37,7 @@ function RecordEditor({ module, initial, suppliers, service, onClose, onSaved, b
     if (module === 'certifications' && values.expiresAt && values.expiresAt < values.issuedAt) { setError('Ngày hết hạn không được trước ngày cấp.'); return; }
     setBusy(true);
     try {
-      if (module === 'suppliers' && !initial.id) values.supplierCode = nextRecordCode(await allPages(supplierService.list), 'supplierCode', 'NCC');
+
       await service.save(initial.id, values); toast.success(`Đã lưu ${config.singular}.`); onSaved(); }
     catch (err) { setError(errorMessage(err)); }
     finally { setBusy(false); }
@@ -48,10 +48,11 @@ function RecordEditor({ module, initial, suppliers, service, onClose, onSaved, b
     {module === 'origins' && <p className="form-note">Xuất xứ là vùng/cơ sở sản xuất, được liên kết với nhà cung cấp. Khi thêm sản phẩm, chọn nhà cung cấp rồi chọn xuất xứ tương ứng.</p>}
     <div className="record-form-grid">{config.fields.map((field) => {
       const { name, label, options, supplier, hint, type, defaultToday, defaultValue, uuid, past, ...props } = field;
+      const automaticCode = name === config.codeKey && ['customers', 'suppliers', 'origins'].includes(module);
       const controlProps = { name, defaultValue: initial[name] ?? (defaultToday ? today() : defaultValue ?? ''), ...props };
       if (name === 'address') return <AdminAddressFields key={name} name={name} initialValue={initial[name] || ''} required={props.required} />;
-      return <Field key={name} label={`${label}${props.required ? ' *' : ''}`} hint={hint} className={type === 'textarea' || name === 'accountId' ? 'full-width' : ''}>
-        {supplier ? <SearchSelect name={name} required={props.required} value={supplierId} onChange={setSupplierId} aria-label="Nhà cung cấp" options={[{ value: '', label: 'Chọn nhà cung cấp' }, ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.supplierName, disabled: supplier.status === 'inactive' && supplier.id !== initial.supplierId }))]} /> : options ? <Select {...controlProps}>{options.map(([value, title]) => <option key={value} value={value}>{title}</option>)}</Select> : type === 'date' ? <AdminDateInput name={name} {...props} value={dates[name]} onChange={(e) => setDates((old) => ({ ...old, [name]: e.target.value }))} min={name === 'expiresAt' ? dates.issuedAt || undefined : undefined} max={past ? today() : name === 'issuedAt' ? dates.expiresAt || undefined : undefined} /> : type === 'textarea' ? <Textarea {...controlProps} /> : <Input {...controlProps} type={type || 'text'} max={past ? today() : undefined} pattern={uuid ? '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' : props.pattern} />}
+      return <Field key={name} label={`${label}${props.required ? ' *' : ''}`} hint={automaticCode ? undefined : hint} className={type === 'textarea' || name === 'accountId' ? 'full-width' : ''}>
+        {automaticCode ? <BusinessCodeInput kind={module} name={name} existing={!!initial.id} value={initial[name] || ''} maxLength={props.maxLength} /> : supplier ? <SearchSelect name={name} required={props.required} value={supplierId} onChange={setSupplierId} aria-label="Nhà cung cấp" options={[{ value: '', label: 'Chọn nhà cung cấp' }, ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.supplierName, disabled: supplier.status === 'inactive' && supplier.id !== initial.supplierId }))]} /> : options ? <Select {...controlProps}>{options.map(([value, title]) => <option key={value} value={value}>{title}</option>)}</Select> : type === 'date' ? <AdminDateInput name={name} {...props} value={dates[name]} onChange={(e) => setDates((old) => ({ ...old, [name]: e.target.value }))} min={name === 'expiresAt' ? dates.issuedAt || undefined : undefined} max={past ? today() : name === 'issuedAt' ? dates.expiresAt || undefined : undefined} /> : type === 'textarea' ? <Textarea {...controlProps} /> : <Input {...controlProps} type={type || 'text'} max={past ? today() : undefined} pattern={uuid ? '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}' : props.pattern} />}
       </Field>;
     })}</div>
     {error && <p className="form-error" role="alert">{error}</p>}

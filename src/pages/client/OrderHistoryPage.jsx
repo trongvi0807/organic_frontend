@@ -1,3 +1,4 @@
+import { CustomerAccountNav } from '@/components/account/CustomerAccountNav';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Leaf, PackageSearch, RefreshCw, Search, ShieldCheck } from 'lucide-react';
@@ -39,6 +40,7 @@ export default function OrderHistoryPage({ demo = false }) {
   function cancelled(result) { list.setData({ ...list.data, orders: orders.map((order) => order.id === result.id ? { ...order, ...result } : order) }); list.reload({ background: true }); }
   const demoReview = () => toast.info('Đây là đơn mô phỏng. Để gửi đánh giá thật, hãy mở đơn đã hoàn tất trong tài khoản của bạn.', { position: 'top-left' });
   return <div className="customer-orders bg-[#F7FAF5] text-[#283C2D]"><div className="container py-8 sm:py-12">
+    {!demo && <CustomerAccountNav />}
     {demo && <DemoOrderNotice onReset={() => { resetDemoOrders(); list.reload(); }} />}
     <nav className="!mb-7 flex items-center gap-2 text-xs text-stone-500" aria-label="Đường dẫn">{demo ? <span>Tài khoản mô phỏng</span> : <Link className="hover:text-[#1B4D2E]" to="/tai-khoan">Tài khoản</Link>}<span>/</span><span className="text-[#1B4D2E]" aria-current="page">Đơn hàng</span></nav>
     <header className="!mb-8 flex flex-wrap items-end justify-between gap-5"><div><p className="!mb-3 flex items-center gap-2 text-[10px] font-semibold tracking-[.2em] text-[#7E925F]"><Leaf size={14} />MỖI ĐƠN HÀNG, MỘT LỰA CHỌN LÀNH</p><h1 className="font-serif text-3xl font-medium text-[#1B4D2E] sm:text-4xl">Lịch sử mua hàng</h1><p className="!mt-3 max-w-xl text-sm leading-7 text-stone-500">Theo dõi hành trình từ cửa hàng đến bạn, cùng những thông tin minh bạch cho từng lựa chọn.</p></div><Button variant="outline" disabled={list.loading} onClick={() => list.reload({ background: !!list.data })}><RefreshCw size={15} />Cập nhật trạng thái</Button></header>
