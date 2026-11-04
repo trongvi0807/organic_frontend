@@ -1,17 +1,48 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUp, CreditCard, Mail, MapPin, Phone } from 'lucide-react';
+import { ArrowRight, ArrowUp, Clock3, Leaf, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { FOOTER_CONFIG } from '@/constants/footer';
-import { FooterSupportDialog, paymentIcons } from './FooterSupportDialog';
+import { PaymentBrand } from '@/components/checkout/PaymentBrand';
+import '@/styles/store-footer.css';
 
-const linkStyle='inline-flex min-h-9 items-center !text-xs leading-6 text-stone-500 transition-colors hover:text-primary';
-export function StoreFooter({content}) {
-  const [topic,setTopic]=useState(null), config=FOOTER_CONFIG;
-  return <footer id="lien-he" aria-label="Thông tin cửa hàng và hỗ trợ" className="border-t border-line bg-[#f7f8f1] text-primary"><div className="!mx-auto max-w-[1240px] px-5 py-8 sm:px-8">
-    <div className="grid grid-cols-2 gap-5 sm:gap-7 sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr] lg:gap-12"><div className="col-span-2 lg:col-span-1"><Logo /><p className="!mt-3 max-w-xs text-xs leading-6 text-stone-500">Một chút xanh, một đời lành.</p><address className="!mt-4 space-y-2 text-xs not-italic leading-6 text-stone-500"><p className="flex gap-2"><MapPin size={15} className="!mt-1 shrink-0" />{config.address}</p><a href={`tel:${config.phone}`} className="inline-flex items-center gap-2 font-semibold text-primary"><Phone size={14} />{config.phoneDisplay}</a>{content?.contactEmail && <p><a href={`mailto:${content.contactEmail}`} className="inline-flex items-center gap-2 break-all"><Mail size={14} />{content.contactEmail}</a></p>}</address></div>
-    <nav aria-label="Khám phá Mộc"><h3 className="!mb-3 text-xs font-semibold uppercase tracking-wider">Khám phá Mộc</h3><ul>{[['/san-pham','Sản phẩm'],['/ve-cua-hang','Về cửa hàng'],['/ve-cua-hang#chung-nhan','Xem chứng nhận'],['/diem-noi-bat','Điểm nổi bật']].map(([to,label])=><li key={to}><Link to={to} className={linkStyle}>{label}</Link></li>)}</ul></nav>
-    <nav aria-label="Hỗ trợ khách hàng"><h3 className="!mb-3 text-xs font-semibold uppercase tracking-wider">Hỗ trợ khách hàng</h3><ul>{[['shopping','Hướng dẫn mua hàng'],['delivery','Giao hàng & nhận hàng'],['returns','Đổi trả & hoàn tiền'],['privacy','Quyền riêng tư']].map(([key,label])=><li key={key}><button type="button" className={linkStyle} onClick={()=>setTopic(key)}>{label}</button></li>)}</ul><div className="!mt-3 flex flex-wrap gap-2" aria-label="Phương thức thanh toán">{config.paymentMethods.map((method)=>{const Icon=paymentIcons[method.id]||CreditCard;return <button key={method.id} type="button" onClick={()=>setTopic('payment')} aria-label={method.description} className="inline-flex min-h-8 items-center gap-1 rounded-md border border-line bg-white px-2 !text-[10px] text-stone-500"><Icon size={12} />{method.label}</button>;})}</div></nav></div>
-    <div className="!mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4 text-[10px] text-stone-400"><p>© {new Date().getFullYear()} Mộc Organic.</p><div className="flex items-center gap-4"><button type="button" className="min-h-8 !text-[10px] hover:text-primary" onClick={()=>setTopic('terms')}>Điều khoản sử dụng</button><button type="button" className="inline-flex min-h-8 items-center gap-1 !text-[10px] hover:text-primary" onClick={()=>window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})}>Về đầu trang<ArrowUp size={12} /></button></div></div>
-  </div><FooterSupportDialog topic={topic} onClose={()=>setTopic(null)} faqs={content?.faqs||[]} /></footer>;
+function FooterLinks({ links }) {
+  return <ul className="organic-footer-links">{links.map(item => <li key={item.label}>
+    {item.to ? <Link to={item.to}>{item.label}</Link>
+      : <a href={item.href} target="_blank" rel="noopener noreferrer">{item.label}</a>}
+  </li>)}</ul>;
+}
+
+export function StoreFooter({ content }) {
+  const config = FOOTER_CONFIG;
+  const email = content?.contactEmail || config.emails[0];
+  return <footer id="lien-he" aria-label="Thông tin cửa hàng và hỗ trợ" className="organic-store-footer">
+    <div className="organic-footer-welcome"><div className="container organic-footer-welcome-inner">
+      <div className="organic-footer-welcome-copy"><span className="organic-footer-leaf"><Leaf size={27} strokeWidth={1.4} /></span><div><p>CÙNG BẠN CHỌN ĐIỀU TỐT LÀNH</p><h2>Mỗi bữa ăn, thêm một chút xanh.</h2></div></div>
+      <Link to="/diem-thuong" className="organic-footer-rewards">Điểm thưởng & ưu đãi<ArrowRight size={17} /></Link>
+    </div></div>
+
+    <div className="container organic-footer-content">
+      <div className="organic-footer-brand-row"><div><Logo /><p>{config.company.description}</p></div><div className="organic-footer-opening"><Clock3 size={19} /><div><strong>Mở cửa & tư vấn</strong><p>{config.hours}</p></div></div></div>
+      <div className="organic-footer-certificates"><span><ShieldCheck size={15} />Thông tin chứng nhận công bố</span>{config.certificationReferences.map(item => <a key={item.code} href="https://organicfood.vn/" target="_blank" rel="noopener noreferrer">{item.label}: <strong>{item.code}</strong></a>)}</div>
+      <div className="organic-footer-columns">
+        <section className="organic-footer-stores" aria-labelledby="footer-stores-title"><h3 id="footer-stores-title">Hệ thống cửa hàng</h3>
+          <div className="organic-footer-branches">{config.branches.map(branch => <address key={branch.id} className="organic-footer-branch">
+            <MapPin size={16} aria-hidden="true" /><div><strong>{branch.name}</strong><a className="organic-footer-address" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(branch.address)}`} target="_blank" rel="noopener noreferrer">{branch.address}</a>
+              {(branch.phone || branch.extension) && <p>{branch.phone && <a href={`tel:${branch.phone}`}>{branch.phoneDisplay}</a>}{branch.phone && branch.extension && <span> · </span>}{branch.extension && <a href={`tel:${config.phone}`}>{config.phoneDisplay} (phím {branch.extension})</a>}</p>}
+            </div>
+          </address>)}</div>
+        </section>
+        <nav aria-label="Chính sách và hỗ trợ khách hàng"><h3>Chính sách & hỗ trợ</h3><FooterLinks links={config.policyLinks} /></nav>
+        <nav aria-label="Về Organicfood.vn"><h3>Về Organicfood.vn</h3><FooterLinks links={config.aboutLinks} /></nav>
+        <section className="organic-footer-contact" aria-labelledby="footer-contact-title"><h3 id="footer-contact-title">Kết nối với chúng tôi</h3>
+          <a className="organic-footer-hotline" href={`tel:${config.phone}`}><Phone size={19} /><span><small>Tổng đài tư vấn</small><strong>{config.phoneDisplay}</strong></span></a>
+          {email && <a className="organic-footer-email" href={`mailto:${email}`}><Mail size={15} />{email}</a>}
+          <p>Giao hàng: {config.deliveryHours}</p>
+          <div className="organic-footer-feedback"><span>Phản hồi chất lượng & dịch vụ</span><a href={`tel:${config.feedbackPhone}`}>{config.feedbackPhoneDisplay} · Ms Huế</a></div>
+          <h4>Phương thức thanh toán</h4><div className="organic-footer-payments">{config.paymentMethods.map(method => <Link key={method.id} to="/phuong-thuc-thanh-toan" title={method.label} aria-label={method.description}><PaymentBrand gateway={method.gateway} className="!h-9 !w-14 !rounded-md !border-0 !bg-transparent !p-1" /><span className="sr-only">{method.label}</span></Link>)}</div>
+        </section>
+      </div>
+      <div className="organic-footer-bottom"><p>© {new Date().getFullYear()} organicfood.vn · {config.company.name}.<br /><span>Mã số doanh nghiệp: {config.company.taxCode}. <a href="http://online.gov.vn/Home/WebDetails/48245" target="_blank" rel="noopener noreferrer">Thông tin Organicfood.vn tại Bộ Công Thương</a>.</span></p><button type="button" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })}>Về đầu trang<ArrowUp size={15} /></button></div>
+    </div>
+  </footer>;
 }

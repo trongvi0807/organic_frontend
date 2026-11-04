@@ -5,7 +5,7 @@ export function procurementFixture(supplier) {
     { id: 'qa-v1', productId: 'qa-p1', productName: 'Cà rốt hữu cơ Đà Lạt', sku: 'CR-500', variantName: 'Gói 500g', unitId: 'g', netQuantity: 500 },
     { id: 'qa-v2', productId: 'qa-p2', productName: 'Bơ sáp hữu cơ', sku: 'BO-1000', variantName: 'Hộp 1kg', unitId: 'kg', netQuantity: 1 },
   ];
-  const employee = { id: 'qa-employee', fullName: 'Nhân viên Mộc QA' };
+  const employee = { id: 'qa-employee', fullName: 'Nhân viên organicfood.vn QA' };
   const orders = [], receipts = [], batches = [], levels = { 'qa-v1': 10, 'qa-v2': 5 };
   const notifications = [{ id: 'qa-n1', title: 'Cần nhập thêm Cà rốt hữu cơ Đà Lạt', message: 'CR-500 · Gói 500g: tồn có thể bán 0 gói, ngưỡng nhập lại 10 gói.', variantId: 'qa-v1', createdAt: new Date().toISOString(), readAt: null, emailStatus: 'sent', firebaseStatus: 'pending', emailAttempts: 1, firebaseAttempts: 0 }];
   const page = (rows, q) => { const p = Number(q.get('page') || 0), size = Number(q.get('size') || 20); return { content: rows.slice(p * size, (p + 1) * size), totalElements: rows.length, totalPages: Math.ceil(rows.length / size), page: p, size }; };

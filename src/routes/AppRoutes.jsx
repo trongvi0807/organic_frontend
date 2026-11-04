@@ -8,6 +8,7 @@ import HomePage from '@/pages/client/HomePage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { ResourceState } from '@/components/common/ResourceState';
 import { useStoreScrollRestoration } from '@/hooks/useStoreScrollRestoration';
+import { POLICY_PAGES, policyPath } from '@/constants/policies';
 
 const FavoritesPage = lazy(() => import('@/pages/client/FavoritesPage'));
 const ProductsPage = lazy(() => import('@/pages/client/ProductsPage'));
@@ -17,9 +18,12 @@ const CheckoutPage = lazy(() => import('@/pages/client/CheckoutPage'));
 const OrderSuccessPage = lazy(() => import('@/pages/client/OrderSuccessPage'));
 const AboutStorePage = lazy(() => import('@/pages/client/TraceabilityPage'));
 const HighlightsPage = lazy(() => import('@/pages/client/HighlightsPage'));
+const PolicyPage = lazy(() => import('@/pages/client/PolicyPage'));
 const AccountPage = lazy(() => import('@/pages/client/AccountPage'));
 const AuthPage = lazy(() => import('@/pages/auth/AuthPage'));
 const LogoutPage = lazy(() => import('@/pages/auth/LogoutPage'));
+const StaffAccountsPage = lazy(() => import('@/pages/admin/StaffAccountsPage'));
+const DeliverySettingsPage = lazy(() => import('@/pages/admin/DeliverySettingsPage'));
 const ManagementPage = lazy(() => import('@/pages/admin/ManagementPage'));
 const RecordsPage = lazy(() => import('@/pages/admin/RecordsPage'));
 const TraceabilityPage = lazy(() => import('@/pages/admin/TraceabilityPage'));
@@ -50,16 +54,18 @@ export function AppRoutes() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     const names = { '/diem-noi-bat': 'Điểm nổi bật', '/ve-cua-hang': 'Về cửa hàng', '/gio-hang': 'Giỏ hàng', '/thanh-toan': 'Thanh toán', '/': 'Trang chủ', '/san-pham': 'Sản phẩm', '/dang-nhap': 'Đăng nhập', '/dang-ky': 'Đăng ký', '/dang-xuat': 'Đăng xuất', '/admin/products': 'Quản lý sản phẩm', '/admin/categories': 'Quản lý loại sản phẩm', '/tai-khoan': 'Tài khoản', '/admin/customers': 'Quản lý khách hàng', '/admin/suppliers': 'Quản lý nhà cung cấp', '/admin/origins': 'Xuất xứ organic', '/admin/certifications': 'Chứng nhận organic', '/admin/traceability': 'Truy xuất sản phẩm', '/admin/home': 'Quản lý trang chủ' };
-    document.title = `${names[pathname] || (/^\/(san-pham|products)\//.test(pathname) ? 'Chi tiết sản phẩm' : 'Trang không tồn tại')} | Mộc Organic`;
+    document.title = `${names[pathname] || (/^\/(san-pham|products)\//.test(pathname) ? 'Chi tiết sản phẩm' : 'Trang không tồn tại')} | organicfood.vn`;
     const operations = { 'purchase-orders': 'Đơn đặt mua', 'order-approvals': 'Duyệt đơn mua', 'goods-receipts': 'Phiếu nhập', 'receipt-approvals': 'Duyệt nhập', inventory: 'Tồn kho / lô', notifications: 'Thông báo' };
-    if (operations[pathname.replace('/admin/', '')]) document.title = `${operations[pathname.replace('/admin/', '')]} | Mộc Organic`;
+    if (operations[pathname.replace('/admin/', '')]) document.title = `${operations[pathname.replace('/admin/', '')]} | organicfood.vn`;
     const commerce = { '/don-hang': 'Đơn hàng', '/yeu-thich': 'Sản phẩm yêu thích', '/diem-thuong': 'Điểm thưởng', '/danh-gia-cua-toi': 'Đánh giá của tôi', '/payment/result': 'Kết quả thanh toán', '/payment/cancel': 'Quay lại từ thanh toán', '/admin/sales-orders': 'Đơn bán & giao hàng', '/admin/promotions': 'Khuyến mãi', '/admin/payment-review': 'Đối soát thanh toán' };
-    if (commerce[pathname] || pathname.startsWith('/don-hang/')) document.title = `${commerce[pathname] || 'Chi tiết đơn hàng'} | Mộc Organic`;
-    if (pathname.startsWith('/dat-hang-thanh-cong/')) document.title = 'Đơn hàng đã ghi nhận | Mộc Organic';
-    if (pathname === '/admin/business-forms') document.title = 'Biểu mẫu & bản in | Mộc Organic';
-    if (pathname === '/admin/dashboard') document.title = 'Trang tổng quan | Mộc Organic';
+    if (commerce[pathname] || pathname.startsWith('/don-hang/')) document.title = `${commerce[pathname] || 'Chi tiết đơn hàng'} | organicfood.vn`;
+    if (pathname.startsWith('/dat-hang-thanh-cong/')) document.title = 'Đơn hàng đã ghi nhận | organicfood.vn';
+    if (pathname === '/admin/business-forms') document.title = 'Biểu mẫu & bản in | organicfood.vn';
+    if (pathname === '/admin/dashboard') document.title = 'Trang tổng quan | organicfood.vn';
     const support = { '/admin/reviews': 'Đánh giá sản phẩm', '/phan-hoi': 'Phản hồi & hỗ trợ', '/doi-tra': 'Đổi trả & hỗ trợ sau mua', '/admin/feedbacks': 'Phản hồi khách hàng', '/admin/return-requests': 'Yêu cầu đổi trả', '/admin/return-receipts': 'Hàng thu hồi' };
-    if (support[pathname]) document.title = `${support[pathname]} | Mộc Organic`;
+    if (support[pathname]) document.title = `${support[pathname]} | organicfood.vn`;
+    const policy = POLICY_PAGES.find(page => policyPath(page.slug) === pathname);
+    if (policy) document.title = `${policy.title} | organicfood.vn`;
   }, [pathname]);
   return <Suspense fallback={<ResourceState loading />}><Routes>
     <Route element={<StoreLayout />}>
@@ -85,6 +91,9 @@ export function AppRoutes() {
       </Route>
       <Route path="ve-cua-hang" element={<AboutStorePage />} />
       <Route path="diem-noi-bat" element={<HighlightsPage />} />
+      {POLICY_PAGES.map(page => <Route key={page.slug} path={page.slug} element={<PolicyPage slug={page.slug} />} />)}
+      {POLICY_PAGES.map(page => <Route key={`legacy-${page.slug}`} path={`pages/${page.slug}`} element={<Navigate to={policyPath(page.slug)} replace />} />)}
+      <Route path="pages/chinh-sach-doi-tra-1" element={<Navigate to="/chinh-sach-doi-tra" replace />} />
       <Route path="products" element={<CatalogRedirect />} />
       <Route path="products/:slug" element={<ProductRedirect />} />
       <Route element={<ProtectedRoute />}><Route path="tai-khoan" element={<AccountPage />} /></Route>
@@ -95,10 +104,13 @@ export function AppRoutes() {
       <Route path="admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="business-forms" element={<BusinessFormsPage />} />
+        <Route path="purchase-orders" element={<ProcurementPage key="purchase-orders" />} />
         <Route path="return-receipts" element={<ReturnWarehousePage />} />
         <Route path="sales-orders" element={<SalesOrdersPage />} />
         <Route index element={<DashboardRedirect />} />
         <Route element={<ProtectedRoute admin />}>
+          <Route path="employees" element={<StaffAccountsPage />} />
+          <Route path="delivery-settings" element={<DeliverySettingsPage />} />
           <Route path="order-approvals" element={<ProcurementPage key="order-approvals" approval />} />
           <Route path="receipt-approvals" element={<ProcurementPage key="receipt-approvals" kind="receipts" approval />} />
           <Route path="home" element={<HomeManagementPage />} />
@@ -107,7 +119,6 @@ export function AppRoutes() {
         <Route element={<ProtectedRoute roles={PRODUCT_MANAGERS} />}><Route path="products" element={<ManagementPage key="products" type="products" />} /></Route>
         <Route element={<ProtectedRoute roles={PROMOTION_MANAGERS} />}><Route path="promotions" element={<PromotionsPage />} /></Route>
         <Route element={<ProtectedRoute roles={['ADMIN', 'WAREHOUSE_STAFF']} />}>
-          <Route path="purchase-orders" element={<ProcurementPage key="purchase-orders" />} />
           <Route path="goods-receipts" element={<ProcurementPage key="goods-receipts" kind="receipts" />} />
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="notifications" element={<NotificationsPage />} />

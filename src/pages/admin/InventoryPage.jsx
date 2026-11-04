@@ -1,3 +1,4 @@
+import { ReorderExportDialog } from '@/components/procurement/ReorderExportDialog';
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Boxes, Search } from 'lucide-react';
@@ -18,6 +19,7 @@ import { errorMessage } from '@/lib/utils';
 
 export default function InventoryPage() {
   const [params, setParams] = useSearchParams(), variantId = params.get('variantId') || '';
+  const [reordering, setReordering] = useState(false);
   const [search, setSearch] = useState(''), term = useDebouncedValue(search);
   const [lowStock, setLowStock] = useState(''), [page, setPage] = useState(0), [batchPage, setBatchPage] = useState(0), [expired, setExpired] = useState('');
   const [threshold, setThreshold] = useState(null), [value, setValue] = useState(''), [busy, setBusy] = useState(false), [error, setError] = useState(''), [batchId, setBatchId] = useState(null);
@@ -34,7 +36,8 @@ export default function InventoryPage() {
     catch (err) { setError(errorMessage(err)); } finally { setBusy(false); }
   }
   return <>
-    <WorkflowHeader title="Tồn kho & lô hàng" description="Một bảng sản phẩm thống nhất; chọn Xem lô để đối chiếu từng lần nhập." step={4} />
+    <WorkflowHeader title="Tồn kho & lô hàng" description="Một bảng sản phẩm thống nhất; chọn Xem lô để đối chiếu từng lần nhập." step={4}><Button onClick={() => setReordering(true)}>Lập danh sách mua hàng</Button></WorkflowHeader>
+    <ReorderExportDialog open={reordering} onClose={() => setReordering(false)} />
     <Notice>Số lượng có thể bán = hàng đã nhập, còn hạn, trừ lượng giữ chỗ. Thay đổi số lượng thực tế qua phiếu nhập; nút Số lượng chỉ cấu hình mức cảnh báo nhập thêm.</Notice>
     <div className="!mb-4"><Link className="button inline-flex items-center rounded-xl border border-line bg-white px-5 py-3 text-sm" to="/admin/business-forms?form=stocktake">Biểu mẫu thẻ kho / kiểm kê / xử lý hàng</Link></div><section className="admin-table-panel"><div className="table-panel-heading"><h2 className="flex items-center gap-2"><Boxes size={18} />Số lượng sản phẩm</h2><Refresh resource={stock} /></div><div className="table-filters"><label className="search-field"><Search size={16} /><input aria-label="Tìm sản phẩm trong kho" list="inventory-search" value={search} maxLength={150} placeholder="Tên sản phẩm, đóng gói…" onChange={(e) => { setSearch(e.target.value); setPage(0); }} /><datalist id="inventory-search">{stock.data?.items.map((item) => <option key={item.variant.id} value={item.variant.productName} />)}</datalist></label><Select aria-label="Lọc số lượng tồn" value={lowStock} onChange={(e) => { setLowStock(e.target.value); setPage(0); }}><option value="">Tất cả mức tồn</option><option value="true">Cần nhập thêm</option><option value="false">Trên ngưỡng</option></Select></div>
       <ResourceState loading={stock.loading} error={stock.error} empty={stock.data?.items.length === 0} onRetry={stock.reload} />

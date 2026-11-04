@@ -17,16 +17,36 @@ export function NotificationProvider({ children }) {
   const allowed = !DEMO_MODE && hasRole(user, 'ADMIN', 'WAREHOUSE_STAFF');
   const [enabled, setEnabled] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [revision, setRevision] = useState(0);
   const seen = useRef(new Set());
+  const inboxSeen = useRef({ owner: null, ids: new Set(), initialized: false });
   const owner = user?.username || 'guest';
   const inbox = useResource(() => loadInbox(user), [owner, revision]);
   const items = inbox.data?.owner === owner ? inbox.data?.items || [] : [];
   useEffect(() => {
+    if (inbox.data?.owner !== owner || !inbox.data.inboxLoaded) return;
+    if (inboxSeen.current.owner !== owner) inboxSeen.current = { owner, ids: new Set(), initialized: false };
+    const state = inboxSeen.current, persistent = items.filter(item => item.persistent);
+    const fresh = persistent.filter(item => !item.read && !state.ids.has(item.id));
+    if (state.initialized) fresh.slice(0, 3).forEach(item => toast(item.title, { description: item.message, action: { label: 'Xem nội dung', onClick: () => navigate(item.target) } }));
+    persistent.forEach(item => state.ids.add(item.id));
+    state.initialized = true;
+  }, [inbox.data, owner, navigate]);
+  useEffect(() => {
     const refresh = () => { if (document.visibilityState === 'visible') inbox.reload({ background: true }); };
-    const timer = setInterval(refresh, 30000); window.addEventListener('focus', refresh);
+    const timer = setInterval(refresh, 15000); window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
     window.addEventListener('moc:order-updated', refresh); window.addEventListener('moc:payment-updated', refresh);
-    return () => { clearInterval(timer); window.removeEventListener('focus', refresh); window.removeEventListener('moc:order-updated', refresh); window.removeEventListener('moc:payment-updated', refresh); };
+    window.addEventListener('moc:after-sales-updated', refresh);
+    return () => { clearInterval(timer); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); window.removeEventListener('moc:order-updated', refresh); window.removeEventListener('moc:payment-updated', refresh); window.removeEventListener('moc:after-sales-updated', refresh); };
   }, [owner, inbox.reload]);
-  async function markRead(item) { await readInboxItem(user, item); inbox.setData((old) => old?.owner === owner ? { ...old, items: old.items.map((n) => n.key === item.key ? { ...n, read: true } : n) } : old); }
+  async function markRead(item) {
+    await readInboxItem(user, item);
+    inbox.setData(old => {
+      if (old?.owner !== owner) return old;
+      const previous = old.items.find(n => n.key === item.key);
+      const delta = previous?.persistent && !previous.read ? 1 : 0;
+      return { ...old, persistentUnread: Math.max(0, (old.persistentUnread || 0) - delta), unreadByCategory: { ...old.unreadByCategory, [item.source]: Math.max(0, (old.unreadByCategory?.[item.source] || 0) - delta) }, items: old.items.map(n => n.key === item.key ? { ...n, read: true } : n) };
+    });
+  }
   useEffect(() => {
     let cancelled = false;
     setError(''); setEnabled(false); seen.current.clear();
@@ -66,6 +86,6 @@ export function NotificationProvider({ children }) {
     } catch (err) { setError(errorMessage(err)); }
     finally { setBusy(false); }
   }
-  return <NotificationContext.Provider value={{ enabled, busy, error, toggle, revision, items, unread: items.filter((n) => !n.read).length, inboxLoading: inbox.loading, inboxError: inbox.error || inbox.refreshError || (inbox.data?.partialError ? 'Một nguồn thông báo chưa tải được. Bấm chuông để thử lại.' : ''), reloadInbox: inbox.reload, markRead }}>{children}</NotificationContext.Provider>;
+  return <NotificationContext.Provider value={{ enabled, busy, error, toggle, revision, items, unreadByCategory: inbox.data?.owner === owner ? inbox.data.unreadByCategory || {} : {}, orderActionCount: inbox.data?.owner === owner ? inbox.data.orderActionCount || 0 : 0, unread: (inbox.data?.owner === owner ? inbox.data.persistentUnread || 0 : 0) + items.filter(n => !n.persistent && !n.read).length, inboxLoading: inbox.loading, inboxError: inbox.error || inbox.refreshError || (inbox.data?.partialError ? 'Một nguồn thông báo chưa tải được. Bấm chuông để thử lại.' : ''), reloadInbox: inbox.reload, markRead }}>{children}</NotificationContext.Provider>;
 }
 export const useNotifications = () => useContext(NotificationContext);

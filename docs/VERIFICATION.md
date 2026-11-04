@@ -33,7 +33,7 @@
 ## Nhập mua, tồn kho và Firebase Push — 24/10/2026
 
 - **76/76 test đạt (13 file)**; build SPA và worker thành công. Build còn cảnh báo chunk chính khoảng 508 kB trước gzip.
-- Tích hợp sáu màn hình theo API procurement backend, menu đúng thứ tự, role kho/Admin và chặn đường dẫn trực tiếp khi sai quyền. Giữ giao diện organic và logo Mộc.
+- Tích hợp sáu màn hình theo API procurement backend, menu đúng thứ tự, role kho/Admin và chặn đường dẫn trực tiếp khi sai quyền. Giữ giao diện organic và logo organicfood.vn.
 - Browser QA cô lập 5183/19093: lập/duyệt đơn, phiếu 10 đặt = 8 đạt + 1 loại + 1 thiếu, tồn bằng 0 lúc chờ duyệt và bằng 8 sau duyệt; phiếu confirmed không còn nút sửa/duyệt. Thử đổi ngưỡng cảnh báo, đọc/retry thông báo và giới hạn quyền kho/bán hàng.
 - Desktop và mobile 390×844: không tràn ngang toàn trang, bảng cuộn riêng. Console không có error/warning trong luồng thông thường.
 - Firebase Messaging sử dụng public config/VAPID người dùng cung cấp, token đăng ký qua API hiện có; có worker nền, toast foreground và thu hồi thiết bị khi đăng xuất. Service worker dev trả HTTP 200 JavaScript. Không bật Analytics.

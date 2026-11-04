@@ -14,6 +14,7 @@ function documents(base) {
 }
 export const purchaseOrderService = {
   ...documents('/purchase-orders'),
+  history: async (id, params) => normalizePage(await get(`/purchase-orders/${encodeURIComponent(id)}/history`, params)),
   close: (id, data) => post(`/purchase-orders/${id}/close`, data),
 };
 export const goodsReceiptService = {

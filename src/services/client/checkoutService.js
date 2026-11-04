@@ -4,6 +4,8 @@ import { requireBackend } from '../backendGuard';
 const get = async (url, params) => { requireBackend(); return unwrap(await api.get(url, { params })); };
 const post = async (url, data, config) => { requireBackend(); return unwrap(await api.post(url, data, config)); };
 export const checkoutService = {
+  deliveryLocations: address => get('/checkout/delivery-locations', { address }),
+  deliveryLocationFromMap: url => post('/checkout/delivery-location-from-map', { url }, { timeout: 15000 }),
   methods: () => get('/payments/methods'),
   preview: async (data) => {
     const quote = await post('/checkout/preview', data);

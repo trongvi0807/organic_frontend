@@ -17,6 +17,7 @@ import { StarRating } from '@/components/products/StarRating';
 import { useProductAvailability } from '@/hooks/useProductAvailability';
 import { availableVariantQuantity } from '@/lib/productAvailability';
 import { storeCategoryLabel, storeCategoryPath } from '@/lib/storeCategoryTree';
+import { PromotionBanners } from '@/components/promotions/PromotionBanners';
 
 export default function ProductDetailPage() {
   const { slug, productId } = useParams();
@@ -49,7 +50,7 @@ function ProductScreen({ product }) {
   const compare = variant?.compareAtPrice > price ? variant.compareAtPrice : null;
   const certificates = (product.certifications || []).filter((item) => item.currentlyValid === true);
   const reviewSummary = product.reviewSummary;
-  useEffect(() => { document.title = `${product.productName} | Mộc Organic`; }, [product.productName]);
+  useEffect(() => { document.title = `${product.productName} | organicfood.vn`; }, [product.productName]);
   useEffect(() => { if (availableQuantity > 0) setQuantity((value) => value === '' ? '' : Math.min(Number(value) || 1, maxQuantity)); }, [availableQuantity, maxQuantity]);
   async function add() {
     if (!canAdd || !Number.isInteger(quantity) || quantity < 1 || quantity > maxQuantity) return;
@@ -69,6 +70,7 @@ function ProductScreen({ product }) {
         <div className="product-purchase-actions"><Button disabled={!canAdd || !Number.isInteger(quantity) || quantity < 1 || quantity > maxQuantity} onClick={add}><ShoppingBag size={18} />{availableQuantity === 0 ? 'Tạm hết hàng' : 'Thêm vào giỏ hàng'}{canAdd && Number.isInteger(quantity) && quantity > 0 && <span>{currency(Number(price) * quantity)}</span>}</Button><button className={`detail-favorite ${favorite ? 'selected' : ''}`} aria-pressed={favorite} aria-label={favorite ? 'Bỏ yêu thích sản phẩm' : 'Yêu thích sản phẩm'} onClick={() => toggleFavorite(product.id)}><Heart size={20} fill={favorite ? 'currentColor' : 'none'} /></button></div>
         <p className="product-purchase-note">Thêm vào giỏ chưa giữ hàng. Tồn khả dụng được kiểm tra lại khi thanh toán.</p><div className="product-detail-assurance"><Leaf size={19} strokeWidth={1.3} /><p>Tìm hiểu kỹ trước khi lựa chọn.<span>Xem xuất xứ, quy cách và chứng nhận được cửa hàng công bố bên dưới.</span></p></div>
       </div></div>
+      <PromotionBanners mode="product" productId={product.id} />
       <nav className="product-detail-tabs" aria-label="Nội dung chi tiết"><a href="#thong-tin">Thông tin sản phẩm</a><a href="#chung-nhan">Chứng nhận</a><a href="#danh-gia">Đánh giá{reviewSummary?.totalReviews ? ` (${reviewSummary.totalReviews})` : ''}</a>{!!related.length && <a href="#lien-quan">Có thể bạn cũng thích</a>}</nav>
       <section className="product-information" id="thong-tin"><div><span className="eyebrow">HIỂU HƠN VỀ LỰA CHỌN CỦA BẠN</span><h2>Thông tin sản phẩm</h2><p className="product-description">{product.description || 'Cửa hàng chưa bổ sung mô tả cho sản phẩm này.'}</p><dl className="product-facts"><div><dt>Danh mục</dt><dd>{storeCategoryLabel(categories.data || [], product.categoryId, product.categoryName)}</dd></div>{product.brandName && <div><dt>Thương hiệu</dt><dd>{product.brandName}</dd></div>}{variant && <div><dt>Quy cách đang chọn</dt><dd>{variantDisplayName(variant)}{variant.sku ? ` · SKU ${variant.sku}` : ''}</dd></div>}</dl></div><div className="product-provenance scroll-mt-32" id="chung-nhan"><h3><MapPin size={18} />Nguồn gốc & chứng nhận</h3>{product.origin ? <><strong>{product.origin.originName}</strong><p>{[product.origin.region, product.origin.country].filter(Boolean).join(', ')}</p>{product.origin.producerName && <p>{product.origin.producerName}</p>}{product.origin.description && <p>{product.origin.description}</p>}</> : <p>Chưa có thông tin xuất xứ được công bố.</p>}{certificates.length > 0 ? <div className="product-certificates">{certificates.map((item) => <article key={item.id}><ShieldCheck size={19} /><div><strong>{item.certificateName}</strong><span>{item.certificateNumber} · {item.issuingOrganization}</span><small>{dateText(item.issuedAt)} → {item.expiresAt ? dateText(item.expiresAt) : 'Không đặt ngày hết hạn'}</small>{safeMediaUrl(item.documentUrl) && <a href={safeMediaUrl(item.documentUrl)} target="_blank" rel="noopener noreferrer">Xem tài liệu chứng nhận <ArrowUpRight size={13} /></a>}</div></article>)}</div> : <p className="provenance-footnote">Chưa có tài liệu chứng nhận hợp lệ được công bố.</p>}</div></section>
       <ProductReviews product={product} />

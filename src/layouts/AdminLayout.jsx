@@ -11,11 +11,13 @@ import { DEMO_MODE } from '@/services/api';
 import { NotificationBell } from '@/components/layout/NotificationBell';
 import { AdminQuickSearch } from '@/components/admin/AdminQuickSearch';
 import { AdminAccountMenu } from '@/components/admin/AdminAccountMenu';
+import { AdminAttentionBadge, useAdminAttention } from '@/components/admin/AdminAttentionBadge';
 import { AdminAppearanceProvider } from '@/contexts/AdminAppearanceContext';
 import '@/styles/admin-kit.css';
 
 export function AdminLayout() {
   const { user } = useAuth();
+  const orderAttention = useAdminAttention({ path: 'sales-orders' });
   const { pathname, search } = useLocation();
   const [open, setOpen] = useState(false);
   const [compact, setCompact] = useState(() => { try { return localStorage.getItem('moc.admin.sidebar.compact') === 'true'; } catch { return false; } });
@@ -74,8 +76,8 @@ export function AdminLayout() {
     <AdminSidebar user={user} open={open} mobile={mobile} compact={compact} onClose={() => setOpen(false)} sidebarRef={sidebarRef} lastPaths={memory.current.groups} />
     <div inert={mobile && open} className="admin-main">
       <header className="admin-topbar"><div className="adk-topbar-start"><button ref={menuRef} type="button" aria-expanded={mobile ? open : !compact} aria-controls="admin-navigation" className="adk-menu-toggle" aria-label={mobile ? 'Mở menu quản lý' : compact ? 'Mở rộng sidebar' : 'Thu gọn sidebar'} onClick={toggleMenu}>{mobile ? <Menu size={21} /> : compact ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}</button><div className="adk-breadcrumb"><Link to="/admin/dashboard">Quản trị</Link><ChevronRight size={13} /><strong>{activeTab?.name || name}</strong></div><AdminQuickSearch user={user} /></div><div className="adk-topbar-end"><span className={`admin-mode ${DEMO_MODE ? 'adk-demo-mode' : ''}`}><i />{DEMO_MODE ? 'Dữ liệu mẫu' : 'Không gian quản trị'}</span><NotificationBell /><span className="adk-topbar-divider" /><AdminAccountMenu user={user} /></div></header>
-      <main className="admin-content" id="main-content"><div className="admin-workspace-heading"><span>{group?.children ? group.name : 'Không gian làm việc'}</span><div>{hasRole(user, 'WAREHOUSE_STAFF') && !hasRole(user, 'ADMIN', 'SALES_STAFF') && <Link to="/admin/sales-orders"><Truck size={15} />Đơn cần chuẩn bị</Link>}<Link to="/admin/business-forms"><FileText size={15} />Biểu mẫu & Bản in</Link>{hasRole(user, 'WAREHOUSE_STAFF') && !hasRole(user, 'ADMIN') && <Link to="/admin/notifications">Trung tâm thông báo</Link>}</div></div><AdminSectionTabs group={group} lastPaths={memory.current.tabs} /><div key={pathname} className="admin-route-content"><Outlet /></div></main>
-      <footer className="admin-footer"><span>© {new Date().getFullYear()} Mộc Organic</span><span><CircleHelp size={13} />Thông tin được quản lý theo quyền tài khoản.</span></footer>
+      <main className="admin-content" id="main-content"><div className="admin-workspace-heading"><span>{group?.children ? group.name : 'Không gian làm việc'}</span><div>{hasRole(user, 'WAREHOUSE_STAFF') && !hasRole(user, 'ADMIN', 'SALES_STAFF') && <Link to="/admin/sales-orders"><Truck size={15} />Đơn cần chuẩn bị<AdminAttentionBadge attention={orderAttention} /></Link>}<Link to="/admin/business-forms"><FileText size={15} />Biểu mẫu & Bản in</Link>{hasRole(user, 'WAREHOUSE_STAFF') && !hasRole(user, 'ADMIN') && <Link to="/admin/notifications">Trung tâm thông báo</Link>}</div></div><AdminSectionTabs group={group} lastPaths={memory.current.tabs} /><div key={pathname} className="admin-route-content"><Outlet /></div></main>
+      <footer className="admin-footer"><span>© {new Date().getFullYear()} organicfood.vn</span><span><CircleHelp size={13} />Thông tin được quản lý theo quyền tài khoản.</span></footer>
     </div>
   </div></AdminAppearanceProvider>;
 }

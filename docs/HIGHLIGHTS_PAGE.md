@@ -34,7 +34,7 @@ Toàn bộ giao diện mới dùng Tailwind, tái sử dụng `Reveal`/Intersect
 ## Dữ liệu và phạm vi nội dung
 
 - Dùng HomeContext hiện có, không gọi thêm API khác. `/api/v1/home` trả `certifications`, endpoint công khai đã lọc hồ sơ hợp lệ. Frontend vẫn kiểm tra ngày hiện tại bằng helper chứng nhận đã có; không tự tạo số chứng nhận hoặc ngày hết hạn.
-- Ba thẻ tên tiêu chuẩn là **tham khảo kiến thức**, dùng biểu tượng chung và ghi rõ phạm vi; không phải logo/chứng nhận Mộc đã đạt. VietGAP không được trình bày như tương đương chứng nhận hữu cơ.
+- Ba thẻ tên tiêu chuẩn là **tham khảo kiến thức**, dùng biểu tượng chung và ghi rõ phạm vi; không phải logo/chứng nhận organicfood.vn đã đạt. VietGAP không được trình bày như tương đương chứng nhận hữu cơ.
 - Tiêu chuẩn canh tác và bao bì được trình bày như định hướng lựa chọn/tìm hiểu. Không khẳng định toàn bộ hàng hóa “không hóa chất”, mọi bao bì đều phân hủy sinh học hoặc đã có chuỗi cung ứng khép kín khi chưa có hồ sơ xác nhận.
 - Nội dung sức khỏe nói về sự đa dạng, cân bằng và lựa chọn phù hợp. Không thêm tỷ lệ dinh dưỡng, khẳng định hữu cơ vượt trội hơn mọi thực phẩm khác hoặc an toàn tuyệt đối cho mọi độ tuổi.
 - API lỗi chỉ ảnh hưởng phần hồ sơ chứng nhận: thông báo tiếng Việt và nút Thử lại; banner, tiêu chuẩn, dinh dưỡng, bao bì vẫn sử dụng được. Chứng nhận trống có thông báo đang cập nhật.

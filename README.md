@@ -2,7 +2,7 @@
 
 Giao diện vận hành chỉ dùng dữ liệu từ hệ thống lưu trữ. Cờ `VITE_DEMO_MODE` không còn bật dữ liệu dựng sẵn; Dashboard không có nút chuyển sang bản mẫu. Các đường dẫn đơn hàng mẫu cũ chuyển tới lịch sử đơn hàng của tài khoản đã đăng nhập. Những hướng dẫn chế độ mẫu ở phần tài liệu cũ bên dưới không còn áp dụng. Xem [kết quả rà soát](docs/DATA_AUDIT_20261029.md).
 
-# Mộc Organic — Frontend
+# organicfood.vn — Frontend
 
 Cập nhật giỏ hàng/checkout theo mẫu, đổi điểm ở giỏ và VNPay tự cập nhật: [PURCHASE_REDESIGN.md](docs/PURCHASE_REDESIGN.md).
 
@@ -26,7 +26,7 @@ Footer: [Bố cục, nội dung mô phỏng và cách thay thông tin liên hệ
 
 Website thương mại điện tử organic, ưu tiên giao diện desktop. React + Vite, Tailwind CSS v4, React Router, Axios, Radix UI (Dialog), hệ component theo cách tổ chức shadcn/ui, Lucide và Sonner. JavaScript/JSX, alias `@/` trỏ đến `src/`.
 
-Thiết kế tham khảo tinh thần tự nhiên của [Pukka Herbs](https://www.pukkaherbs.com/uk/en) và cách tổ chức danh mục của [Organica](https://organica.vn/). Nhận diện “Mộc” và bố cục được xây mới. Hai ảnh cấu trúc thư mục/giao diện được nhắc trong yêu cầu chưa có trong hội thoại, nên chưa thể đối chiếu chính xác từng thư mục và chi tiết ảnh mẫu.
+Thiết kế tham khảo tinh thần tự nhiên của [Pukka Herbs](https://www.pukkaherbs.com/uk/en) và cách tổ chức danh mục của [Organica](https://organica.vn/). Nhận diện “organicfood.vn” và bố cục được xây mới. Hai ảnh cấu trúc thư mục/giao diện được nhắc trong yêu cầu chưa có trong hội thoại, nên chưa thể đối chiếu chính xác từng thư mục và chi tiết ảnh mẫu.
 
 ## 1. Chạy ngay trên máy
 

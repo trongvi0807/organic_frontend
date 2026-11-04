@@ -1,4 +1,4 @@
-/* Homepage-only composition. Catalog, checkout, admin and the Mộc logo keep
+/* Homepage-only composition. Catalog, checkout, admin and the organicfood.vn logo keep
    their established styles and behavior. */
 .home-page { --home-ink: #244b34; --home-moss: #77884f; --home-paper: #fbf9f2; --home-line: #e1e5d7; background: #fffefa; color: var(--home-ink); overflow: clip; }
 .home-page .moc-home-section { padding-block: 76px; }
@@ -13,13 +13,13 @@
 .home-page .moc-home-section-heading p { font-size: 13px; line-height: 1.9; color: #737b69; margin-top: 12px; }
 .home-page .moc-home-section-heading > a { flex-shrink: 0; }
 
-.home-page .moc-home-hero { isolation: isolate; position: relative; background: #f6f3e8; overflow: hidden; padding-block: 48px 60px; }
+.home-page .moc-home-hero { isolation: isolate; position: relative; background: #f6f5eb; overflow: hidden; padding-block: 38px 56px; }
 .home-page .moc-home-hero::before { content: ''; position: absolute; z-index: -1; width: 650px; height: 650px; border-radius: 50%; right: -110px; top: -160px; background: #e6ead7; }
-.home-page .moc-home-hero-grid { display: grid; grid-template-columns: 1fr 1.03fr; align-items: center; gap: 55px; }
+.home-page .moc-home-hero-grid { display: grid; grid-template-columns: 1fr 1.03fr; align-items: center; gap: 42px; }
 .home-page .moc-home-hero-copy { position: relative; min-width: 0; padding-block: 18px 40px; animation: moc-home-enter .65s both; overflow-wrap: anywhere; }
 .home-page .moc-home-hero-copy > .moc-home-kicker { font-size: 9px; letter-spacing: 1.7px; }
 .home-page .moc-home-hero-copy > .moc-home-kicker > span { width: 24px; height: 1px; background: #90a074; }
-.home-page .moc-home-hero h1 { max-width: 640px; font: 500 clamp(37px, 4vw, 61px)/1.19 var(--font-serif); color: #274d34; letter-spacing: -2px; margin-top: 24px; text-wrap: balance; overflow-wrap: anywhere; }
+.home-page .moc-home-hero h1 { max-width: 620px; font: 500 clamp(37px, 3.8vw, 56px)/1.23 var(--font-serif); color: #274d34; letter-spacing: -1.5px; margin-top: 22px; text-wrap: balance; overflow-wrap: anywhere; }
 .home-page .moc-home-hero-description { max-width: 470px; font-size: 13px; line-height: 2; color: #727967; margin-top: 24px; white-space: pre-line; text-wrap: pretty; }
 .home-page .moc-home-hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 22px; margin-top: 27px; }
 .home-page .moc-home-hero-note { display: flex; align-items: center; gap: 12px; margin-top: 33px; }
@@ -27,7 +27,7 @@
 .home-page .moc-home-hero-note p { color: #50654a; font-size: 11px; line-height: 1.8; }
 .home-page .moc-home-hero-note small { display: block; font-size: 10px; color: #7d8474; margin-top: 3px; }
 .home-page .moc-home-hero-visual { position: relative; min-width: 0; padding: 12px 10px 40px 20px; }
-.home-page .moc-home-hero-image { aspect-ratio: 1.04; border-radius: 48% 48% 22px 22px; overflow: hidden; background: #e6e9d9; animation: moc-home-enter .8s both; }
+.home-page .moc-home-hero-image { aspect-ratio: 1.14; border-radius: 48% 48% 22px 22px; overflow: hidden; background: #e6e9d9; animation: moc-home-enter .8s both; }
 .home-page .moc-home-hero-image img { width: 100%; height: 100%; object-fit: cover; object-position: center 47%; }
 .home-page .moc-home-hero-orbit { position: absolute; inset: 0 0 54px 8px; border: 1px solid #aebd92; border-radius: 48% 48% 26px 26px; transform: rotate(5deg); pointer-events: none; }
 .home-page .moc-home-hero-seal { position: absolute; top: 5px; right: -12px; width: 122px; height: 122px; border-radius: 50%; border: 1px solid #c7cdaf; outline: 7px solid #fffdf3; background: #fffdf3; color: #7b8955; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 7px; transform: rotate(10deg); box-shadow: 0 5px 20px #2947350a; }
@@ -68,9 +68,9 @@
 .home-page .moc-home-category-card:hover img { transform: scale(1.05); }
 .home-page .moc-home-category-card h3 { font-size: 12px; font-weight: 500; line-height: 1.6; margin-bottom: 9px; }
 .home-page .moc-home-category-card > span:last-child { display: inline-flex; gap: 9px; align-items: center; margin-top: auto; font-size: 10px; color: #7a846c; }
-.home-page .moc-home-tone-0 { background: #eef2e4; }.home-page .moc-home-tone-1 { background: #f5eadd; }.home-page .moc-home-tone-2 { background: #f1edf1; }.home-page .moc-home-tone-3 { background: #f4f1de; }
+.home-page .moc-home-tone-0 { background: #eef2e4; }.home-page .moc-home-tone-1 { background: #f5eddf; }.home-page .moc-home-tone-2 { background: #edf3e9; }.home-page .moc-home-tone-3 { background: #f5f1df; }
 
-.home-page .moc-home-offers { background: #f4f0e6; position: relative; }
+.home-page .moc-home-offers { background: #f7f3e9; position: relative; border-bottom: 1px solid #efecdf; }
 .home-page .moc-home-offers .moc-home-kicker { color: #947148; }
 .home-page .product-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 22px; }
 .home-page .product-card { min-width: 0; border-radius: 20px; border-color: #e5e8dc; background: #fffefa; box-shadow: none; padding: 9px; }

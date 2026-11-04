@@ -24,6 +24,7 @@ export function ShopProvider({ children }) {
   const token = getSession()?.accessToken || '';
   const scope = `${user?.username || 'guest'}:${getSession()?.sessionId || token}`;
   const currentScope = useRef(scope); currentScope.current = scope;
+  const previousUsername = useRef(user?.username);
   const [cart, setCart] = useState(() => DEMO_MODE ? readStorage('moc.cart', []) : []);
   const cartRef = useRef(cart); cartRef.current = cart;
   const { favorites, toggleFavorite } = useFavorites(user?.username);
@@ -51,7 +52,12 @@ export function ShopProvider({ children }) {
   }, [scope, customer, allowed]);
   useEffect(() => {
     if (DEMO_MODE) return;
-    cartRef.current = []; pending.current = 0; setCart([]); setMeta(null); setPromoCode(''); setVoucherCode(''); setRewardPoints(0); setError(''); setBusy(false);
+    const signingInFromGuest = !previousUsername.current && customer;
+    previousUsername.current = user?.username;
+    cartRef.current = []; pending.current = 0; setCart([]); setMeta(null);
+    // A public code selected by a guest follows the normal guest-cart merge on sign-in.
+    if (!signingInFromGuest) setPromoCode('');
+    setVoucherCode(''); setRewardPoints(0); setError(''); setBusy(false);
     if (allowed) refreshCart().catch(() => {}); else setLoading(false);
   }, [scope, allowed, refreshCart]);
   useEffect(() => {
@@ -103,6 +109,18 @@ export function ShopProvider({ children }) {
     setCart((items) => items.some((item) => cartItemKey(item) === cartKey) ? items.map((item) => cartItemKey(item) === cartKey ? { ...item, minPrice: product.minPrice, stock: product.stock, selected: true, quantity: Math.min(item.quantity + quantity, maximum) } : item) : [...items, { ...product, variantId, cartKey, selected: true, quantity: Math.min(quantity, maximum) }]);
     announce(); return true;
   }
+  function addComboToCart(offer, items) {
+    if (DEMO_MODE) return Promise.resolve(false);
+    return mutate(service => service.addMany(items)).then(success => {
+      if (!success || !sameScope()) return false;
+      const affected = new Set(items.map(item => item.variantId));
+      const next = cartRef.current.map(row => affected.has(row.variantId) ? { ...row, selected: true } : row);
+      cartRef.current = next; setCart(next); setPromoCode(offer.promotionCode);
+      setCartAdded({ sequence: ++addedSequence.current, productName: offer.name, quantity: items.reduce((sum, item) => sum + item.quantity, 0) });
+      toast.success('Đã thêm các món vào giỏ hàng', { description: `Đã chọn mã ${offer.promotionCode}. Ưu đãi được kiểm tra lại khi thanh toán.` });
+      return true;
+    });
+  }
   function updateQuantity(key, amount) {
     if (DEMO_MODE) { setCart((items) => changeCartQuantity(items, key, amount)); return; }
     return mutate((service) => { const item = cartRef.current.find((line) => cartItemKey(line) === key); if (!item) throw new Error('Dòng giỏ hàng đã thay đổi.'); return service.quantity(item.variantId, item.quantity + amount); });
@@ -135,7 +153,7 @@ export function ShopProvider({ children }) {
       return data;
     });
   }
-  return <ShopContext.Provider value={{ cart, cartAdded, favorites, addToCart, updateQuantity, setQuantity, toggleFavorite, promoCode, setPromoCode, voucherCode, setVoucherCode, rewardPoints, setRewardPoints, clearCart, removeFromCart, refreshCart, removePurchased, cartLoading, cartBusy, cartError, cartMeta, cartAllowed: allowed,
+  return <ShopContext.Provider value={{ cart, cartAdded, favorites, addToCart, addComboToCart, updateQuantity, setQuantity, toggleFavorite, promoCode, setPromoCode, voucherCode, setVoucherCode, rewardPoints, setRewardPoints, clearCart, removeFromCart, refreshCart, removePurchased, cartLoading, cartBusy, cartError, cartMeta, cartAllowed: allowed,
     setItemSelected: (key, selected) => { const next = selectCartItem(cartRef.current, key, selected); cartRef.current = next; setCart(next); },
     setAllSelected: (selected) => { const next = selectAllCartItems(cartRef.current, selected); cartRef.current = next; setCart(next); },
   }}>{children}</ShopContext.Provider>;

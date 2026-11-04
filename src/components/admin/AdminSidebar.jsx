@@ -5,12 +5,14 @@ import { Logo } from '@/components/common/Logo';
 import { adminGroupPath, getAdminNavigation, isAdminItemActive } from '@/constants/adminNavigation';
 import { hasRole } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
+import { AdminAttentionBadge, useAdminAttention } from './AdminAttentionBadge';
 
 function SidebarLink({ item, onNavigate, lastPaths, compact }) {
   const { pathname } = useLocation();
   const active = isAdminItemActive(item, pathname), Icon = item.icon;
-  return <Link to={lastPaths?.[item.id] || adminGroupPath(item)} aria-label={item.name} title={compact ? item.name : undefined} aria-current={active ? 'page' : undefined} onClick={onNavigate} className={cn('adk-nav-link', active && 'is-active')}>
-    <Icon size={20} strokeWidth={1.65} aria-hidden="true" /><span className="adk-nav-copy">{item.name}</span>{active && <ChevronRight size={14} className="adk-nav-arrow" aria-hidden="true" />}
+  const attention = useAdminAttention(item);
+  return <Link to={attention.count ? attention.target : lastPaths?.[item.id] || adminGroupPath(item)} aria-label={`${item.name}${attention.count ? `. ${attention.label}` : ''}`} title={attention.count ? attention.label : compact ? item.name : undefined} aria-current={active ? 'page' : undefined} onClick={onNavigate} className={cn('adk-nav-link', active && 'is-active', attention.unread > 0 && 'has-unread')}>
+    <Icon size={20} strokeWidth={1.65} aria-hidden="true" /><span className="adk-nav-copy">{item.name}</span><AdminAttentionBadge attention={attention} />{active && <ChevronRight size={14} className="adk-nav-arrow" aria-hidden="true" />}
   </Link>;
 }
 

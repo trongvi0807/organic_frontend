@@ -10,6 +10,7 @@ import { HomeCategories, HomeCategoryStories, HomeCollections, HomeOffers } from
 import { HomeEditorial } from '@/components/home/HomeEditorial';
 import { HomeCertifications } from '@/components/home/HomeCertifications';
 import { FOOTER_CONFIG } from '@/constants/footer';
+import { PromotionBanners } from '@/components/promotions/PromotionBanners';
 import '@/styles/home-page.css';
 
 const shoppingLinks = [
@@ -34,13 +35,14 @@ export default function HomePage() {
     <HomeHero content={content} exploreHref={home.categories.length ? '#kham-pha-danh-muc' : '#san-pham'} />
     <div className="moc-home-shopping-links"><div className="container">{shoppingLinks.map(({ icon: Icon, title, text, to }) => <Link to={to} key={title}><span><Icon size={24} strokeWidth={1.3} /></span><div><strong>{title}</strong><small>{text}</small></div><ArrowUpRight size={14} /></Link>)}</div></div>
     <HomeCategories categories={home.categories} products={allProducts} />
-    <HomeOffers products={allProducts} onView={setSelected} />
+    <PromotionBanners />
+    <HomeOffers products={home.discountedProducts || allProducts} onView={setSelected} />
     <HomeCollections home={home} onView={setSelected} />
     <HomeCategoryStories categories={home.categories} products={allProducts} />
     <HomeEditorial origins={home.origins} highlights={content.highlights} faqs={content.faqs}>
       <HomeCertifications certificates={home.certifications} products={allProducts} />
     </HomeEditorial>
-    <Reveal as="section" className="moc-home-contact" aria-labelledby="home-contact-title"><div className="container"><div><span className="moc-home-kicker">GHÉ MỘC, THÊM MỘT CHÚT XANH</span><h2 id="home-contact-title">Một giỏ hàng nhỏ.<br /><em>Nhiều niềm vui mỗi ngày.</em></h2><p>Cần tìm sản phẩm hoặc hỏi thêm trước khi chọn? Mộc luôn sẵn sàng lắng nghe bạn.</p><a href={`tel:${FOOTER_CONFIG.phone}`} className="moc-home-contact-address"><Phone size={16} />{FOOTER_CONFIG.phoneDisplay}</a><p className="moc-home-contact-address"><MapPin size={16} />{FOOTER_CONFIG.address}</p></div><Link to="/san-pham" className="moc-home-primary-link">Đi chợ cùng Mộc<ArrowUpRight size={19} /></Link></div></Reveal>
+    <Reveal as="section" className="moc-home-contact" aria-labelledby="home-contact-title"><div className="container"><div><span className="moc-home-kicker">GHÉ organicfood.vn, THÊM MỘT CHÚT XANH</span><h2 id="home-contact-title">Một giỏ hàng nhỏ.<br /><em>Nhiều niềm vui mỗi ngày.</em></h2><p>Cần tìm sản phẩm hoặc hỏi thêm trước khi chọn? organicfood.vn luôn sẵn sàng lắng nghe bạn.</p><a href={`tel:${FOOTER_CONFIG.phone}`} className="moc-home-contact-address"><Phone size={16} />{FOOTER_CONFIG.phoneDisplay}</a><p className="moc-home-contact-address"><MapPin size={16} />{FOOTER_CONFIG.address}</p></div><Link to="/san-pham" className="moc-home-primary-link">Đi chợ cùng organicfood.vn<ArrowUpRight size={19} /></Link></div></Reveal>
     {selected && <ProductDetail product={selected} onClose={() => setSelected(null)} />}
   </div>;
 }

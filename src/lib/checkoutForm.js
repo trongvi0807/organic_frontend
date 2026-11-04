@@ -1,6 +1,7 @@
 import { checkoutPayload } from './checkout';
 import { formatShippingAddress } from './address';
-export const PICKUP_STORE = { name: 'Mộc Organic · Tân Phú', address: '36 Trịnh Đình Trọng, Phường Tân Phú, Thành phố Hồ Chí Minh', phone: '0344855913' };
+import { DEFAULT_STORE_LOCATION } from '@/constants/store';
+export const PICKUP_STORE = { name: 'organicfood.vn · Quận 1', address: DEFAULT_STORE_LOCATION.address, phone: '0969421088' };
 export function checkoutFormPayload(values, items, address, data, fulfillment) {
   if (values.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) throw new Error('Vui lòng nhập email hợp lệ.');
   const note = [fulfillment === 'pickup' ? '[Yêu cầu nhận tại cửa hàng] Cần cửa hàng xác nhận lịch nhận.' : null, values.email.trim() ? `Email nhận hóa đơn (yêu cầu): ${values.email.trim()}` : null, values.note.trim()].filter(Boolean).join('\n');

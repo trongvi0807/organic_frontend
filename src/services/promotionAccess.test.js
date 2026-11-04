@@ -2,6 +2,7 @@
 import { act, createElement as h } from 'react';
 import { createRoot } from 'react-dom/client';
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: { roles: ['SALES_STAFF'] } }) }));
 vi.mock('./api', () => ({ default:{ get:vi.fn() }, unwrap:(r)=>r.data.data, DEMO_MODE:false }));
 import api from './api';
 import PromotionsPage from '@/pages/admin/PromotionsPage';
@@ -12,8 +13,9 @@ it('loads promotion target choices without requesting forbidden catalog/inventor
   api.get.mockImplementation(async(path)=>({data:{data:{items:path.endsWith('/products')?[{id:'p1',productCode:'SP01',productName:'Cà rốt hữu cơ'}]:path.endsWith('/batches')?[{id:'b1',batchCode:'LO01',productName:'Cà rốt hữu cơ'}]:[],totalPages:1,totalElements:0}}}));
   await act(async()=>root.render(h(PromotionsPage)));
   await act(async()=>[...container.querySelectorAll('button')].find((b)=>b.textContent==='Tạo mã ưu đãi').click());
-  expect(api.get.mock.calls.map(([path])=>path)).toEqual(['/admin/promotions','/admin/promotions/products','/admin/promotions/batches']);
+  expect(api.get.mock.calls.map(([path])=>path)).toContain('/admin/promotions/products');
+  expect(api.get.mock.calls.some(([path])=>path.includes('/batches')||path.startsWith('/inventory')||path.startsWith('/admin/products')||path.includes('combo-suggestions'))).toBe(false);
   expect(document.body.textContent).toContain('Cà rốt hữu cơ');
-  expect(document.body.textContent).toContain('LO01 · Cà rốt hữu cơ');
+  expect(document.body.textContent).not.toContain('LO01 · Cà rốt hữu cơ');
   expect(document.body.textContent).not.toContain('Request failed');
 });

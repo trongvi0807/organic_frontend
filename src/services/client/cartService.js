@@ -7,6 +7,7 @@ export function createCartService(authenticated) {
   return {
     get: () => request('get'),
     add: (variantId, quantity) => request('post', '/items', { variantId, quantity }),
+    addMany: (items) => request('post', '/items/batch', { items }),
     quantity: (variantId, quantity) => request('patch', `/items/${encodeURIComponent(variantId)}`, { quantity }),
     remove: (variantId) => request('delete', `/items/${encodeURIComponent(variantId)}`),
     clear: () => request('delete'),

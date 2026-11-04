@@ -2,7 +2,7 @@
 
 ## Sử dụng
 
-Chạy frontend như hiện tại bằng `pnpm dev`. Menu “Về cửa hàng” trên header, footer và nút trên hero trang chủ mở `/ve-cua-hang`. Không cần thêm dependency hoặc biến môi trường. Logo Mộc được giữ nguyên.
+Chạy frontend như hiện tại bằng `pnpm dev`. Menu “Về cửa hàng” trên header, footer và nút trên hero trang chủ mở `/ve-cua-hang`. Không cần thêm dependency hoặc biến môi trường. Logo organicfood.vn được giữ nguyên.
 
 Chọn sản phẩm trong “Khám phá hồ sơ sản phẩm”, có thể tìm theo tên/mã và chuyển trang danh sách nếu có nhiều sản phẩm. Khi chọn cụ thể, URL lưu `?product=<id>` để tải lại hoặc chia sẻ đúng hồ sơ. Nếu chưa chọn, hiển thị sản phẩm đầu tiên trong kết quả công khai. Tìm kiếm danh sách không tự xóa hồ sơ đã chọn bằng URL.
 

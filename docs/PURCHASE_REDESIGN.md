@@ -4,7 +4,7 @@
 
 ## Giao diện cuối cùng
 
-- Tham khảo cách tổ chức của [CellphoneS Cart](https://cellphones.com.vn/cart/) và ảnh checkout người dùng cung cấp. Giữ logo Mộc, màu xanh lá/be của dự án.
+- Tham khảo cách tổ chức của [CellphoneS Cart](https://cellphones.com.vn/cart/) và ảnh checkout người dùng cung cấp. Giữ logo organicfood.vn, màu xanh lá/be của dự án.
 - Giỏ hai cột: chọn tất cả/từng dòng; nhập trực tiếp số lượng hoặc +/−; xóa từng dòng/toàn bộ có xác nhận; voucher, đổi điểm và thông tin đơn bên phải. Mobile có thanh Mua ngay cố định.
 - Checkout: **sản phẩm → khách hàng → nhận hàng** ở trái; **thông tin đơn → phương thức thanh toán → THANH TOÁN** ở phải. Không có mục 4, nút chọn voucher hoặc ô nhập điểm ở checkout. Chỉ hiển thị mã/điểm đã chọn ở giỏ dưới dạng thông tin tổng kết.
 - Sau tạo đơn chuyển `/dat-hang-thanh-cong/:id`, đọc lại đơn qua API. Đơn online chưa trả tiền ghi rõ chờ thanh toán, có nút tiếp tục qua cổng. Không đánh đồng đặt hàng thành công với đã thu tiền.

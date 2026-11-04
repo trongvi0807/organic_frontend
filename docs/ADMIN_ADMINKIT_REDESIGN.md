@@ -7,11 +7,11 @@ Nguồn tham khảo ngày 28-10-2026:
 - [Sidebar SCSS](https://github.com/adminkit/adminkit/blob/main/src/scss/3-components/_sidebar.scss)
 - [Navbar SCSS](https://github.com/adminkit/adminkit/blob/main/src/scss/3-components/_navbar.scss)
 
-Triển khai lại bằng React, Tailwind và Recharts hiện có; không thêm Bootstrap, script hoặc CSS CDN của AdminKit. Mượn cách tổ chức vùng làm việc, sắc độ sidebar và hệ phân cấp thông tin, giữ nhận diện Mộc.
+Triển khai lại bằng React, Tailwind và Recharts hiện có; không thêm Bootstrap, script hoặc CSS CDN của AdminKit. Mượn cách tổ chức vùng làm việc, sắc độ sidebar và hệ phân cấp thông tin, giữ nhận diện organicfood.vn.
 
 ## Những thay đổi
 
-- Sidebar xanh xám đậm mặc định, trạng thái active có thanh màu bên trái; vẫn chỉ các mục cha theo quyền và tab ngang trong trang. Logo Mộc giữ nguyên. Có thể đổi sidebar sáng/tối; tùy chọn trước đó trong localStorage được tôn trọng.
+- Sidebar xanh xám đậm mặc định, trạng thái active có thanh màu bên trái; vẫn chỉ các mục cha theo quyền và tab ngang trong trang. Logo organicfood.vn giữ nguyên. Có thể đổi sidebar sáng/tối; tùy chọn trước đó trong localStorage được tôn trọng.
 - Nút đầu thanh công cụ thu/mở sidebar thành rail biểu tượng trên desktop. Rail rộng 78px; đầy đủ 256px. Trên mobile <=640px dùng drawer; có backdrop, Escape, vòng Tab, inert và trả focus về nút menu khi đóng.
 - Thanh trên nền trắng, breadcrumb chức năng hiện tại, tìm chức năng theo tên không dấu, chuông thông báo và menu tài khoản. Ctrl/Cmd+K mở tìm nhanh khi không có hộp thoại/drawer đang mở. Kết quả lấy đúng getAdminNavigation(user), không bổ sung quyền hay endpoint.
 - Vùng nội dung nền xám nhạt, tiêu đề sans, card trắng bo 7–9px, shadow rất nhẹ. Tab ngang, bảng, thanh lọc, nút, badge, phân trang và form thống nhất.

@@ -16,6 +16,7 @@ export const orderService = {
 };
 export const promotionService = {
   nextCode: () => get('/admin/promotions/next-code'),
+  comboSuggestions: () => get('/admin/promotions/combo-suggestions'),
   products: async (params) => normalizePage(await get('/admin/promotions/products', params)),
   batches: async (params) => normalizePage(await get('/admin/promotions/batches', params)),
   list: async (params) => normalizePage(await get('/admin/promotions', params)),

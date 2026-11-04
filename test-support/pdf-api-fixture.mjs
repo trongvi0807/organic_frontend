@@ -14,7 +14,7 @@ export function createPdfApiFixture({autoPaid=false}={}){
  const payment={id:ids.payment,orderId:ids.order,gateway:'vnpay',status:'pending',amount:28000,currency:'VND',exchangeRate:1,paymentUrl:`https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_TxnRef=${qaReference}`,expiresAt:'2026-12-31T12:00:00',failureCode:null,failureMessage:null};
  const order={id:ids.order,orderCode:'OD-PDF-QA',status:'pending_payment',paymentStatus:'pending',paymentMethod:'vnpay',receiverName:'Khách QA',receiverPhone:'0901234567',shippingAddress:'Địa chỉ QA',note:null,pricing:quote,orderedAt:'2026-10-26T12:00:00',paymentDueAt:'2026-12-31T12:00:00',stockReservedUntil:'2026-12-31T12:00:00',pointsEarned:0,payments:[payment],shipments:[]};
  const profile={id:'qa-customer',fullName:'Khách QA',phoneNumber:'0901234567',email:'qa@example.com',addresses:[]};
- const content={siteName:'Mộc QA',headline:'Tươi lành từ nguồn gốc.',introduction:'Phiên kiểm thử theo hợp đồng PDF.',banners:[],highlights:[],faqs:[]};
+ const content={siteName:'organicfood.vn QA',headline:'Tươi lành từ nguồn gốc.',introduction:'Phiên kiểm thử theo hợp đồng PDF.',banners:[],highlights:[],faqs:[]};
  const state={requests,payment,order,product,cart:[],paymentReads:0,created:0,initiated:0};
  const page=(items)=>({content:items,page:0,size:20,totalElements:items.length,totalPages:items.length?1:0,first:true,last:true,hasNext:false});
  const server=createServer(async(req,res)=>{

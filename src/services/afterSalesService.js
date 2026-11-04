@@ -4,8 +4,9 @@ import { normalizePage } from '@/lib/apiData';
 
 const id = encodeURIComponent;
 const get = async (url, params) => { requireBackend(); return unwrap(await api.get(url, { params })); };
-const post = async (url, body, config) => { requireBackend(); return unwrap(await api.post(url, body, config)); };
-const patch = async (url, body) => { requireBackend(); return unwrap(await api.patch(url, body)); };
+const updated = result => { window.dispatchEvent(new Event('moc:after-sales-updated')); return result; };
+const post = async (url, body, config) => { requireBackend(); const result = unwrap(await api.post(url, body, config)); return url.includes('/preview') ? result : updated(result); };
+const patch = async (url, body) => { requireBackend(); return updated(unwrap(await api.patch(url, body))); };
 const page = async (url, params) => normalizePage(await get(url, params));
 const keyed = (url, body, key) => post(url, body, { headers: { 'Idempotency-Key': key } });
 

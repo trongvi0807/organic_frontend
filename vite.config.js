@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'DEV_');
   return {
     plugins: [react(), tailwindcss(), {
-      name: 'moc-messaging-worker-dev',
+      name: 'organicfood-messaging-worker-dev',
       apply: 'serve',
       configureServer(server) {
         let compiled;

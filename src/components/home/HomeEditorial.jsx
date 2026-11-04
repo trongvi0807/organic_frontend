@@ -44,9 +44,9 @@ function FarmStory({ origins }) {
         </div>
       </Reveal>
       <Reveal delay={80} className="min-w-0">
-        <p className="!mb-5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#687d52]"><Sprout size={16} strokeWidth={1.4} aria-hidden="true" /> CÂU CHUYỆN CỦA MỘC</p>
+        <p className="!mb-5 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#687d52]"><Sprout size={16} strokeWidth={1.4} aria-hidden="true" /> CÂU CHUYỆN CỦA organicfood.vn</p>
         <h2 id="moc-home-story-title" className="max-w-lg font-serif text-[32px] font-medium leading-[1.3] tracking-tight text-[#294b34] sm:text-[40px] lg:text-[44px]">Chọn thực phẩm.<br /><em className="font-normal text-[#798b5b]">Chọn cả sự rõ ràng.</em></h2>
-        <p className="!mt-5 max-w-lg text-sm leading-8 text-[#5c6c56]">Bữa ăn gần gũi bắt đầu từ những nguyên liệu bạn hiểu rõ. Tại Mộc, bạn có thể tìm hiểu nguồn gốc, xem hồ sơ chứng nhận và đối chiếu quy cách trước khi lựa chọn.</p>
+        <p className="!mt-5 max-w-lg text-sm leading-8 text-[#5c6c56]">Bữa ăn gần gũi bắt đầu từ những nguyên liệu bạn hiểu rõ. Tại organicfood.vn, bạn có thể tìm hiểu nguồn gốc, xem hồ sơ chứng nhận và đối chiếu quy cách trước khi lựa chọn.</p>
         <p className="!mt-3 max-w-lg text-sm leading-8 text-[#5c6c56]">Chúng tôi dành một nơi riêng cho những thông tin ấy, để việc mua sắm mỗi ngày trở nên dễ dàng và có cơ sở hơn.</p>
         <OriginChips origins={origins} />
         <div className="!mt-7"><EditorialLink to="/ve-cua-hang">Khám phá câu chuyện & nguồn gốc</EditorialLink></div>
@@ -62,7 +62,7 @@ function ValuesSection({ highlights }) {
   return <section id="song-xanh" className="moc-home-values py-14 sm:py-20" aria-labelledby="moc-home-values-title">
     <div className="container">
       <Reveal className="!mb-9 flex flex-col justify-between gap-5 sm:!mb-11 lg:flex-row lg:items-end">
-        <div><p className="!mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7b8d5f]">CHĂM CHÚT TỪ NHỮNG ĐIỀU NHỎ</p><h2 id="moc-home-values-title" className="font-serif text-3xl font-medium leading-snug text-[#294b34] sm:text-[38px]">{published.length ? 'Những điều Mộc trân trọng.' : 'Mua sắm bằng sự thấu hiểu.'}</h2></div>
+        <div><p className="!mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7b8d5f]">CHĂM CHÚT TỪ NHỮNG ĐIỀU NHỎ</p><h2 id="moc-home-values-title" className="font-serif text-3xl font-medium leading-snug text-[#294b34] sm:text-[38px]">{published.length ? 'Những điều organicfood.vn trân trọng.' : 'Mua sắm bằng sự thấu hiểu.'}</h2></div>
         <Link to="/diem-noi-bat" className="inline-flex min-h-11 items-center gap-3 text-sm font-medium text-[#47623a] transition-colors hover:text-[#7c913f]">Điểm nổi bật của cửa hàng <ArrowUpRight size={16} aria-hidden="true" /></Link>
       </Reveal>
       <div className="grid gap-5 md:grid-cols-3">
@@ -94,7 +94,7 @@ function QuestionsSection({ faqs }) {
   const published = faqs.filter((item) => item && item.question && item.answer);
   if (!published.length) return null;
   return <section className="moc-home-questions py-14 sm:py-20" aria-labelledby="moc-home-questions-title"><div className="container grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:gap-20">
-    <Reveal><span className="!mb-4 flex size-12 items-center justify-center rounded-full bg-[#edf1e4] text-[#829364]"><Leaf size={23} strokeWidth={1.3} aria-hidden="true" /></span><p className="!mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7b8d5f]">CÙNG BẠN TÌM HIỂU</p><h2 id="moc-home-questions-title" className="font-serif text-3xl font-medium leading-snug text-[#294b34] sm:text-[38px]">Bạn hỏi,<br /><em className="font-normal text-[#7a8b60]">Mộc giải đáp.</em></h2><p className="!mt-5 max-w-xs text-sm leading-7 text-[#727968]">Một vài thông tin hữu ích trước khi bạn chọn sản phẩm cho mình.</p></Reveal>
+    <Reveal><span className="!mb-4 flex size-12 items-center justify-center rounded-full bg-[#edf1e4] text-[#829364]"><Leaf size={23} strokeWidth={1.3} aria-hidden="true" /></span><p className="!mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#7b8d5f]">CÙNG BẠN TÌM HIỂU</p><h2 id="moc-home-questions-title" className="font-serif text-3xl font-medium leading-snug text-[#294b34] sm:text-[38px]">Bạn hỏi,<br /><em className="font-normal text-[#7a8b60]">organicfood.vn giải đáp.</em></h2><p className="!mt-5 max-w-xs text-sm leading-7 text-[#727968]">Một vài thông tin hữu ích trước khi bạn chọn sản phẩm cho mình.</p></Reveal>
     <Reveal delay={60} className="min-w-0 border-t border-[#e0e5d8]">{published.map((item, index) => <details key={`${item.question}-${index}`} className="group border-b border-[#e0e5d8] py-1"><summary className="flex min-h-18 cursor-pointer list-none items-center justify-between gap-5 py-5 text-sm font-medium leading-6 text-[#36513b] [&::-webkit-details-marker]:hidden">{item.question}<Plus size={18} strokeWidth={1.5} className="shrink-0 text-[#8c9c72] transition-transform duration-300 group-open:rotate-45 motion-reduce:transition-none" aria-hidden="true" /></summary><p className="pb-6 pr-8 text-sm leading-8 text-[#68745e]">{item.answer}</p></details>)}</Reveal>
   </div></section>;
 }

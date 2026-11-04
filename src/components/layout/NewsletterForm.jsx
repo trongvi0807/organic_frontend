@@ -5,7 +5,7 @@ export function NewsletterForm() {
   const [submitted, setSubmitted] = useState(false);
   return <section aria-labelledby="newsletter-title" className="rounded-2xl border border-[#dce5cf] bg-[#edf2e4] p-5 sm:p-6">
     <p className="!mb-2 flex items-center gap-2 text-[10px] font-medium tracking-[0.16em] text-[#73845c]"><Mail size={14} /> THÊM MỘT CHÚT TƯƠI LÀNH</p>
-    <h3 id="newsletter-title" className="font-serif text-xl font-medium text-primary">Nhận tin từ Mộc</h3>
+    <h3 id="newsletter-title" className="font-serif text-xl font-medium text-primary">Nhận tin từ organicfood.vn</h3>
     <p className="!mt-2 text-xs leading-6 text-[#6f7a64]">Câu chuyện sống xanh, sản phẩm mới và những ưu đãi dành cho bạn.</p>
     <form aria-label="Đăng ký nhận tin (mô phỏng)" onSubmit={(event) => { event.preventDefault(); setSubmitted(true); event.currentTarget.reset(); }} className="!mt-4 flex overflow-hidden rounded-xl border border-[#d8dfce] bg-white">
       <label htmlFor="footer-newsletter-email" className="sr-only">Email nhận bản tin</label>

@@ -4,7 +4,7 @@ Thiết kế tham khảo [Pukka Herbs](https://www.pukkaherbs.com/uk/en): hình 
 
 ## Màu và component
 
-Điều chỉnh theo phản hồi: logo hiển thị cố định `mộc.` cùng biểu tượng lá và dòng `ORGANIC LIVING`, không lấy tên từ API. Đã bỏ badge “ẢNH MINH HỌA” trên banner; hình nền vẫn giữ nguyên.
+Logo hiển thị cố định `organicfood.vn` cùng biểu tượng lá và dòng `Healthy Food - Better Life`, không lấy tên từ API. Đã bỏ badge “ẢNH MINH HỌA” trên banner; hình nền vẫn giữ nguyên.
 
 Đăng nhập thành công: CUSTOMER về `/` (Home); ADMIN vào `/admin/products`, SALES_STAFF vào `/admin/customers`, WAREHOUSE_STAFF vào `/admin/suppliers`. Người đã đăng nhập mở trang đăng nhập/đăng ký cũng chuyển đến đích tương ứng. Tài khoản có cả vai trò nhân viên và CUSTOMER ưu tiên trang quản lý. Đường dẫn hồ sơ `/tai-khoan` vẫn dùng cho thao tác mở hồ sơ cá nhân.
 

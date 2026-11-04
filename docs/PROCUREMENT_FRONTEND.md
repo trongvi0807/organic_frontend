@@ -2,7 +2,7 @@
 
 Cập nhật bán hàng/thanh toán ngày 26/10/2026: xem [CHECKOUT_FRONTEND.md](CHECKOUT_FRONTEND.md). “Đơn mua” ở tài liệu này là đơn đặt mua từ nhà cung cấp; đơn khách hàng ở mục “Đơn bán & giao hàng”.
 
-Frontend gọi API thật theo `organic_backend/docs/PROCUREMENT_API.md`. Không thay đổi backend hoặc tự cộng tồn trong trình duyệt. Giữ nguyên logo Mộc và giao diện organic hiện có.
+Frontend gọi API thật theo `organic_backend/docs/PROCUREMENT_API.md`. Không thay đổi backend hoặc tự cộng tồn trong trình duyệt. Giữ nguyên logo organicfood.vn và giao diện organic hiện có.
 
 ## Chạy cùng backend
 

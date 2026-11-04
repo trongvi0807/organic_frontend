@@ -1,3 +1,4 @@
+import { ComboSuggestions } from '@/components/admin/ComboSuggestions';
 import { PromotionDiscountFields } from '@/components/admin/PromotionDiscountFields';
 import { PromotionProductPicker } from '@/components/admin/PromotionProductPicker';
 import { PromotionRedemptionFields } from '@/components/admin/PromotionRedemptionFields';
@@ -21,7 +22,7 @@ export default function PromotionsPage() {
   const [page, setPage] = useState(0), [editor, setEditor] = useState(null), [stop, setStop] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const list = useResource(() => promotionService.list({ page, size: 10 }), [page]);
   async function deactivate() { if (busy) return; setBusy(true); setError(''); try { await promotionService.deactivate(stop.id); setStop(null); list.reload(); toast.success('Đã ngừng chương trình. Quyền lợi đã cấp được giữ theo điều kiện đã chốt.'); } catch (err) { setError(errorMessage(err)); } finally { setBusy(false); } }
-  return <><div className="admin-page-heading"><div><span className="eyebrow">ƯU ĐÃI CỬA HÀNG</span><h1>Khuyến mãi.</h1><p>Quản lý sản phẩm áp dụng, thời hạn và số lượt sử dụng của từng ưu đãi.</p></div><Button onClick={() => setEditor({})}>Tạo mã ưu đãi</Button></div><section className="admin-table-panel"><div className="table-panel-heading"><h2>Danh sách chương trình</h2><Button variant="outline" size="sm" onClick={list.reload}>Tải lại</Button></div><ResourceState loading={list.loading} error={list.error} empty={!list.data?.items.length} onRetry={list.reload} />{!list.loading && !list.error && <div className="table-scroll"><table className="data-table"><thead><tr><th>Mã / tên</th><th>Giá trị giảm</th><th>Thời gian (giờ Việt Nam)</th><th>Lượt đã dùng / giới hạn</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>{list.data?.items.map((p) => <tr key={p.id}><td><strong className="block">{p.promotionCode}</strong><small>{p.name}</small>{p.pointsCost && <small className="block text-primary">Đổi {p.pointsCost} điểm · Hạn dùng {p.voucherValidDays} ngày</small>}</td><td>{p.discountType === 'percentage' ? `${p.discountValue}%` : currency(p.discountValue)}<small className="block">Đơn từ {currency(p.minOrderValue)}</small></td><td>{adminDate(p.startDate, true)}<small className="block">→ {adminDate(p.endDate, true)}</small></td><td>{p.usageCount} / {p.usageLimit ?? 'Không giới hạn'}</td><td>{p.status}</td><td><div className="flex flex-wrap gap-2"><Button size="sm" variant="ghost" onClick={() => setEditor(p)}>Chi tiết / sửa</Button>{p.status !== 'inactive' && <Button variant="outline" size="sm" onClick={() => { setStop(p); setError(''); }}>Ngừng mã</Button>}</div></td></tr>)}</tbody></table></div>}<Pagination page={page} size={10} totalPages={list.data?.totalPages || 0} totalElements={list.data?.totalElements || 0} onChange={setPage} /></section>{editor && <PromotionForm key={editor.id || 'new'} item={editor} onClose={() => setEditor(null)} onSaved={() => { setEditor(null); list.reload(); }} />}<Modal open={!!stop} onOpenChange={(open) => { if (!open && !busy) setStop(null); }} title="Ngừng mã khuyến mãi?" description={stop?.pointsCost ? 'Ngừng cho khách đổi thêm. Voucher đã cấp vẫn sử dụng được đến hạn theo điều kiện đã chốt.' : 'Đơn mới không dùng được mã. Đơn đã giữ mã vẫn giữ điều kiện đã chốt.'}>{error && <p role="alert" className="form-error">{error}</p>}<div className="form-actions"><Button variant="outline" disabled={busy} onClick={() => setStop(null)}>Giữ lại</Button><Button disabled={busy} onClick={deactivate}>Xác nhận ngừng</Button></div></Modal></>;
+  return <><div className="admin-page-heading"><div><span className="eyebrow">ƯU ĐÃI CỬA HÀNG</span><h1>Khuyến mãi.</h1><p>Quản lý sản phẩm áp dụng, thời hạn và số lượt sử dụng của từng ưu đãi.</p></div><div className="flex flex-wrap gap-2"><ComboSuggestions onChoose={setEditor} /><Button onClick={() => setEditor({})}>Tạo mã ưu đãi</Button></div></div><section className="admin-table-panel"><div className="table-panel-heading"><h2>Danh sách chương trình</h2><Button variant="outline" size="sm" onClick={list.reload}>Tải lại</Button></div><ResourceState loading={list.loading} error={list.error} empty={!list.data?.items.length} onRetry={list.reload} />{!list.loading && !list.error && <div className="table-scroll"><table className="data-table"><thead><tr><th>Mã / tên</th><th>Giá trị giảm</th><th>Thời gian (giờ Việt Nam)</th><th>Lượt đã dùng / giới hạn</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>{list.data?.items.map((p) => <tr key={p.id}><td><strong className="block">{p.promotionCode}</strong><small>{p.name}</small>{p.promotionType === 'combo' && <small className="block text-primary">Combo · Mua đủ các sản phẩm</small>}{p.pointsCost && <small className="block text-primary">Đổi {p.pointsCost} điểm · Hạn dùng {p.voucherValidDays} ngày</small>}</td><td>{p.discountType === 'percentage' ? `${p.discountValue}%` : currency(p.discountValue)}<small className="block">Đơn từ {currency(p.minOrderValue)}</small></td><td>{adminDate(p.startDate, true)}<small className="block">→ {adminDate(p.endDate, true)}</small></td><td>{p.usageCount} / {p.usageLimit ?? 'Không giới hạn'}</td><td>{p.status}</td><td><div className="flex flex-wrap gap-2"><Button size="sm" variant="ghost" onClick={() => setEditor(p)}>Chi tiết / sửa</Button>{p.status !== 'inactive' && <Button variant="outline" size="sm" onClick={() => { setStop(p); setError(''); }}>Ngừng mã</Button>}</div></td></tr>)}</tbody></table></div>}<Pagination page={page} size={10} totalPages={list.data?.totalPages || 0} totalElements={list.data?.totalElements || 0} onChange={setPage} /></section>{editor && <PromotionForm key={editor.id || 'new'} item={editor} onClose={() => setEditor(null)} onSaved={() => { setEditor(null); list.reload(); }} />}<Modal open={!!stop} onOpenChange={(open) => { if (!open && !busy) setStop(null); }} title="Ngừng mã khuyến mãi?" description={stop?.pointsCost ? 'Ngừng cho khách đổi thêm. Voucher đã cấp vẫn sử dụng được đến hạn theo điều kiện đã chốt.' : 'Đơn mới không dùng được mã. Đơn đã giữ mã vẫn giữ điều kiện đã chốt.'}>{error && <p role="alert" className="form-error">{error}</p>}<div className="form-actions"><Button variant="outline" disabled={busy} onClick={() => setStop(null)}>Giữ lại</Button><Button disabled={busy} onClick={deactivate}>Xác nhận ngừng</Button></div></Modal></>;
 }
 function PromotionForm({ item, onClose, onSaved }) {
   const [busy, setBusy] = useState(false);
@@ -32,13 +33,13 @@ function PromotionForm({ item, onClose, onSaved }) {
   return <Modal open onOpenChange={(open) => { if (!open && !busy) onClose(); }} title={item.id ? 'Chi tiết chương trình ưu đãi' : 'Tạo mã ưu đãi'} className="!max-w-[850px]"><ResourceState loading={detail.loading} error={detail.error} onRetry={detail.reload} />{!detail.loading && !detail.error && <PromotionFields item={detail.data.record} initialRows={detail.data.existing} initialCode={detail.data.suggestion?.promotionCode} onSaved={onSaved} busy={busy} setBusy={setBusy} />}</Modal>;
 }
 function PromotionFields({ item, initialRows, initialCode, onSaved, busy, setBusy }) {
-  const keys = ['promotionCode', 'name', 'description', 'discountType', 'discountValue', 'maxDiscountAmount', 'minOrderValue', 'startDate', 'endDate', 'usageLimit', 'perUserLimit', 'status', 'productIds', 'batchIds', 'pointsCost', 'voucherValidDays'];
-  const [values, setValues] = useState(() => ({ ...Object.fromEntries(keys.map((key) => [key, item[key] ?? ({ promotionCode: initialCode || '', discountType: 'percentage', minOrderValue: 0, status: 'draft', productIds: [] }[key] ?? '')])), batchIds: [] }));
+  const keys = ['promotionCode', 'name', 'description', 'discountType', 'discountValue', 'maxDiscountAmount', 'minOrderValue', 'startDate', 'endDate', 'usageLimit', 'perUserLimit', 'status', 'productIds', 'batchIds', 'pointsCost', 'voucherValidDays', 'promotionType', 'requiredQuantities'];
+  const [values, setValues] = useState(() => ({ ...Object.fromEntries(keys.map((key) => [key, item[key] ?? ({ promotionCode: initialCode || '', discountType: 'percentage', minOrderValue: 0, status: 'draft', productIds: [], promotionType: 'product', requiredQuantities: {} }[key] ?? '')])), batchIds: [] }));
   const [existing, setExisting] = useState(initialRows), [error, setError] = useState(''); const locked = useRef(false);
   // This calculation input is not a promotion rule and must not be sent to the API.
   const [referenceAmount, setReferenceAmount] = useState('');
   const [discountEdited, setDiscountEdited] = useState(false);
-  const requireReference = values.discountType === 'percentage' && (!item.id || discountEdited);
+  const requireReference = values.promotionType !== 'combo' && values.discountType === 'percentage' && (!item.id || discountEdited);
   // A new record's displayed code is only a preview; the server chooses the final code atomically.
   const identityErrors = promotionIdentityErrors(existing, { ...values, promotionCode: item.id ? values.promotionCode : '' }, item.id);
   const options = useResource(async () => ({ products: await allPages(promotionService.products) }), []);
@@ -47,7 +48,8 @@ function PromotionFields({ item, initialRows, initialCode, onSaved, busy, setBus
     if (changesDiscount) setDiscountEdited(true);
     setValues((old) => {
       const next = { ...old, [key]: value };
-      if (changesDiscount) next.maxDiscountAmount = automaticPromotionMaximum(referenceAmount, next);
+      if (key === 'promotionType') { next.maxDiscountAmount = ''; if (value === 'combo') { next.pointsCost = ''; next.voucherValidDays = ''; } }
+      if (changesDiscount && old.promotionType !== 'combo') next.maxDiscountAmount = automaticPromotionMaximum(referenceAmount, next);
       return next;
     });
     setError('');
@@ -98,6 +100,7 @@ function PromotionFields({ item, initialRows, initialCode, onSaved, busy, setBus
         </Field>
       </div>
 
+      <Field label="Loại chương trình"><Select value={values.promotionType} onChange={event => field('promotionType', event.target.value)}><option value="product">Ưu đãi từng sản phẩm</option><option value="combo">Combo — phải mua đủ nhóm sản phẩm</option></Select></Field>
       <p className="rounded-xl bg-[#F7FAF5] px-4 py-3 text-sm leading-6 text-[#1B4D2E]">
         Điền lần lượt từ bước 1 đến bước 4 bên dưới. Các ô có dấu * là bắt buộc.
       </p>
@@ -105,14 +108,15 @@ function PromotionFields({ item, initialRows, initialCode, onSaved, busy, setBus
       <PromotionStep number="1" title="Chọn sản phẩm áp dụng" description="Tìm và đánh dấu những sản phẩm được hưởng ưu đãi. Có thể chọn tất cả nếu áp dụng toàn cửa hàng.">
         <ResourceState loading={options.loading} error={options.error} onRetry={options.reload} />
         {!!item.batchIds?.length && <p className="rounded-xl bg-amber-50 p-4 text-xs leading-6 text-amber-800">Chương trình này có điều kiện áp dụng cũ. Khi chỉnh sửa, hãy chọn lại các sản phẩm; sau khi lưu, ưu đãi sẽ áp dụng theo sản phẩm bạn chọn.</p>}
-        {options.data && <PromotionProductPicker products={options.data.products} selectedIds={values.productIds} onChange={(ids) => field('productIds', ids)} />}
+        {options.data && <><PromotionProductPicker products={options.data.products} selectedIds={values.productIds} onChange={(ids) => field('productIds', ids)} />
+          {values.promotionType === 'combo' && <div className="mt-4 space-y-3"><p className="text-sm leading-6">Chọn 2–8 sản phẩm. Khách phải mua đủ số gói/hộp của từng sản phẩm để tạo thành một bộ combo; có thể cộng số lượng từ các quy cách của cùng sản phẩm.</p>{values.productIds.map(id => <Field key={id} label={`Số lượng ${options.data.products.find(p => p.id === id)?.productName || 'sản phẩm đã chọn'}`}><Input required type="number" min="1" max="99" step="1" value={values.requiredQuantities?.[id] ?? 1} onChange={event => field('requiredQuantities', { ...values.requiredQuantities, [id]: event.target.value })} /></Field>)}</div>}</>}
       </PromotionStep>
 
-      <PromotionStep number="2" title="Thiết lập mức giảm" description={values.discountType === 'percentage'
+      <PromotionStep number="2" title="Thiết lập mức giảm" description={values.promotionType === 'combo' ? 'Thiết lập mức giảm cho mỗi bộ đầy đủ và giới hạn tổng giảm trên một đơn.' : values.discountType === 'percentage'
         ? 'Nhập giá trị hàng làm mốc trước, sau đó nhập tỷ lệ giảm. Mức giảm tối đa được điền tự động, không cần tính tay.'
         : 'Nhập số tiền muốn giảm. Hệ thống tự điền mức giảm tối đa bằng số tiền này.'}>
-        <PromotionDiscountFields values={values} referenceAmount={referenceAmount} requireReference={requireReference}
-          onReferenceChange={changeReference} onChange={field} />
+        {values.promotionType === 'combo' ? <div className="grid gap-4 sm:grid-cols-2"><Field label={values.discountType === 'percentage' ? 'Tỷ lệ giảm trên các bộ combo (%)' : 'Số tiền giảm cho mỗi bộ combo (₫)'}><Input required type="number" min="0.01" max={values.discountType === 'percentage' ? 100 : '999999999999.99'} step="0.01" value={values.discountValue} onChange={event => field('discountValue', event.target.value)} /></Field><Field label="Giảm tối đa trên một đơn (₫)" hint="Để trống nếu không giới hạn. Phần mua dư ngoài bộ combo không được giảm; hệ thống tính các bộ đầy đủ và ưu tiên quy cách giá thấp trước."><Input type="number" min="0.01" step="0.01" max="999999999999.99" value={values.maxDiscountAmount} onChange={event => field('maxDiscountAmount', event.target.value)} /></Field></div> : <PromotionDiscountFields values={values} referenceAmount={referenceAmount} requireReference={requireReference}
+          onReferenceChange={changeReference} onChange={field} />}
       </PromotionStep>
 
       <PromotionStep number="3" title="Điều kiện và thời gian áp dụng" description="Đặt điều kiện mua hàng, số lượt sử dụng và khoảng thời gian khách có thể dùng ưu đãi.">
@@ -136,7 +140,7 @@ function PromotionFields({ item, initialRows, initialCode, onSaved, busy, setBus
       </PromotionStep>
 
       <PromotionStep number="4" title="Cách nhận ưu đãi và lưu" description="Chọn cách khách nhận ưu đãi, kiểm tra thông tin rồi lưu. Chọn Bản nháp nếu chưa muốn cho khách sử dụng.">
-        <PromotionRedemptionFields values={values} onChange={field} />
+        {values.promotionType !== 'combo' && <PromotionRedemptionFields values={values} onChange={field} />}
         <Field label="Mô tả (tùy chọn)">
           <Textarea maxLength={5000} placeholder="Thông tin bổ sung cho chương trình ưu đãi…" value={values.description} onChange={(event) => field('description', event.target.value)} />
         </Field>

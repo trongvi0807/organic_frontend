@@ -14,7 +14,7 @@ export function Status({ value }) {
   return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${color}`}>{orderStatuses[value] || receiptStatuses[value] || value}</span>;
 }
 export function WorkflowHeader({ title, description, children }) {
-  return <div className="admin-page-heading"><div><span className="eyebrow">VẬN HÀNH KHO · MỘC ORGANIC</span><h1>{title}<span className="heading-dot">.</span></h1><p>{description}</p></div>{children}</div>;
+  return <div className="admin-page-heading"><div><span className="eyebrow">VẬN HÀNH KHO · organicfood.vn</span><h1>{title}<span className="heading-dot">.</span></h1><p>{description}</p></div>{children}</div>;
 }
 export function Refresh({ resource }) { return <Button size="sm" variant="outline" disabled={resource.loading} onClick={resource.reload}><RefreshCw size={14} />Tải lại</Button>; }
 export function Notice({ children }) { return <div className="!mb-5 flex items-start gap-3 rounded-2xl bg-[#eff3ea] p-4 text-sm leading-6 text-[#48604a]"><PackageCheck size={19} className="mt-0.5 shrink-0" /><div>{children}</div></div>; }

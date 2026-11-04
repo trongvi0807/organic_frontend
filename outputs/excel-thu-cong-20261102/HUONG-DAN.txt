@@ -1,0 +1,13 @@
+BỘ EXCEL KIỂM TRA THỦ CÔNG NGÀY 02-11-2026
+
+01-san-pham-moi.xlsx: 5 sản phẩm mới, 6 quy cách. Nhập tại Sản phẩm > Nhập Excel.
+02-don-mua-NCC01.xlsx: 6 sản phẩm đã có, 48 đơn vị đóng gói, tổng 2.600.000 đồng. Chọn NCC01 và tạo đơn mua, sau đó duyệt.
+03-phieu-nhap-NCC01.xlsx: chọn chính đơn vừa tạo và đã duyệt từ file 02, sau đó nhập file, gửi duyệt và duyệt phiếu.
+
+Không cần gõ mã đơn mua vào Excel. Chọn đúng đơn trên màn hình trước khi tải file 03 lên.
+Sheet Data là dữ liệu để nhập; HuongDan là hướng dẫn. Sheet QuyCach ghi rõ khối lượng từng mã hàng.
+File 01 kiểm tra thêm mới độc lập. File 02 và 03 dùng sản phẩm hiện có để không phải đoán mã mới của file 01.
+Ngày sản xuất 02-11-2026, hạn sử dụng 12-11-2026 trong file 03 là giá trị dùng kiểm tra thao tác. Đối chiếu ngày thực tế nếu nhập hàng thật.
+Chưa nhập, tạo đơn, tạo phiếu, duyệt hoặc thay đổi dữ liệu nào trên hệ thống.
+
+Tên và mã hàng được đối chiếu tại thời điểm tạo file. Nếu bạn đã sửa sản phẩm hoặc đổi nhà cung cấp sau đó, cần đối chiếu lại.

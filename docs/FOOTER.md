@@ -1,8 +1,8 @@
 > Cập nhật 26/10/2026: Footer đã tinh gọn thành ba nhóm, bỏ newsletter và các nhóm mô phỏng dài. Xem [phiên bản hiện tại](PURCHASE_REDESIGN.md). Nội dung bên dưới mô tả bản thiết kế trước.
 
-# Footer Mộc Organic
+# Footer organicfood.vn
 
-Footer được mở rộng theo bố cục tham khảo Organica: logo, các nhóm điều hướng, hỗ trợ khách hàng và một cột thông tin liên hệ/nhận tin. Giữ nhận diện Mộc, dùng nền trắng/be, xanh thảo mộc và bo góc mềm.
+Footer được mở rộng theo bố cục tham khảo Organica: logo, các nhóm điều hướng, hỗ trợ khách hàng và một cột thông tin liên hệ/nhận tin. Giữ nhận diện organicfood.vn, dùng nền trắng/be, xanh thảo mộc và bo góc mềm.
 
 ## Thông tin đã được người dùng cung cấp
 
@@ -16,7 +16,7 @@ Người dùng cho phép mô phỏng phần còn lại. Giờ mở cửa, nội 
 ## Các nhóm nội dung và thao tác
 
 - **Logo & nhận diện:** logo cũ, lời giới thiệu và liên kết hồ sơ nguồn gốc sản phẩm.
-- **Khám phá Mộc:** sản phẩm, về cửa hàng, xuất xứ, chứng nhận, quy cách/giá. Liên kết mở các route và khu vực đã có.
+- **Khám phá organicfood.vn:** sản phẩm, về cửa hàng, xuất xứ, chứng nhận, quy cách/giá. Liên kết mở các route và khu vực đã có.
 - **Đồng hành:** tài khoản, đăng ký, giỏ hàng và tuyển dụng mô phỏng.
 - **Góc sống xanh:** các đoạn nội dung mô phỏng về lựa chọn thực phẩm, đọc hồ sơ organic và tin/ưu đãi; mở trong dialog, không dẫn tới chuyên mục blog chưa xây dựng.
 - **Hỗ trợ:** hướng dẫn mua hàng, thành viên, giao hàng, thanh toán, đổi trả, bảo mật, xử lý dữ liệu và FAQ. Các mục mở Radix Dialog, có focus bàn phím, đóng bằng Esc và hiệu ứng của theme. Giữ nội dung trong lúc chạy hiệu ứng đóng.

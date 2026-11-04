@@ -32,6 +32,7 @@ const navigation = [
       { path: 'customers', name: 'Khách hàng', icon: Users },
       { path: 'reviews', name: 'Đánh giá sản phẩm', icon: MessageSquare },
       { path: 'feedbacks', name: 'Phản hồi', icon: MessageCircle },
+      { path: 'purchase-orders', name: 'Lịch sử đơn mua', icon: FileText, roles: ['SALES_STAFF'], excludeRoles: ['ADMIN'] },
       { path: 'return-requests', name: 'Đổi trả', icon: RotateCcw },
       { path: 'return-receipts', name: 'Hàng thu hồi', icon: FileInput },
     ],
@@ -50,6 +51,8 @@ const navigation = [
     id: 'system', name: 'Hệ thống', icon: Settings2, roles: ADMIN,
     children: [
       { path: 'notifications', name: 'Thông báo', icon: Bell },
+      { path: 'employees', name: 'Nhân viên & Phân quyền', icon: Users },
+      { path: 'delivery-settings', name: 'Cấu hình giao hàng', icon: Truck },
       { path: 'business-forms', name: 'Biểu mẫu & Bản in', icon: FileText },
       { path: 'home', name: 'Nội dung trang chủ', icon: Home },
     ],

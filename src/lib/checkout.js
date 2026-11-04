@@ -45,7 +45,11 @@ export function promotionPayload(values, { automaticCode = false } = {}) {
   if ((!automaticCode && !/^[A-Z0-9_-]{1,50}$/.test(payload.promotionCode)) || !payload.name) throw new Error('Kiểm tra mã khuyến mãi và tên chương trình.');
   if (!(payload.discountValue > 0) || (payload.discountType === 'percentage' && payload.discountValue > 100)) throw new Error('Giá trị giảm phải dương, phần trăm tối đa 100.');
   if (!payload.startDate || !payload.endDate || payload.endDate <= payload.startDate) throw new Error('Ngày kết thúc phải sau ngày bắt đầu.');
-  if (payload.status === 'active' && !payload.productIds.length && !payload.batchIds.length) throw new Error('Vui lòng chọn ít nhất một sản phẩm áp dụng trước khi bật hoạt động.');
+  payload.batchIds = [];
+  payload.promotionType = values.promotionType || 'product';
+  payload.requiredQuantities = payload.promotionType === 'combo' ? Object.fromEntries(payload.productIds.map(id => [id, Number(values.requiredQuantities?.[id] ?? 1)])) : {};
+  if (payload.promotionType === 'combo' && (payload.productIds.length < 2 || payload.productIds.length > 8 || Object.values(payload.requiredQuantities).some(q => !Number.isInteger(q) || q < 1 || q > 99))) throw new Error('Combo cần từ 2 đến 8 sản phẩm, số lượng mỗi sản phẩm từ 1 đến 99.');
+  if (payload.status === 'active' && !payload.productIds.length) throw new Error('Vui lòng chọn ít nhất một sản phẩm áp dụng trước khi bật hoạt động.');
   const redeemable = values.pointsCost !== '' && values.pointsCost != null;
   payload.pointsCost = redeemable ? Number(values.pointsCost) : null;
   payload.voucherValidDays = redeemable ? Number(values.voucherValidDays) : null;

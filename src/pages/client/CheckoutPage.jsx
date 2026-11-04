@@ -1,3 +1,5 @@
+import { CheckoutDeliveryLocation } from '@/components/checkout/CheckoutDeliveryLocation';
+import { validLocation } from '@/lib/deliveryLocation';
 import { CheckoutBenefits } from '@/components/checkout/CheckoutBenefits';
 import { loadCheckoutVouchers } from '@/lib/customerVouchers';
 import { useEffect, useRef, useState } from 'react';
@@ -11,7 +13,7 @@ import { hasRole } from '@/lib/permissions';
 import { selectedCartItems } from '@/lib/cart';
 import { quoteFingerprint, canPayOrder, paymentRedirect } from '@/lib/checkout';
 import { checkoutFormPayload, PICKUP_STORE } from '@/lib/checkoutForm';
-import { savedAddressToForm } from '@/lib/address';
+import { formatShippingAddress, savedAddressToForm } from '@/lib/address';
 import { readAttempt, saveAttempt, clearAttempt, rememberPayment } from '@/lib/checkoutAttempt';
 import { checkoutService } from '@/services/client/checkoutService';
 import { loadAddresses } from '@/services/client/addressService';
@@ -31,7 +33,7 @@ import { PaymentMethods } from '@/components/checkout/PaymentMethods';
 export default function CheckoutPage() {
   const { user } = useAuth();
   if (!user || !hasRole(user, 'CUSTOMER') || DEMO_MODE) return <PurchaseFrame step={2} title="Thông tin & thanh toán"><section className={`${purchasePanel} p-8 text-center`}><ShoppingBag className="!mx-auto text-primary" size={35} /><h2 className="!mt-4 text-lg font-semibold">{!user ? 'Đăng nhập để tiếp tục đặt hàng' : 'Thanh toán dành cho tài khoản khách hàng'}</h2><p className="!mt-3 text-sm text-stone-500">{DEMO_MODE ? 'Chức năng đặt hàng chưa sẵn sàng. Vui lòng liên hệ cửa hàng để được hỗ trợ.' : !user ? 'Giỏ khách sẽ được gộp vào tài khoản sau khi đăng nhập.' : 'Vui lòng sử dụng tài khoản khách hàng để mua sắm.'}</p><Link className="!mt-5 inline-flex rounded-xl bg-primary px-6 py-3 text-sm !text-white" to={!user ? '/dang-nhap' : '/gio-hang'} state={!user ? { from: '/thanh-toan' } : undefined}>{!user ? 'Đăng nhập' : 'Về giỏ hàng'}</Link></section></PurchaseFrame>;
-  if (user.profileCompletionRequired) return <PurchaseFrame step={2} title="Bổ sung thông tin nhận hàng"><section className={`${purchasePanel} p-8 text-center`}><UserRound className="!mx-auto text-primary" size={35} /><h2 className="!mt-4 text-lg font-semibold">Thêm số điện thoại để tiếp tục đặt hàng</h2><p className="!mt-3 text-sm leading-7 text-stone-500">Mộc cần số điện thoại trong hồ sơ để liên hệ và xác nhận giao hàng.</p><Link className="!mt-5 inline-flex rounded-xl bg-primary px-6 py-3 text-sm !text-white" to="/tai-khoan" state={{ profileReturnTo: '/thanh-toan' }}>Cập nhật hồ sơ</Link></section></PurchaseFrame>;
+  if (user.profileCompletionRequired) return <PurchaseFrame step={2} title="Bổ sung thông tin nhận hàng"><section className={`${purchasePanel} p-8 text-center`}><UserRound className="!mx-auto text-primary" size={35} /><h2 className="!mt-4 text-lg font-semibold">Thêm số điện thoại để tiếp tục đặt hàng</h2><p className="!mt-3 text-sm leading-7 text-stone-500">organicfood.vn cần số điện thoại trong hồ sơ để liên hệ và xác nhận giao hàng.</p><Link className="!mt-5 inline-flex rounded-xl bg-primary px-6 py-3 text-sm !text-white" to="/tai-khoan" state={{ profileReturnTo: '/thanh-toan' }}>Cập nhật hồ sơ</Link></section></PurchaseFrame>;
   return <CheckoutForm key={user.username} user={user} />;
 }
 function CheckoutForm({ user }) {
@@ -40,6 +42,7 @@ function CheckoutForm({ user }) {
   const [attempt, setAttempt] = useState(() => readAttempt(user.username));
   const [values, setValues] = useState({ receiverName: user.fullName || '', receiverPhone: user.phoneNumber || '', email: user.email || '', note: '', paymentMethod: 'cod', promotionCode: promoCode || '', voucherCode: voucherCode || '' });
   const [address, setAddress] = useState({ provinceCode: '', wardCode: '', street: '', search: '' }), [fulfillment, setFulfillment] = useState('delivery');
+  const [deliveryPoint, setDeliveryPoint] = useState(null);
   const [quoted, setQuoted] = useState(null), [checking, setChecking] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState('');
   const locked = useRef(false), initialized = useRef(false), touched = useRef(false);
   const vouchers = useResource(loadCheckoutVouchers, []);
@@ -57,7 +60,9 @@ function CheckoutForm({ user }) {
     if (a) setAddress(savedAddressToForm(a, options.data.addresses));
     setValues((old) => ({ ...old, receiverName: a?.receiverName || p?.fullName || old.receiverName, receiverPhone: a?.receiverPhone || p?.phoneNumber || old.receiverPhone, email: p?.email || old.email, paymentMethod: options.data.methods.cod ? 'cod' : Object.keys(options.data.methods).find((n) => options.data.methods[n]) || '' }));
   }, [options.data, attempt]);
-  const signature = JSON.stringify({ values, rewardPoints, address: { ...address, search: '' }, fulfillment, items: selected.map(({ variantId, quantity, minPrice }) => [variantId, quantity, minPrice]) });
+  let deliveryAddress = '';
+  try { if (fulfillment === 'delivery' && options.data) deliveryAddress = formatShippingAddress(address, options.data.addresses); } catch { /* Wait for a complete address. */ }
+  const signature = JSON.stringify({ deliveryPoint, values, rewardPoints, address: { ...address, search: '' }, fulfillment, items: selected.map(({ variantId, quantity, minPrice }) => [variantId, quantity, minPrice]) });
   const currentSignature = useRef(signature); currentSignature.current = signature;
   const quote = quoted?.signature === signature ? quoted.value : null;
   function field(key, value) { touched.current = true; setValues((old) => ({ ...old, [key]: value })); setError(''); }
@@ -65,7 +70,7 @@ function CheckoutForm({ user }) {
     const points = validateRewardPoints(rewardPoints, options.data?.rewards);
     const payload = checkoutFormPayload({ ...next, points }, selected, address, options.data?.addresses, fulfillment);
     if (!options.data?.methods[payload.paymentMethod]) throw new Error('Phương thức thanh toán này chưa khả dụng.');
-    return payload;
+    return deliveryPoint?.address === payload.shippingAddress && validLocation(deliveryPoint.latitude, deliveryPoint.longitude) ? { ...payload, deliveryLatitude: deliveryPoint.latitude, deliveryLongitude: deliveryPoint.longitude } : payload;
   }
   useEffect(() => {
     if (attempt || cartLoading || cartBusy || cartError || !options.data || locked.current) return;
@@ -82,6 +87,7 @@ function CheckoutForm({ user }) {
       if (current?.orderId) { clearAttempt(user.username); navigate(`/dat-hang-thanh-cong/${encodeURIComponent(current.orderId)}`); return; }
       if (!current) {
         if (recover) throw new Error('Không có lần đặt trước để khôi phục.');
+        if (fulfillment === 'delivery' && (deliveryPoint?.address !== deliveryAddress || !validLocation(deliveryPoint?.latitude, deliveryPoint?.longitude))) throw new Error('Vui lòng chờ xác định vị trí nhận hàng hoặc chọn đúng địa chỉ gợi ý trước khi đặt hàng.');
         const payload = body(), latest = await checkoutService.preview(payload);
         if (currentSignature.current !== signature) throw new Error('Giỏ hàng vừa thay đổi. Vui lòng kiểm tra tổng tiền mới trước khi xác nhận.');
         if (!quote || quoteFingerprint(latest) !== quoteFingerprint(quote)) { setQuoted({ signature, value: latest }); setError('Tổng tiền đã được kiểm tra. Vui lòng xem lại và bấm THANH TOÁN để xác nhận.'); return; }
@@ -105,7 +111,7 @@ function CheckoutForm({ user }) {
           return;
         }
       }
-      toast.success(order.paymentStatus === 'paid' ? 'Đơn hàng đã được xác nhận thanh toán.' : 'Đặt hàng thành công. Mộc đã ghi nhận đơn của bạn.', { position: 'top-left' });
+      toast.success(order.paymentStatus === 'paid' ? 'Đơn hàng đã được xác nhận thanh toán.' : 'Đặt hàng thành công. organicfood.vn đã ghi nhận đơn của bạn.', { position: 'top-left' });
       navigate(`/dat-hang-thanh-cong/${encodeURIComponent(order.id)}`, { replace: true });
     } catch (e) {
       if ([400, 403, 404, 409].includes(e.response?.status)) { clearAttempt(user.username); setAttempt(null); setQuoted(null); }
@@ -138,7 +144,7 @@ function CheckoutForm({ user }) {
         {vouchers.error && <p role="alert" className="!mt-3 text-xs text-red-700">{vouchers.error}</p>}</section><fieldset disabled={blocked} className="min-w-0 space-y-4">
         <CheckoutSection number="1" title="Thông tin khách hàng" icon={UserRound}><div className="grid gap-4 sm:grid-cols-2"><Field label="Họ và tên *"><Input required maxLength={100} autoComplete="name" placeholder="Nguyễn Văn An" value={values.receiverName} onChange={(e) => field('receiverName', e.target.value)} /></Field><Field label="Số điện thoại *"><Input required type="tel" maxLength={20} minLength={8} autoComplete="tel" placeholder="Số điện thoại nhận hàng" value={values.receiverPhone} onChange={(e) => field('receiverPhone', e.target.value)} /></Field></div><div className="!mt-4"><Field label="Email nhận hóa đơn (tùy chọn)" hint="Gửi yêu cầu email kèm đơn; cửa hàng xác nhận việc phát hành hóa đơn."><Input type="email" maxLength={254} autoComplete="email" placeholder="ban@email.com" value={values.email} onChange={(e) => field('email', e.target.value)} /></Field></div></CheckoutSection>
         <CheckoutSection number="2" title="Hình thức nhận hàng" icon={Truck}><div className="!mb-5 grid grid-cols-2 gap-3">{[['delivery', Truck, 'Giao hàng tận nhà'], ['pickup', Building2, 'Nhận tại cửa hàng']].map(([key, Icon, label]) => <label key={key} className={`flex min-h-20 cursor-pointer items-center gap-2 rounded-xl border px-3 py-4 text-xs ${fulfillment === key ? 'border-[#7c9664] bg-sage text-primary' : 'border-line text-stone-500'}`}><input type="radio" name="fulfillment" value={key} checked={fulfillment === key} onChange={() => { touched.current = true; setFulfillment(key); setError(''); }} className="accent-primary" /><Icon size={18} className="shrink-0" /><span>{label}</span></label>)}</div>
-        {fulfillment === 'delivery' ? <>{!!options.data.profile?.addresses?.length && <div className="!mb-4"><Field label="Địa chỉ đã lưu"><Select defaultValue="" onChange={(e) => { const a = options.data.profile.addresses.find((a) => a.id === e.target.value); if (a) { touched.current = true; setAddress(savedAddressToForm(a, options.data.addresses)); setValues((old) => ({ ...old, receiverName: a.receiverName || old.receiverName, receiverPhone: a.receiverPhone || old.receiverPhone })); } }}><option value="">Chọn địa chỉ hoặc nhập mới</option>{options.data.profile.addresses.map((a) => <option key={a.id} value={a.id}>{a.label || a.receiverName} · {a.streetAddress}</option>)}</Select></Field></div>}<AddressForm data={options.data.addresses} value={address} disabled={blocked} onChange={(a) => { touched.current = true; setAddress(a); setError(''); }} /></> : <div className="rounded-xl border border-[#c5d2b8] bg-[#f7faf3] p-4"><p className="flex items-center gap-2 text-sm font-semibold text-primary"><MapPin size={18} />{PICKUP_STORE.name}</p><p className="!mt-2 text-xs leading-6 text-stone-500">{PICKUP_STORE.address}</p><a className="!mt-2 inline-block text-xs text-primary" href={`tel:${PICKUP_STORE.phone}`}>{PICKUP_STORE.phone}</a><p className="!mt-3 border-t border-line pt-3 text-[11px] leading-6 text-amber-800">Đây là yêu cầu nhận tại cửa hàng, được gửi kèm ghi chú đơn. Vui lòng chờ cửa hàng liên hệ xác nhận lịch nhận.</p></div>}
+        {fulfillment === 'delivery' ? <>{!!options.data.profile?.addresses?.length && <div className="!mb-4"><Field label="Địa chỉ đã lưu"><Select defaultValue="" onChange={(e) => { const a = options.data.profile.addresses.find((a) => a.id === e.target.value); if (a) { touched.current = true; setAddress(savedAddressToForm(a, options.data.addresses)); setValues((old) => ({ ...old, receiverName: a.receiverName || old.receiverName, receiverPhone: a.receiverPhone || old.receiverPhone })); } }}><option value="">Chọn địa chỉ hoặc nhập mới</option>{options.data.profile.addresses.map((a) => <option key={a.id} value={a.id}>{a.label || a.receiverName} · {a.streetAddress}</option>)}</Select></Field></div>}<AddressForm data={options.data.addresses} value={address} disabled={blocked} onChange={(a) => { touched.current = true; setAddress(a); setError(''); }} /><CheckoutDeliveryLocation address={deliveryAddress} value={deliveryPoint} onChange={setDeliveryPoint} /></> : <div className="rounded-xl border border-[#c5d2b8] bg-[#f7faf3] p-4"><p className="flex items-center gap-2 text-sm font-semibold text-primary"><MapPin size={18} />{PICKUP_STORE.name}</p><p className="!mt-2 text-xs leading-6 text-stone-500">{PICKUP_STORE.address}</p><a className="!mt-2 inline-block text-xs text-primary" href={`tel:${PICKUP_STORE.phone}`}>{PICKUP_STORE.phone}</a><p className="!mt-3 border-t border-line pt-3 text-[11px] leading-6 text-amber-800">Đây là yêu cầu nhận tại cửa hàng, được gửi kèm ghi chú đơn. Vui lòng chờ cửa hàng liên hệ xác nhận lịch nhận.</p></div>}
         <div className="!mt-5"><Field label="Ghi chú cho cửa hàng (tùy chọn)"><Textarea maxLength={4500} rows={2} className="!min-h-20" placeholder="Lưu ý về thời gian, người nhận hoặc yêu cầu khác…" value={values.note} onChange={(e) => field('note', e.target.value)} /></Field></div></CheckoutSection>
       </fieldset></div>
       <CheckoutSummary items={selected} quote={quote} busy={busy} checking={checking} disabled={cartBusy || !!attempt || cartLoading || !!cartError} promotionCode={values.promotionCode} points={rewardPoints}><PaymentMethods methods={options.data.methods} value={values.paymentMethod} onChange={(value) => field('paymentMethod',value)} disabled={blocked} fulfillment={fulfillment} /></CheckoutSummary>

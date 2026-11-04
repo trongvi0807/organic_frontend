@@ -36,4 +36,4 @@ Sản phẩm tạm hết hàng vẫn nằm trong trang yêu thích và không th
 
 Các thay đổi này không cần migration SQL. Cần khởi động backend mới và cập nhật frontend. Chỉ build/biên dịch; các thao tác nghiệp vụ ở trên dành cho người dùng kiểm tra thủ công.
 
-Trang chủ mặc định mở “Sản phẩm còn hàng”, hiển thị tối đa 8 sản phẩm khác nhau từ các bộ sưu tập đã có. “Mộc chọn lọc” vẫn là tab riêng chỉ gồm sản phẩm được đánh dấu nổi bật. Không tự đánh dấu sản phẩm nổi bật hoặc thêm hàng vào kho để làm đầy giao diện.
+Trang chủ mặc định mở “Sản phẩm còn hàng”, hiển thị tối đa 8 sản phẩm khác nhau từ các bộ sưu tập đã có. “organicfood.vn chọn lọc” vẫn là tab riêng chỉ gồm sản phẩm được đánh dấu nổi bật. Không tự đánh dấu sản phẩm nổi bật hoặc thêm hàng vào kho để làm đầy giao diện.

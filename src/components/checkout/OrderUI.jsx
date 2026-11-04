@@ -7,7 +7,7 @@ import { orderLabels, paymentLabels, paymentDisplayNames as paymentNames, shipme
 
 export const commercePanel = 'min-w-0 rounded-3xl border border-line bg-white p-5 shadow-sm sm:p-7';
 export function CommerceHeader({ title, description }) {
-  return <div className="!mb-8"><CustomerAccountNav /><p className="!mb-3 text-[10px] tracking-[0.22em] text-[#7b8f5c]">MỘC · CHỌN LÀNH, SỐNG XANH</p><h1 className="font-serif text-4xl text-primary sm:text-5xl">{title}</h1>{description && <p className="!mt-4 text-sm leading-7 text-stone-500">{description}</p>}</div>;
+  return <div className="!mb-8"><CustomerAccountNav /><p className="!mb-3 text-[10px] tracking-[0.22em] text-[#7b8f5c]">organicfood.vn · CHỌN LÀNH, SỐNG XANH</p><h1 className="font-serif text-4xl text-primary sm:text-5xl">{title}</h1>{description && <p className="!mt-4 text-sm leading-7 text-stone-500">{description}</p>}</div>;
 }
 export function CommerceStatus({ value, type = 'order' }) {
   const labels = type === 'payment' ? paymentLabels : type === 'shipment' ? shipmentLabels : orderLabels;

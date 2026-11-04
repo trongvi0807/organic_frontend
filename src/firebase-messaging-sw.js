@@ -23,7 +23,7 @@ if (firebaseConfigured(config)) {
 const messaging = getMessaging(initializeApp(config));
 onBackgroundMessage(messaging, async (payload) => {
   // FCM automatically displays notification payloads; do not display twice.
-  if (!payload.notification) await self.registration.showNotification('Mộc · Thông báo kho', {
+  if (!payload.notification) await self.registration.showNotification('organicfood.vn · Thông báo kho', {
     body: payload.data?.message || 'Có cập nhật tồn kho mới.',
     tag: payload.data?.notificationId || payload.messageId,
     data: payload.data,

@@ -1,22 +1,54 @@
-// Contact information supplied by the store; missing channels stay unpublished.
+import { DEFAULT_STORE_LOCATION } from './store';
+
+// Public store information: https://organicfood.vn/ (checked 04/11/2026).
 export const FOOTER_CONFIG = {
-  address: '36 Trịnh Đình Trọng, Phường Tân Phú',
-  phone: '0344855913',
-  phoneDisplay: '0344 855 913',
-  hours: 'Liên hệ hotline để được tư vấn',
+  address: DEFAULT_STORE_LOCATION.address,
+  phone: '02873071088',
+  phoneDisplay: '028 7307 1088',
+  hours: '7h – 20h · Thứ Hai đến Chủ Nhật',
+  deliveryHours: '7h30 – 20h',
+  feedbackPhone: '0862751088',
+  feedbackPhoneDisplay: '0862 751 088',
   hoursDemo: false,
-  company: { name: 'Mộc Organic', description: 'Không gian thực phẩm xanh và những lựa chọn lành cho mỗi ngày.', taxCode: 'Đang cập nhật', demo: false },
-  emails: [],
+  company: { name: 'Công ty Cổ phần Vạn Sơn Thịnh Phát', description: 'Thực phẩm hữu cơ cho bữa ăn và cuộc sống mỗi ngày.', taxCode: '0313701476', demo: false },
+  certificationReferences: [
+    { label: 'Organic (USDA/EU) · Control Union', code: 'CU 900475' },
+    { label: 'HACCP', code: 'HFM2512' },
+  ],
+  emails: ['info@organicfood.vn'],
+  branches: [
+    { id: 'district-1', name: 'Organicfood Quận 1', address: DEFAULT_STORE_LOCATION.address, phone: '0969421088', phoneDisplay: '0969 421 088', extension: '1' },
+    { id: 'district-2', name: 'Organicfood Quận 2', address: '93 Trần Não, Phường Bình An, Quận 2, Thành phố Hồ Chí Minh', phone: '0931771088', phoneDisplay: '0931 771 088', extension: '2' },
+    { id: 'warehouse', name: 'Văn phòng & Kho', address: '28 Đường Thảo Điền, Phường Thảo Điền, Quận 2, Thành phố Hồ Chí Minh', extension: '0' },
+    { id: 'farm', name: 'Nông trại Farm O', address: '179 Ấp 5, Thạnh Hoà, Bến Lức, Long An' },
+  ],
+  policyLinks: [
+    { label: 'Chương trình tích điểm', to: '/chinh-sach-tich-diem' },
+    { label: 'Chính sách đổi trả', to: '/chinh-sach-doi-tra' },
+    { label: 'Chính sách giao hàng', to: '/chinh-sach-giao-hang' },
+    { label: 'Chính sách bảo mật', to: '/chinh-sach-bao-mat' },
+    { label: 'Phương thức thanh toán', to: '/phuong-thuc-thanh-toan' },
+    { label: 'Hướng dẫn mua hàng', to: '/huong-dan-mua-hang' },
+  ],
+  aboutLinks: [
+    { label: 'Giới thiệu Organicfood.vn', to: '/ve-cua-hang' },
+    { label: 'Thông tin chứng nhận', to: '/ve-cua-hang#chung-nhan' },
+    { label: 'Điểm nổi bật', to: '/diem-noi-bat' },
+    { label: 'Làm việc với chúng tôi', href: 'https://organicfood.vn/pages/viec-lam-organicfood' },
+    { label: 'Điều khoản dịch vụ', to: '/dieu-khoan-dich-vu' },
+    { label: 'Phản hồi & hỗ trợ', to: '/phan-hoi' },
+  ],
   socialLinks: [
     { platform: 'facebook', label: 'Facebook', href: null, demo: false },
     { platform: 'instagram', label: 'Instagram', href: null, demo: false },
     { platform: 'youtube', label: 'YouTube', href: null, demo: false },
   ],
   paymentMethods: [
-    { id: 'cash', label: 'COD', description: 'Thanh toán khi nhận hàng' },
-    { id: 'card', label: 'Stripe', description: 'Thẻ quốc tế qua Stripe Checkout khi cổng được bật' },
-    { id: 'wallet', label: 'PayPal', description: 'PayPal khi cổng được bật' },
-    { id: 'bank', label: 'VNPay', description: 'VNPay khi cổng được bật' },
+    { id: 'cash', gateway: 'cod', label: 'COD', description: 'Thanh toán khi nhận hàng' },
+    { id: 'bank', gateway: 'vnpay', label: 'VNPay', description: 'Thanh toán qua VNPay' },
+    { id: 'qr', gateway: 'payos', label: 'VietQR', description: 'Quét mã VietQR để thanh toán' },
+    { id: 'card', gateway: 'stripe', label: 'Stripe', description: 'Thanh toán bằng thẻ qua Stripe' },
+    { id: 'wallet', gateway: 'paypal', label: 'PayPal', description: 'Thanh toán qua PayPal' },
   ],
   paymentDemo: false,
   // Only add verification badges after receiving a genuine document and a public verification URL.
@@ -32,7 +64,7 @@ export const FOOTER_TOPICS = {
     ['Xem nguồn gốc', 'Kiểm tra quốc gia, vùng sản xuất và cơ sở được liên kết với từng sản phẩm.'],
     ['Đọc chứng nhận', 'Đối chiếu tổ chức cấp, số hồ sơ, thời hạn và tài liệu công bố. Không mặc định mọi sản phẩm có cùng một chứng nhận.'],
   ], demo: false },
-  offers: { title: 'Tin tức & ưu đãi', description: 'Những cập nhật và trải nghiệm mới cùng Mộc.', steps: [
+  offers: { title: 'Tin tức & ưu đãi', description: 'Những cập nhật và trải nghiệm mới cùng organicfood.vn.', steps: [
     ['Ưu đãi chính thức', 'Chương trình khuyến mãi thật sẽ được công bố khi cửa hàng xác nhận điều kiện và thời gian áp dụng.'],
     ['Áp dụng vào đơn hàng', 'Chọn sản phẩm vào giỏ hàng, áp dụng mã ưu đãi rồi kiểm tra số tiền giảm trước khi thanh toán.'],
   ], demo: false },
@@ -66,7 +98,7 @@ export const FOOTER_TOPICS = {
     ['Kiểm tra trước khi lựa chọn', 'Đọc kỹ mô tả sản phẩm, quy cách, giá và thông tin nguồn gốc được công bố.'],
     ['Xác nhận giao dịch', 'Kiểm tra thông tin nhận hàng và tổng tiền trước khi đặt đơn. Trạng thái thanh toán được xác nhận từ hệ thống cửa hàng; trang quay về từ cổng không tự xác nhận đã thu tiền.'],
   ], demo: false },
-  careers: { title: 'Cùng làm việc với Mộc', description: 'Một không gian làm việc gần hơn với lối sống xanh.', steps: [
-    ['Cơ hội đồng hành', 'Mộc đang chuẩn bị chuyên mục tuyển dụng. Danh sách vị trí và kênh ứng tuyển chính thức sẽ được cập nhật sau.'],
+  careers: { title: 'Cùng làm việc với organicfood.vn', description: 'Một không gian làm việc gần hơn với lối sống xanh.', steps: [
+    ['Cơ hội đồng hành', 'organicfood.vn đang chuẩn bị chuyên mục tuyển dụng. Danh sách vị trí và kênh ứng tuyển chính thức sẽ được cập nhật sau.'],
   ], demo: false },
 };

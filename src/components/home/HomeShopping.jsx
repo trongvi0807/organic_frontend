@@ -5,6 +5,7 @@ import { ProductCard } from '@/components/products/ProductCard';
 import { Reveal } from '@/components/common/Reveal';
 import { safeMediaUrl } from '@/lib/productDetail';
 import { Select } from '@/components/ui/field';
+import { discountedProductCards, shoppingCategories } from '@/lib/homeMerchandising';
 
 const categoryHref = (id) => `/san-pham?category=${encodeURIComponent(id)}`;
 const imageFor = (category, products) => safeMediaUrl(products.find((item) => item.categoryId === category.id && safeMediaUrl(item.imageUrl))?.imageUrl);
@@ -13,7 +14,7 @@ function CategoryImage({ src }) {
   return src && !failed ? <img src={src} alt="" loading="lazy" width="180" height="180" onError={() => setFailed(true)} /> : <Leaf size={38} strokeWidth={1.1} />;
 }
 export function HomeCategories({ categories, products }) {
-  const popular = [...categories].filter((item) => Number(item.productCount) > 0)
+  const popular = shoppingCategories(categories).filter((item) => Number(item.productCount) > 0)
     .sort((a, b) => Number(b.productCount) - Number(a.productCount) || String(a.name).localeCompare(String(b.name), 'vi'))
     .slice(0, 8);
   if (!popular.length) return null;
@@ -24,10 +25,10 @@ export function HomeCategories({ categories, products }) {
 }
 
 export function HomeOffers({ products, onView }) {
-  const offers = products.filter((item) => Number(item.minPrice) > 0 && Number(item.compareAtPrice) > Number(item.minPrice)).slice(0, 4);
+  const offers = discountedProductCards(products).slice(0, 8);
   if (!offers.length) return null;
   return <section className="moc-home-offers moc-home-section" id="uu-dai" aria-labelledby="home-offers-title"><div className="container">
-    <Reveal className="moc-home-section-heading"><div><span className="moc-home-kicker"><Tag size={14} />GIÁ TỐT TỪ CỬA HÀNG</span><h2 id="home-offers-title">Chọn điều lành, thêm tiết kiệm.</h2><p>Những sản phẩm có giá ưu đãi trong bộ sưu tập của Mộc.</p></div><a className="moc-home-underlined-link" href="#san-pham">Khám phá thêm<ArrowRight size={16} /></a></Reveal>
+    <Reveal className="moc-home-section-heading"><div><span className="moc-home-kicker"><Tag size={14} />GIÁ TỐT TỪ CỬA HÀNG</span><h2 id="home-offers-title">Chọn điều lành, thêm tiết kiệm.</h2><p>Những sản phẩm đang giảm giá, chọn mua từng món bạn yêu thích.</p></div><a className="moc-home-underlined-link" href="#san-pham">Khám phá thêm<ArrowRight size={16} /></a></Reveal>
     <div className="product-grid">{offers.map((product, index) => <ProductCard key={product.id} product={product} index={index} onView={onView} />)}</div>
   </div></section>;
 }
@@ -39,7 +40,7 @@ export function HomeCollections({ home, onView }) {
   const groups = { availableProducts, featuredProducts: home.featuredProducts, newProducts: home.newProducts, certifiedProducts: home.certifiedProducts };
   const collections = [
     { key: 'availableProducts', label: 'Sản phẩm còn hàng', icon: ShoppingBag },
-    { key: 'featuredProducts', label: 'Mộc chọn lọc', icon: Leaf },
+    { key: 'featuredProducts', label: 'organicfood.vn chọn lọc', icon: Leaf },
     { key: 'newProducts', label: 'Mới tại cửa hàng', icon: ShoppingBag },
     { key: 'certifiedProducts', label: 'Có chứng nhận hợp lệ', icon: ShieldCheck },
   ].filter((item) => groups[item.key].length);
@@ -56,7 +57,7 @@ export function HomeCollections({ home, onView }) {
 }
 
 export function HomeCategoryStories({ categories, products }) {
-  const picks = categories.filter((item) => imageFor(item, products)).slice(0, 2);
+  const picks = shoppingCategories(categories).filter((item) => imageFor(item, products)).slice(0, 2);
   if (!picks.length) return null;
   return <section className="container moc-home-category-stories" aria-label="Khám phá thêm các nhóm sản phẩm">{picks.map((item, index) => <Reveal key={item.id}><Link to={categoryHref(item.id)} className={`moc-home-category-story moc-home-tone-${index + 1}`}><div><span className="moc-home-kicker">THÊM LỰA CHỌN CHO GIỎ HÀNG</span><h2>{item.name}</h2><span className="moc-home-underlined-link">Khám phá ngay<ArrowUpRight size={17} /></span></div><div className="moc-home-category-story-image"><CategoryImage key={imageFor(item, products)} src={imageFor(item, products)} /></div></Link></Reveal>)}</section>;
 }
