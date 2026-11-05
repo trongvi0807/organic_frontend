@@ -1,7 +1,7 @@
 import api, { unwrap } from '../api';
 import { requireBackend } from '../backendGuard';
 import { normalizePage, allPages } from '@/lib/apiData';
-import { hasRole } from '@/lib/permissions';
+import { hasRole, rolesFor } from '@/lib/permissions';
 import { purchaseOrderService, goodsReceiptService, inventoryService } from './procurementService';
 import { orderService } from './orderService';
 import { loadPhysicalStock, loadPurchasePrintContext } from './purchasePrintService';
@@ -11,8 +11,8 @@ import { feedbackFormData, inventoryFormData, receiptFormData, returnFormData, r
 
 const get = async (url, params) => { requireBackend(); return unwrap(await api.get(url, { params })); };
 export const formSourceRoles = {
-  purchase: ['ADMIN', 'WAREHOUSE_STAFF'], receipt: ['ADMIN', 'WAREHOUSE_STAFF'], batch: ['ADMIN', 'WAREHOUSE_STAFF'],
-  sale: ['ADMIN', 'SALES_STAFF', 'WAREHOUSE_STAFF'], feedback: ['ADMIN', 'SALES_STAFF'], return: ['ADMIN', 'SALES_STAFF'], return_receipt: ['ADMIN', 'SALES_STAFF', 'WAREHOUSE_STAFF'],
+  purchase: rolesFor('purchase.read'), receipt: rolesFor('receipt.read'), batch: rolesFor('inventory.read'),
+  sale: rolesFor('order.read'), feedback: rolesFor('feedback.read'), return: rolesFor('return.read'), return_receipt: rolesFor('return.warehouse.read'),
 };
 export const canReadFormSource = (user, source) => hasRole(user, ...(formSourceRoles[source] || []));
 const sources = {

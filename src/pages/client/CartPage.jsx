@@ -10,7 +10,6 @@ import { ClearCartDialog } from '@/components/cart/ClearCartDialog';
 import { ResourceState } from '@/components/common/ResourceState';
 import { PurchaseFrame, purchasePanel } from '@/components/checkout/PurchaseFrame';
 import { DEMO_MODE } from '@/services/api';
-import { PromotionBanners } from '@/components/promotions/PromotionBanners';
 
 export default function CartPage() {
   const { cart, setAllSelected, clearCart, cartLoading, cartBusy, cartError, cartMeta, cartAllowed, refreshCart } = useShop();
@@ -28,7 +27,6 @@ export default function CartPage() {
         <ul>{cart.map((item) => <CartItem key={cartItemKey(item)} item={item} />)}</ul>
       </div><div className="!mt-4 flex items-start gap-2 px-1 text-[11px] leading-6 text-stone-500"><ShoppingBag size={16} className="!mt-1 shrink-0 text-[#7d9565]" /><p>Chọn những sản phẩm bạn muốn mua. Các sản phẩm chưa chọn vẫn được giữ trong giỏ.</p></div></section>
       <OrderSummary />
-      <div className="min-w-0 lg:col-span-2"><PromotionBanners mode="cart" /></div>
     </div>}
     <ClearCartDialog open={confirmOpen} busy={cartBusy} onOpenChange={setConfirmOpen} onConfirm={async () => { const success = await clearCart(); if (success) { setConfirmOpen(false); if (DEMO_MODE) toast.success('Đã xóa toàn bộ giỏ hàng.'); } }} />
   </PurchaseFrame>;

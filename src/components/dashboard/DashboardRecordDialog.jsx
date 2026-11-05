@@ -6,7 +6,7 @@ import { ResourceState } from '@/components/common/ResourceState';
 import { useResource } from '@/hooks/useResource';
 import { dashboardService } from '@/services/admin/dashboardService';
 import { adminDate } from '@/lib/adminFormat';
-import { hasRole } from '@/lib/permissions';
+import { hasRole, can } from '@/lib/permissions';
 import { currency } from '@/lib/utils';
 import { RETURN_STATES } from '@/lib/customerOrders';
 import { orderStatuses, receiptStatuses } from '@/lib/procurement';
@@ -19,8 +19,8 @@ export function DashboardRecordDialog({ selection, demo, user, onClose }) {
   const code = row.orderCode || row.receiptCode || row.requestCode || row.batchCode || row.variant?.productName || 'Chưa có mã';
   let href = '', action = 'Mở trang quản lý';
   if (type === 'order') href = `/admin/sales-orders?orderId=${encodeURIComponent(row.id)}`;
-  if (type === 'purchase') href = `/admin/${hasRole(user, 'ADMIN') ? 'order-approvals' : 'purchase-orders'}?documentId=${encodeURIComponent(row.id)}`;
-  if (type === 'receipt') href = `/admin/${hasRole(user, 'ADMIN') ? 'receipt-approvals' : 'goods-receipts'}?documentId=${encodeURIComponent(row.id)}`;
+  if (type === 'purchase') href = `/admin/${can(user, 'purchase.approve') ? 'order-approvals' : 'purchase-orders'}?documentId=${encodeURIComponent(row.id)}`;
+  if (type === 'receipt') href = `/admin/${can(user, 'receipt.approve') ? 'receipt-approvals' : 'goods-receipts'}?documentId=${encodeURIComponent(row.id)}`;
   if (['batch', 'stock'].includes(type)) href = `/admin/inventory?variantId=${encodeURIComponent(row.variant.id)}`;
   if (type === 'return') { href = `/admin/return-requests?requestId=${encodeURIComponent(row.id)}`; action = 'Xử lý yêu cầu đổi trả'; }
   const details = !record ? [] : type === 'purchase' ? [['Nhà cung cấp', record.supplier?.supplierName], ['Ngày lập', adminDate(record.orderDate)], ['Người lập', record.createdByEmployee?.fullName], ['Trạng thái', orderStatuses[record.status]], ['Tổng tiền', currency(record.totalAmount)], ['Giao dự kiến', adminDate(record.expectedDeliveryDate)]]

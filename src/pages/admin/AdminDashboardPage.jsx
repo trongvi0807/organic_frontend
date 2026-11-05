@@ -7,7 +7,7 @@ import { useOrderRefresh } from '@/hooks/useOrderRefresh';
 import { dashboardService } from '@/services/admin/dashboardService';
 import { buildDashboard } from '@/lib/adminDashboard';
 import { adminDate } from '@/lib/adminFormat';
-import { hasRole, roleCodes } from '@/lib/permissions';
+import { hasRole, can, roleCodes } from '@/lib/permissions';
 import { today } from '@/lib/apiData';
 import { Button } from '@/components/ui/button';
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
@@ -31,9 +31,9 @@ function DashboardContent({ user }) {
   const loading = snapshot.loading || (!data && !snapshot.error);
   const model = useMemo(() => buildDashboard(data, { today: day, days, granularity, expiryDays }), [data, day, days, granularity, expiryDays]);
   const sources = data?.sources || {}, errors = Object.values(sources).filter((source) => source.status === 'error');
-  const canStock = hasRole(user, 'ADMIN', 'WAREHOUSE_STAFF'), canManage = hasRole(user, 'ADMIN');
+  const canStock = can(user, 'inventory.read'), canManage = can(user, 'purchase.approve');
   const shortcuts = [
-    ['/admin/sales-orders', 'Đơn bán & giao hàng', true], ['/admin/order-approvals', 'Duyệt đơn mua', canManage],
+    ['/admin/sales-orders', 'Đơn bán & giao hàng', can(user, 'order.read')], ['/admin/order-approvals', 'Duyệt đơn mua', canManage],
     ['/admin/inventory', 'Tồn kho / Lô', canStock], ['/admin/business-forms', 'Biểu mẫu & bản in', true],
   ].filter(([, , allowed]) => allowed);
 

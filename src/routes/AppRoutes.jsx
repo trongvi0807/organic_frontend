@@ -102,38 +102,32 @@ export function AppRoutes() {
     <Route path="dang-nhap" element={<AuthPage />} /><Route path="dang-ky" element={<AuthPage mode="register" />} /><Route path="dang-xuat" element={<LogoutPage />} />
     <Route element={<ProtectedRoute roles={STAFF_ROLES} />}>
       <Route path="admin" element={<AdminLayout />}>
+        <Route index element={<DashboardRedirect />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="business-forms" element={<BusinessFormsPage />} />
-        <Route path="purchase-orders" element={<ProcurementPage key="purchase-orders" />} />
-        <Route path="return-receipts" element={<ReturnWarehousePage />} />
-        <Route path="sales-orders" element={<SalesOrdersPage />} />
-        <Route index element={<DashboardRedirect />} />
-        <Route element={<ProtectedRoute admin />}>
-          <Route path="employees" element={<StaffAccountsPage />} />
-          <Route path="delivery-settings" element={<DeliverySettingsPage />} />
-          <Route path="order-approvals" element={<ProcurementPage key="order-approvals" approval />} />
-          <Route path="receipt-approvals" element={<ProcurementPage key="receipt-approvals" kind="receipts" approval />} />
-          <Route path="home" element={<HomeManagementPage />} />
-          <Route path="categories" element={<ManagementPage key="categories" type="categories" />} />
-        </Route>
-        <Route element={<ProtectedRoute roles={PRODUCT_MANAGERS} />}><Route path="products" element={<ManagementPage key="products" type="products" />} /></Route>
-        <Route element={<ProtectedRoute roles={PROMOTION_MANAGERS} />}><Route path="promotions" element={<PromotionsPage />} /></Route>
-        <Route element={<ProtectedRoute roles={['ADMIN', 'WAREHOUSE_STAFF']} />}>
-          <Route path="goods-receipts" element={<ProcurementPage key="goods-receipts" kind="receipts" />} />
-          <Route path="inventory" element={<InventoryPage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
-        </Route>
-        <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}><Route path="customers" element={<RecordsPage key="customers" module="customers" />} /></Route>
-        <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}><Route path="payment-review" element={<PaymentReviewPage />} /></Route>
-        <Route element={<ProtectedRoute roles={['ADMIN','SALES_STAFF']} />}>
-          <Route path="reviews" element={<ReviewManagementPage />} />
-          <Route path="feedbacks" element={<FeedbackPage management />} />
-          <Route path="return-requests" element={<ReturnRequestsPage management />} />
-        </Route>
-        <Route path="suppliers" element={<RecordsPage key="suppliers" module="suppliers" />} />
-        <Route path="origins" element={<RecordsPage key="origins" module="origins" />} />
-        <Route path="certifications" element={<RecordsPage key="certifications" module="certifications" />} />
-        <Route path="traceability" element={<TraceabilityPage />} />
+        <Route element={<ProtectedRoute permission="system.manage" />}><Route path="employees" element={<StaffAccountsPage />} /></Route>
+        <Route element={<ProtectedRoute permission="system.manage" />}><Route path="delivery-settings" element={<DeliverySettingsPage />} /></Route>
+        <Route element={<ProtectedRoute permission="system.manage" />}><Route path="home" element={<HomeManagementPage />} /></Route>
+        <Route element={<ProtectedRoute permission="purchase.approve" />}><Route path="order-approvals" element={<ProcurementPage key="order-approvals" approval />} /></Route>
+        <Route element={<ProtectedRoute permission="receipt.approve" />}><Route path="receipt-approvals" element={<ProcurementPage key="receipt-approvals" kind="receipts" approval />} /></Route>
+        <Route element={<ProtectedRoute permission="catalog.read" />}><Route path="categories" element={<ManagementPage key="categories" type="categories" />} /></Route>
+        <Route element={<ProtectedRoute permission="catalog.read" />}><Route path="products" element={<ManagementPage key="products" type="products" />} /></Route>
+        <Route element={<ProtectedRoute permission="promotion.read" />}><Route path="promotions" element={<PromotionsPage />} /></Route>
+        <Route element={<ProtectedRoute permission="purchase.read" />}><Route path="purchase-orders" element={<ProcurementPage key="purchase-orders" />} /></Route>
+        <Route element={<ProtectedRoute permission="receipt.read" />}><Route path="goods-receipts" element={<ProcurementPage key="goods-receipts" kind="receipts" />} /></Route>
+        <Route element={<ProtectedRoute permission="inventory.read" />}><Route path="inventory" element={<InventoryPage />} /></Route>
+        <Route element={<ProtectedRoute permission="inventory.read" />}><Route path="notifications" element={<NotificationsPage />} /></Route>
+        <Route element={<ProtectedRoute permission="order.read" />}><Route path="sales-orders" element={<SalesOrdersPage />} /></Route>
+        <Route element={<ProtectedRoute permission="customer.read" />}><Route path="customers" element={<RecordsPage key="customers" module="customers" />} /></Route>
+        <Route element={<ProtectedRoute permission="payment.read" />}><Route path="payment-review" element={<PaymentReviewPage />} /></Route>
+        <Route element={<ProtectedRoute permission="review.read" />}><Route path="reviews" element={<ReviewManagementPage />} /></Route>
+        <Route element={<ProtectedRoute permission="feedback.read" />}><Route path="feedbacks" element={<FeedbackPage management />} /></Route>
+        <Route element={<ProtectedRoute permission="return.read" />}><Route path="return-requests" element={<ReturnRequestsPage management />} /></Route>
+        <Route element={<ProtectedRoute permission="return.warehouse.read" />}><Route path="return-receipts" element={<ReturnWarehousePage />} /></Route>
+        <Route element={<ProtectedRoute permission="source.read" />}><Route path="suppliers" element={<RecordsPage key="suppliers" module="suppliers" />} /></Route>
+        <Route element={<ProtectedRoute permission="source.read" />}><Route path="origins" element={<RecordsPage key="origins" module="origins" />} /></Route>
+        <Route element={<ProtectedRoute permission="source.read" />}><Route path="certifications" element={<RecordsPage key="certifications" module="certifications" />} /></Route>
+        <Route element={<ProtectedRoute permission="source.read" />}><Route path="traceability" element={<TraceabilityPage />} /></Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Route>

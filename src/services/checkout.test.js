@@ -22,6 +22,13 @@ it('sends order idempotency header and distinct preview/initiate/capture endpoin
   expect(api.post).toHaveBeenCalledWith('/payments/initiate', { orderId: 'o', gateway: 'paypal' }, { timeout: 60000 });
   expect(api.post).toHaveBeenCalledWith('/payments/p/paypal/capture', undefined, { timeout: 60000 });
 });
+it('guards checkout cleanup with the purchased quantity and preserves ordinary removal', async () => {
+  const cart = createCartService(true);
+  await cart.remove('v/1', 2);
+  expect(api.request).toHaveBeenLastCalledWith({ method: 'delete', url: '/cart/items/v%2F1', data: undefined, params: { expectedQuantity: 2 }, withCredentials: true });
+  await cart.remove('v/1');
+  expect(api.request).toHaveBeenLastCalledWith({ method: 'delete', url: '/cart/items/v%2F1', data: undefined, withCredentials: true });
+});
 it('reads reward history as a list and keeps COD reconciliation separate from collection', async () => {
   api.get.mockResolvedValue({ data: { data: [{ id: 'tx' }] } });
   expect(await checkoutService.transactions({ page: 0, size: 20 })).toEqual([{ id: 'tx' }]);

@@ -7,14 +7,14 @@ import { currency, errorMessage } from '@/lib/utils';
 import { decisionPayload, returnTypes, whole } from '@/lib/afterSales';
 import { EvidenceList, SupportError } from './SupportUI';
 
-export function ReturnDecisionEditor({ detail, service, onSaved, onClose }) {
+export function ReturnDecisionEditor({ detail, service, onSaved, onClose, canApprove = true }) {
   const request = detail.request;
   const initialType = request.order.status === 'cancelled' ? 'refund' : request.requestType;
   const [values, setValues] = useState(() => Object.fromEntries(detail.items.map((line) => [line.id, {
-    quantity: request.proposalVersion > 0 ? line.approvedQuantity : line.requestedQuantity,
-    type: line.resolutionType || initialType, returnRequired: line.returnRequired,
+    quantity: detail.draft?.decision.items.find(item => item.detailId === line.id)?.approvedQuantity ?? (request.proposalVersion > 0 ? line.approvedQuantity : line.requestedQuantity),
+    type: detail.draft?.decision.items.find(item => item.detailId === line.id)?.resolutionType || line.resolutionType || initialType, returnRequired: detail.draft?.decision.items.find(item => item.detailId === line.id)?.returnRequired ?? line.returnRequired,
   }])));
-  const [policy, setPolicy] = useState(detail.policyNote || '');
+  const [policy, setPolicy] = useState(detail.draft?.decision.policyNote || detail.policyNote || '');
   const [preview, setPreview] = useState(null), [calculating, setCalculating] = useState(true);
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
   const [calculationAttempt, setCalculationAttempt] = useState(0);
@@ -54,8 +54,8 @@ export function ReturnDecisionEditor({ detail, service, onSaved, onClose }) {
     catch (err) { setError(err.message); return; }
     lock.current = true; setBusy(true); setError('');
     try {
-      const result = await service.approve(request.id, payload);
-      toast.success('Đã duyệt phương án · Chờ khách xác nhận.', { position: 'top-left' });
+      const result = await (canApprove ? service.approve : service.saveProposal)(request.id, payload);
+      toast.success(canApprove ? 'Đã duyệt phương án · Chờ khách xác nhận.' : 'Đã gửi phương án để cửa hàng trưởng duyệt.', { position: 'top-left' });
       onSaved(result); onClose();
     } catch (err) { setError(errorMessage(err)); }
     finally { lock.current = false; setBusy(false); }
@@ -85,7 +85,7 @@ export function ReturnDecisionEditor({ detail, service, onSaved, onClose }) {
       {current && <section className="rounded-xl bg-emerald-50 p-4" aria-live="polite"><p className="text-sm">Tổng tiền hoàn: <strong>{currency(current.approvedRefundAmount)}</strong></p><p className="!mt-2 text-xs leading-6">{current.returnRequired ? 'Cần nhận và xử lý xong hàng thu hồi.' : 'Không yêu cầu thu hồi hàng.'} Khách cần đồng ý phương án trước khi thực hiện. Nhân viên trao đổi tài khoản nhận tiền với khách, chuyển khoản và xác nhận kết quả kèm mã giao dịch.</p></section>}
       <SupportError>{error}</SupportError>
       {error && !current && !calculating && <Button variant="outline" disabled={busy} onClick={() => setCalculationAttempt((old) => old + 1)}>Tính lại phương án</Button>}
-      <div className="support-form-actions"><Button variant="outline" disabled={busy} onClick={onClose}>Đóng</Button><Button disabled={busy || calculating || !current || !!policyError} onClick={approve}>{busy ? 'Đang xử lý…' : calculating ? 'Đang tính phương án…' : 'Duyệt và gửi khách xác nhận'}</Button></div>
+      <div className="support-form-actions"><Button variant="outline" disabled={busy} onClick={onClose}>Đóng</Button><Button disabled={busy || calculating || !current || !!policyError} onClick={approve}>{busy ? 'Đang xử lý…' : calculating ? 'Đang tính phương án…' : canApprove ? 'Duyệt và gửi khách xác nhận' : 'Gửi cửa hàng trưởng duyệt'}</Button></div>
     </div>
   </Modal>;
 }

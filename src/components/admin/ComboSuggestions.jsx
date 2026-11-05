@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { promotionService } from '@/services/admin/orderService';
 import { useResource } from '@/hooks/useResource';
 import { useAuth } from '@/contexts/AuthContext';
-import { hasRole } from '@/lib/permissions';
+import { hasRole, can } from '@/lib/permissions';
 import { adminDate } from '@/lib/adminFormat';
 import { currency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { ResourceState } from '@/components/common/ResourceState';
 export function ComboSuggestions({ onChoose }) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  if (!hasRole(user, 'ADMIN')) return null;
+  if (!can(user, 'promotion.write')) return null;
   return <><Button variant="outline" onClick={() => setOpen(true)}>Đề xuất combo</Button>
     <Modal open={open} onOpenChange={setOpen} title="Combo tiềm năng từ đơn đã hoàn tất" description="Chọn một nhóm sản phẩm để mở bản nháp khuyến mãi. Bạn quyết định mức giảm và thời hạn." className="!max-w-[900px]">
       {open && <Suggestions onChoose={combo => { setOpen(false); onChoose({ promotionType: 'combo', name: `Combo ${combo.products.map(p => p.productName).join(' + ')}`.slice(0, 200), productIds: combo.products.map(p => p.id), requiredQuantities: Object.fromEntries(combo.products.map(p => [p.id, 1])), status: 'draft' }); }} />}

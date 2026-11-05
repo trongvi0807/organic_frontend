@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuth } from './AuthContext';
-import { hasRole } from '@/lib/permissions';
+import { hasRole, can, STAFF_ROLES } from '@/lib/permissions';
 import { DEMO_MODE } from '@/services/api';
 import { enablePush, disablePush, listenToPush, pushOptedIn, ownsPushDevice } from '@/services/pushNotifications';
 import { notificationTarget } from '@/lib/notificationTarget';
@@ -14,12 +14,12 @@ const NotificationContext = createContext(null);
 export function NotificationProvider({ children }) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const allowed = !DEMO_MODE && hasRole(user, 'ADMIN', 'WAREHOUSE_STAFF');
+  const allowed = !DEMO_MODE && can(user, 'inventory.read');
   const [enabled, setEnabled] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [revision, setRevision] = useState(0);
   const seen = useRef(new Set());
   const inboxSeen = useRef({ owner: null, ids: new Set(), initialized: false });
   const owner = user?.username || 'guest';
-  const inbox = useResource(() => loadInbox(user), [owner, revision]);
+  const inbox = useResource(() => loadInbox(user), [owner, user?.roles?.join(','), revision]);
   const items = inbox.data?.owner === owner ? inbox.data?.items || [] : [];
   useEffect(() => {
     if (inbox.data?.owner !== owner || !inbox.data.inboxLoaded) return;

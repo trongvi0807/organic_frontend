@@ -1,0 +1,220 @@
+{
+  "roles": {
+    "ADMIN": "Quản trị viên",
+    "EXECUTIVE_DIRECTOR": "Giám đốc điều hành",
+    "PROCUREMENT_MANAGER": "Trưởng nhóm thu mua",
+    "PROCUREMENT_STAFF": "Nhân viên thu mua",
+    "STORE_MANAGER": "Cửa hàng trưởng",
+    "WAREHOUSE_STAFF": "Nhân viên kho",
+    "SALES_STAFF": "Nhân viên bán hàng",
+    "BUSINESS_STAFF": "Nhân viên kinh doanh"
+  },
+  "permissions": {
+    "staff.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "STORE_MANAGER",
+      "WAREHOUSE_STAFF",
+      "SALES_STAFF",
+      "BUSINESS_STAFF"
+    ],
+    "system.manage": [
+      "ADMIN"
+    ],
+    "catalog.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "WAREHOUSE_STAFF"
+    ],
+    "catalog.write": [
+      "STORE_MANAGER",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "WAREHOUSE_STAFF"
+    ],
+    "category.write": [
+      "ADMIN",
+      "STORE_MANAGER",
+      "PROCUREMENT_MANAGER"
+    ],
+    "source.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "STORE_MANAGER",
+      "WAREHOUSE_STAFF",
+      "SALES_STAFF",
+      "BUSINESS_STAFF"
+    ],
+    "source.write": [
+      "STORE_MANAGER",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "WAREHOUSE_STAFF"
+    ],
+    "source.manage": [
+      "STORE_MANAGER",
+      "PROCUREMENT_MANAGER"
+    ],
+    "purchase.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "STORE_MANAGER",
+      "WAREHOUSE_STAFF",
+      "SALES_STAFF",
+      "BUSINESS_STAFF"
+    ],
+    "purchase.write": [
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF"
+    ],
+    "purchase.approve": [
+      "PROCUREMENT_MANAGER"
+    ],
+    "receipt.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "WAREHOUSE_STAFF"
+    ],
+    "receipt.write": [
+      "WAREHOUSE_STAFF"
+    ],
+    "receipt.approve": [
+      "STORE_MANAGER"
+    ],
+    "inventory.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "WAREHOUSE_STAFF"
+    ],
+    "inventory.write": [
+      "WAREHOUSE_STAFF",
+      "STORE_MANAGER"
+    ],
+    "reorder.write": [
+      "WAREHOUSE_STAFF",
+      "PROCUREMENT_STAFF",
+      "PROCUREMENT_MANAGER",
+      "STORE_MANAGER"
+    ],
+    "order.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "WAREHOUSE_STAFF",
+      "SALES_STAFF",
+      "BUSINESS_STAFF"
+    ],
+    "order.prepare": [
+      "WAREHOUSE_STAFF",
+      "SALES_STAFF",
+      "STORE_MANAGER"
+    ],
+    "order.complete": [
+      "SALES_STAFF",
+      "STORE_MANAGER"
+    ],
+    "shipment.write": [
+      "BUSINESS_STAFF",
+      "WAREHOUSE_STAFF",
+      "STORE_MANAGER"
+    ],
+    "payment.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "SALES_STAFF",
+      "BUSINESS_STAFF"
+    ],
+    "payment.write": [
+      "BUSINESS_STAFF",
+      "SALES_STAFF",
+      "STORE_MANAGER"
+    ],
+    "promotion.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "SALES_STAFF"
+    ],
+    "promotion.write": [
+      "STORE_MANAGER",
+      "SALES_STAFF"
+    ],
+    "customer.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "SALES_STAFF",
+      "BUSINESS_STAFF"
+    ],
+    "customer.write": [
+      "STORE_MANAGER",
+      "SALES_STAFF"
+    ],
+    "customer.manage": [
+      "STORE_MANAGER"
+    ],
+    "feedback.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "SALES_STAFF"
+    ],
+    "feedback.write": [
+      "STORE_MANAGER",
+      "SALES_STAFF"
+    ],
+    "feedback.assign": [
+      "ADMIN",
+      "STORE_MANAGER"
+    ],
+    "return.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "SALES_STAFF"
+    ],
+    "return.approve": [
+      "STORE_MANAGER"
+    ],
+    "return.execute": [
+      "STORE_MANAGER",
+      "SALES_STAFF"
+    ],
+    "return.reconcile": [
+      "STORE_MANAGER"
+    ],
+    "return.warehouse.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "WAREHOUSE_STAFF",
+      "SALES_STAFF",
+      "BUSINESS_STAFF"
+    ],
+    "return.warehouse.write": [
+      "WAREHOUSE_STAFF"
+    ],
+    "review.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "SALES_STAFF"
+    ]
+  }
+}

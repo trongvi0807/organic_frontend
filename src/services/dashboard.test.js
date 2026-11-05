@@ -18,9 +18,9 @@ it('reads all pages and exact existing endpoints for an Admin without inventing 
   expect(snapshot.sources.orders.data).toHaveLength(2); expect(orderService.list).toHaveBeenCalledWith({ page: 1, size: 50 });
   expect(api.get).toHaveBeenCalledExactlyOnceWith('/management/return-requests', { params: { page: 0, size: 50 } }); expect(productService.list).toHaveBeenCalled(); expect(catalogService.products).not.toHaveBeenCalled();
 });
-it('does not request warehouse/procurement or Admin product APIs for sales staff', async () => {
+it('limits sales staff to permitted sources including read-only purchase history', async () => {
   const snapshot = await dashboardService.snapshot(user('SALES_STAFF'));
-  expect(snapshot.sources.stock.status).toBe('forbidden'); expect(snapshot.sources.purchases.status).toBe('forbidden'); expect(inventoryService.list).not.toHaveBeenCalled(); expect(purchaseOrderService.list).not.toHaveBeenCalled(); expect(productService.list).not.toHaveBeenCalled(); expect(catalogService.products).toHaveBeenCalled(); expect(api.get).toHaveBeenCalled();
+  expect(snapshot.sources.stock.status).toBe('forbidden'); expect(snapshot.sources.purchases.status).toBe('ready'); expect(inventoryService.list).not.toHaveBeenCalled(); expect(purchaseOrderService.list).toHaveBeenCalled(); expect(productService.list).not.toHaveBeenCalled(); expect(catalogService.products).toHaveBeenCalled(); expect(api.get).toHaveBeenCalled();
 });
 it('does not request return data for warehouse staff but preserves authorized sales and stock data', async () => {
   const snapshot = await dashboardService.snapshot(user('WAREHOUSE_STAFF'));
@@ -30,7 +30,7 @@ it('marks a failed source unknown while preserving successful sources; never sub
   inventoryService.batches.mockRejectedValue(new Error('Offline')); const snapshot = await dashboardService.snapshot(user('ADMIN'));
   expect(snapshot.demo).toBe(false); expect(snapshot.sources.batches.status).toBe('error'); expect(snapshot.sources.orders.status).toBe('ready'); expect(snapshot.sources.batches.data).toEqual([]);
 });
-it('provides explicitly labeled demo data with no network calls or unauthorized sources', async () => {
+it('always uses persisted data even if an obsolete demo option is supplied', async () => {
   const snapshot = await dashboardService.snapshot(user('SALES_STAFF'), { demo: true, today: '2026-10-28' });
-  expect(snapshot.demo).toBe(true); expect(snapshot.sources.orders.data.length).toBeGreaterThan(100); expect(snapshot.sources.stock.status).toBe('forbidden'); expect(orderService.list).not.toHaveBeenCalled(); expect(api.get).not.toHaveBeenCalled();
+  expect(snapshot.demo).toBe(false); expect(snapshot.sources.orders.data).toEqual([]); expect(snapshot.sources.stock.status).toBe('forbidden'); expect(orderService.list).toHaveBeenCalled(); expect(api.get).toHaveBeenCalled();
 });

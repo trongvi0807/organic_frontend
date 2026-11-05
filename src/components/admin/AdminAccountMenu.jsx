@@ -1,13 +1,13 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowUpRight, ChevronDown, LogOut, ShieldCheck } from 'lucide-react';
-import { hasRole } from '@/lib/permissions';
+import { hasRole, roleLabel } from '@/lib/permissions';
 
 export function AdminAccountMenu({ user }) {
   const [open, setOpen] = useState(false), root = useRef(null), button = useRef(null), id = useId();
   const { pathname } = useLocation();
   const name = user?.fullName || user?.username || 'Tài khoản';
-  const role = hasRole(user, 'ADMIN') ? 'Quản trị viên' : hasRole(user, 'WAREHOUSE_STAFF') ? 'Nhân viên kho' : 'Nhân viên bán hàng';
+  const role = roleLabel(user);
   const initials = name.trim().split(/\s+/).slice(-2).map((part) => part[0]).join('').toUpperCase();
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => { const outside = (event) => { if (!root.current?.contains(event.target)) setOpen(false); }; document.addEventListener('pointerdown', outside); return () => document.removeEventListener('pointerdown', outside); }, []);

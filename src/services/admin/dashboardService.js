@@ -1,20 +1,20 @@
 import api, { unwrap } from '../api';
 import { requireBackend } from '../backendGuard';
 import { allPages, normalizePage } from '@/lib/apiData';
-import { hasRole, PRODUCT_MANAGERS } from '@/lib/permissions';
+import { hasRole, rolesFor, PRODUCT_MANAGERS } from '@/lib/permissions';
 import { orderService } from './orderService';
 import { purchaseOrderService, goodsReceiptService, inventoryService } from './procurementService';
 import { productService } from './productService';
 import { catalogService } from '../client/catalogService';
 
 export const dashboardSources = {
-  orders: { label: 'Đơn bán', roles: ['ADMIN', 'SALES_STAFF', 'WAREHOUSE_STAFF'], list: orderService.list },
-  products: { label: 'Danh mục sản phẩm', roles: ['ADMIN', 'SALES_STAFF', 'WAREHOUSE_STAFF'] },
-  stock: { label: 'Mức tồn kho', roles: ['ADMIN', 'WAREHOUSE_STAFF'], list: inventoryService.list },
-  batches: { label: 'Lô hàng', roles: ['ADMIN', 'WAREHOUSE_STAFF'], list: inventoryService.batches },
-  purchases: { label: 'Đơn mua', roles: ['ADMIN', 'WAREHOUSE_STAFF'], list: purchaseOrderService.list },
-  receipts: { label: 'Phiếu nhập', roles: ['ADMIN', 'WAREHOUSE_STAFF'], list: goodsReceiptService.list },
-  returns: { label: 'Yêu cầu đổi trả', roles: ['ADMIN', 'SALES_STAFF'], list: async (params) => { requireBackend(); return normalizePage(unwrap(await api.get('/management/return-requests', { params }))); } },
+  orders: { label: 'Đơn bán', roles: rolesFor('order.read'), list: orderService.list },
+  products: { label: 'Danh mục sản phẩm', roles: rolesFor('staff.read') },
+  stock: { label: 'Mức tồn kho', roles: rolesFor('inventory.read'), list: inventoryService.list },
+  batches: { label: 'Lô hàng', roles: rolesFor('inventory.read'), list: inventoryService.batches },
+  purchases: { label: 'Đơn mua', roles: rolesFor('purchase.read'), list: purchaseOrderService.list },
+  receipts: { label: 'Phiếu nhập', roles: rolesFor('receipt.read'), list: goodsReceiptService.list },
+  returns: { label: 'Yêu cầu đổi trả', roles: rolesFor('return.read'), list: async (params) => { requireBackend(); return normalizePage(unwrap(await api.get('/management/return-requests', { params }))); } },
 };
 export const dashboardService = {
   async snapshot(user) {

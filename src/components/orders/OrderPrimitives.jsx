@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, CheckCircle2, Clock3, Leaf, Package, RotateCcw, ShieldCheck, Truck, XCircle } from 'lucide-react';
+import { ArrowRight, Check, CheckCircle2, Clock3, Package, RotateCcw, ShieldCheck, Truck, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { currency } from '@/lib/utils';
+import { safeMediaUrl } from '@/lib/productDetail';
 import { cancellationEligibility, isCompleted, mayRequestReturn, latestShipment, orderBadge, orderDateTime, orderItems, orderProgress, paymentBadge, RETURN_STATES } from '@/lib/customerOrders';
 
 const badgeColors = { green: 'bg-emerald-50 text-emerald-800 ring-emerald-100', amber: 'bg-amber-50 text-amber-800 ring-amber-100', blue: 'bg-sky-50 text-sky-800 ring-sky-100', red: 'bg-red-50 text-red-800 ring-red-100', gray: 'bg-stone-100 text-stone-600 ring-stone-200' };
@@ -11,8 +12,13 @@ export function OrderBadge({ order, payment = false }) {
   return <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium ring-1 ring-inset ${badgeColors[color]}`}><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />{label}</span>;
 }
 export function OrderProductImage({ item }) {
-  const [failed, setFailed] = useState(false);
-  return <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#F1F4ED] text-[#799571] sm:h-24 sm:w-24">{item.imageUrl && !failed ? <img src={item.imageUrl} alt={item.productName || 'Sản phẩm trong đơn'} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" onError={() => setFailed(true)} /> : <Leaf size={30} aria-label="Chưa có hình ảnh sản phẩm" />}</div>;
+  const [failedUrl, setFailedUrl] = useState(null);
+  const imageUrl = safeMediaUrl(item.imageUrl);
+  return <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-white sm:h-24 sm:w-24">
+    {imageUrl && failedUrl !== imageUrl
+      ? <img src={imageUrl} alt={item.productName || 'Sản phẩm trong đơn'} width="96" height="96" loading="lazy" className="h-full w-full object-contain p-1 transition-transform duration-300 motion-safe:hover:scale-105" onError={() => setFailedUrl(imageUrl)} />
+      : <span className="px-2 text-center text-[11px] leading-5 text-stone-400">Chưa có ảnh</span>}
+  </div>;
 }
 export function OrderProductList({ order, compact = false }) {
   const [expanded, setExpanded] = useState(false), items = orderItems(order), shown = compact && !expanded ? items.slice(0, 2) : items;

@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { authService } from '@/services/auth/authService';
-import { getSession, setSession } from '@/services/api';
-import { hasRole, STAFF_ROLES } from '@/lib/permissions';
+import { api, unwrap, getSession, setSession } from '@/services/api';
+import { hasRole, can, STAFF_ROLES } from '@/lib/permissions';
 import { disablePush, revokeLocalPush } from '@/services/pushNotifications';
 import { DEMO_MODE } from '@/services/api';
 
@@ -22,6 +22,29 @@ export function AuthProvider({ children }) {
     window.addEventListener('moc:session-refreshed', refreshed);
     return () => { window.removeEventListener('moc:session-expired', expired); window.removeEventListener('moc:session-refreshed', refreshed); };
   }, []);
+  useEffect(() => {
+    if (!session?.sessionId) return;
+    let active = true, pending = false;
+    const sessionId = session.sessionId;
+    async function synchronize() {
+      if (pending || document.visibilityState === 'hidden') return;
+      pending = true;
+      try {
+        const profile = unwrap(await api.get('/auth/session'));
+        const current = getSession();
+        if (!active || current?.sessionId !== sessionId || !Array.isArray(profile?.roles)) return;
+        if (JSON.stringify(current.user) !== JSON.stringify(profile)) {
+          const next = { ...current, user: profile };
+          setSession(next); updateSession(next);
+        }
+      } catch { /* Connection failures keep the session; protected requests still enforce current rights. */ }
+      finally { pending = false; }
+    }
+    synchronize();
+    const timer = setInterval(synchronize, 60000);
+    window.addEventListener('focus', synchronize);
+    return () => { active = false; clearInterval(timer); window.removeEventListener('focus', synchronize); };
+  }, [session?.sessionId]);
   function finishLogin(result) {
     if (!result?.accessToken || !result.refreshToken || !result.user?.username || !Array.isArray(result.user.roles)) throw new Error('Chưa nhận đủ thông tin đăng nhập. Vui lòng thử lại.');
     const next = { ...result, sessionId: crypto.randomUUID() };
@@ -30,7 +53,7 @@ export function AuthProvider({ children }) {
   }
   async function login(values) { return finishLogin(await authService.login(values)); }
   async function logout() {
-    if (!DEMO_MODE && hasRole(session?.user, 'ADMIN', 'WAREHOUSE_STAFF')) {
+    if (!DEMO_MODE && can(session?.user, 'inventory.read')) {
       try { await disablePush(session.user, false); }
       catch { toast.error('Chưa gỡ hoàn toàn thông báo trên thiết bị. Kiểm tra kết nối trước khi dùng máy chung.'); }
     }

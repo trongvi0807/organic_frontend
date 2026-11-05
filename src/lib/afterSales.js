@@ -5,7 +5,7 @@ export const returnTypes = { return_refund: 'Trả hàng và hoàn tiền', refu
 export const returnReasons = { damaged: 'Sản phẩm hư hỏng', expired: 'Sản phẩm hết hạn', wrong_product: 'Giao sai sản phẩm', missing_product: 'Giao thiếu sản phẩm', quality_issue: 'Vấn đề chất lượng', other: 'Lý do khác' };
 export const inspectionStates = { pending: 'Chưa kiểm tra', inspecting: 'Đang kiểm tra', passed: 'Đạt', failed: 'Không đạt', mixed: 'Có phần đạt và không đạt' };
 export const feedbackTransitions = { processing: ['waiting_customer', 'resolved'], waiting_customer: ['processing', 'resolved'], resolved: ['processing', 'closed'] };
-export const historyActions = { created: 'Tạo yêu cầu', submitted: 'Gửi yêu cầu', claimed: 'Tiếp nhận', approved: 'Duyệt phương án', rejected: 'Từ chối', cancelled: 'Hủy yêu cầu', customer_accepted: 'Khách đồng ý', customer_declined: 'Khách yêu cầu xét lại', proposal_accepted: 'Khách đồng ý', proposal_declined: 'Khách yêu cầu xét lại', information_requested: 'Yêu cầu bổ sung', information_submitted: 'Bổ sung thông tin', goods_received: 'Nhận hàng', goods_inspected: 'Kiểm tra', goods_restocked: 'Nhập lại tồn', goods_disposed: 'Loại bỏ', batch_identified: 'Đối chiếu lô', goods_reinspected: 'Kiểm tra lại' };
+export const historyActions = { created: 'Tạo yêu cầu', proposal_drafted: 'Gửi phương án chờ duyệt', submitted: 'Gửi yêu cầu', claimed: 'Tiếp nhận', approved: 'Duyệt phương án', rejected: 'Từ chối', cancelled: 'Hủy yêu cầu', customer_accepted: 'Khách đồng ý', customer_declined: 'Khách yêu cầu xét lại', proposal_accepted: 'Khách đồng ý', proposal_declined: 'Khách yêu cầu xét lại', information_requested: 'Yêu cầu bổ sung', information_submitted: 'Bổ sung thông tin', goods_received: 'Nhận hàng', goods_inspected: 'Kiểm tra', goods_restocked: 'Nhập lại tồn', goods_disposed: 'Loại bỏ', batch_identified: 'Đối chiếu lô', goods_reinspected: 'Kiểm tra lại' };
 
 Object.assign(historyActions, { refund_account_saved: 'Lưu tài khoản nhận tiền', refund_requested: 'Gửi yêu cầu hoàn tiền', refund_succeeded: 'Đã hoàn tiền', refund_updated: 'Cập nhật kết quả hoàn tiền', refund_reconciled: 'Đối soát khoản hoàn', replacement_created: 'Tạo đơn hàng đổi', replacement_preparing: 'Chuẩn bị hàng đổi', replacement_shipment_booked: 'Tạo chuyến giao hàng đổi', replacement_shipment_updated: 'Cập nhật giao hàng đổi', execution_completed: 'Hoàn tất hồ sơ' });
 
@@ -13,10 +13,10 @@ Object.assign(historyActions, { refund_account_saved: 'Lưu tài khoản nhận 
 // keeping the untouched snapshot at the server for auditing.
 export function supportHistoryText(raw = '') {
   const text = String(raw), start = text.indexOf('{');
-  if (start < 0 || !text.includes('"proposal"') && !text.includes('"receiptItemId"') && !text.includes('"execution"')) return text;
+  if (start < 0 || !text.includes('"proposal"') && !text.includes('"receiptItemId"') && !text.includes('"execution"') && !text.includes('"expectedProposalVersion"')) return text;
   try {
     const snapshot = JSON.parse(text.slice(start));
-    if (!snapshot.proposal && !snapshot.receiptItemId && !snapshot.execution) return text;
+    if (!snapshot.proposal && !snapshot.receiptItemId && !snapshot.execution && snapshot.expectedProposalVersion == null) return text;
     const lines = [typeof snapshot.note === 'string' ? snapshot.note : 'Đã ghi nhận xử lý.'];
     if (snapshot.proposal) {
       lines.push(`Phương án lần ${snapshot.proposalVersion}: tiền hoàn dự kiến ${Number(snapshot.proposal.approvedRefundAmount || 0).toLocaleString('vi-VN', { signDisplay: 'negative' })} ₫.`);

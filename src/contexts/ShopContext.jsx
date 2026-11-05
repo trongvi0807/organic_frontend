@@ -148,7 +148,13 @@ export function ShopProvider({ children }) {
       for (const purchased of items) {
         const row = data.items.find((line) => line.variantId === purchased.variantId);
         // Keep changed quantities; never clear unrelated or newly edited lines.
-        if (row?.quantity === purchased.quantity) data = await service.remove(row.variantId);
+        if (row?.quantity === purchased.quantity) {
+          try { data = await service.remove(row.variantId, purchased.quantity); }
+          catch (error) {
+            if (error.response?.status !== 409) throw error;
+            data = await service.get();
+          }
+        }
       }
       return data;
     });

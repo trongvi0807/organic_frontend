@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { beforeEach, expect, it, vi } from 'vitest';
 vi.mock('./api', () => ({ default: { get: vi.fn(), post: vi.fn(), patch: vi.fn(), delete: vi.fn() }, unwrap: (response) => response.data.data }));
 vi.mock('./backendGuard', () => ({ requireBackend: vi.fn() }));
@@ -33,6 +34,12 @@ it('separates proposal actions from monetary execution endpoints', async () => {
   expect(api.post).toHaveBeenCalledWith('/management/return-requests/r/preview-decision', body, undefined);
   expect(api.post).toHaveBeenCalledWith('/management/return-requests/r/approve', body, undefined);
   expect(() => staff.action('r', 'complete', {})).toThrow('không hợp lệ');
+});
+it('persists the sales proposal separately from manager approval', async () => {
+  const proposal = { expectedProposalVersion: 0, items: [] };
+  await returnService(true).saveProposal('r', proposal);
+  expect(api.post).toHaveBeenCalledWith('/management/return-requests/r/proposal', proposal, undefined);
+  expect(api.post.mock.calls.some(([url]) => url.endsWith('/approve'))).toBe(false);
 });
 
 it('uses real execution endpoints, keeps payment idempotency and allows enough time for the provider', async () => {

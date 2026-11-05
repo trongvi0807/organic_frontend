@@ -1,6 +1,6 @@
 import { notificationService } from './admin/notificationService';
 import { checkoutService } from './client/checkoutService';
-import { hasRole } from '@/lib/permissions';
+import { hasRole, can, STAFF_ROLES } from '@/lib/permissions';
 import { readStorage, writeStorage } from '@/lib/storage';
 import { homeService } from './client/homeService';
 import { DEMO_MODE } from './api';
@@ -11,7 +11,7 @@ import { inboxNotifications } from './inboxNotifications';
 
 const readKey = (user) => `moc.order-updates.read:${user?.username || 'guest'}`;
 export async function loadInbox(user) {
-  const stock = hasRole(user, 'ADMIN', 'WAREHOUSE_STAFF');
+  const stock = can(user, 'inventory.read');
   const requests = [];
   if (user && !DEMO_MODE) requests.push(inboxNotifications.list().then(result => ({
     unreadCount: result.unreadCount,
@@ -20,7 +20,7 @@ export async function loadInbox(user) {
     items: (result.page.items || result.page.content || []).map(n => ({ ...n, source: n.category, orderId: n.category === 'order' ? new URL(n.target, 'https://local.invalid').searchParams.get('orderId') : null, key: `inbox:${n.id}`, persistent: true, read: !!n.readAt })),
   })));
   if (stock && !DEMO_MODE) requests.push(notificationService.list({ page: 0, size: 20 }).then((page) => page.items.map((n) => ({ ...n, key: `stock:${n.id}`, source: 'stock', target: `/admin/inventory?variantId=${encodeURIComponent(n.variantId)}`, read: !!n.readAt }))));
-  if (!DEMO_MODE && hasRole(user, 'CUSTOMER') && !hasRole(user, 'ADMIN', 'SALES_STAFF', 'WAREHOUSE_STAFF')) requests.push(checkoutService.orders({ page: 0, size: 10 }).then((page) => {
+  if (!DEMO_MODE && hasRole(user, 'CUSTOMER') && !hasRole(user, ...STAFF_ROLES)) requests.push(checkoutService.orders({ page: 0, size: 10 }).then((page) => {
     const read = readStorage(readKey(user), []);
     return page.items.map((order) => { const key = `order:${order.id}:${order.status}:${order.paymentStatus}`; return { key, id: order.id, source: 'order', title: order.orderCode ? `Đơn #${order.orderCode}` : 'Đơn hàng chưa có mã', message: `${orderBadge(order)[0]} · ${paymentBadge(order)[0]}`, read: read.includes(key), target: `/don-hang/${encodeURIComponent(order.id)}`, createdAt: order.orderedAt }; });
   }));

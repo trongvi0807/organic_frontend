@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Bell, Check, Copy, Leaf, Package, Ticket, X, MessageCircle, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { hasRole } from '@/lib/permissions';
+import { hasRole, can } from '@/lib/permissions';
 import { orderDateTime } from '@/lib/customerOrders';
 
 const sources = { order: ['Đơn hàng', Package], product: ['Sản phẩm mới', Leaf], promotion: ['Ưu đãi', Ticket], stock: ['Cảnh báo kho', Bell], feedback: ['Phản hồi', MessageCircle], return: ['Đổi trả', RotateCcw] };
@@ -31,7 +31,7 @@ export function NotificationBell({ storefront = false }) {
     catch { setError('Chưa sao chép được mã. Bạn có thể chọn và sao chép mã hiển thị trong thông báo.'); }
   }
   const items = inbox.items.filter((item) => tab === 'all' || item.source === tab);
-  const staff = hasRole(user, 'ADMIN', 'SALES_STAFF');
+  const staff = can(user, 'order.read');
   const categoryUnread = source => inbox.unreadByCategory[source] ?? inbox.items.filter(item => item.source === source && !item.read).length;
   const visibleSources = Object.entries(sources).filter(([source]) =>
     (staff && ['order', 'feedback', 'return'].includes(source)) ||

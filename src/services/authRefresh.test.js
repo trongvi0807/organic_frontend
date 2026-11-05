@@ -5,6 +5,12 @@ const response=(config,data={})=>({config,data,status:200,statusText:'OK',header
 const unauthorized=config=>({config,response:{status:401},message:'unauthorized'});
 beforeEach(()=>{const values=new Map();vi.stubGlobal('sessionStorage',{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)});vi.stubGlobal('window',{dispatchEvent:vi.fn()});setSession(session);});
 afterEach(()=>{vi.restoreAllMocks();vi.unstubAllGlobals();});
+it('updates menu roles from the refreshed server profile',async()=>{
+  const profile={username:'customer',roles:['SALES_STAFF','BUSINESS_STAFF']};
+  vi.spyOn(publicApi,'post').mockResolvedValue({data:{data:{accessToken:'new-token',refreshToken:'refresh-2',user:profile}}});
+  await api.get('/customers/me',{adapter:async config=>{if(config.headers.Authorization==='Bearer old-token')throw unauthorized(config);return response(config);}});
+  expect(getSession().user).toEqual(profile);
+});
 it('refreshes once for simultaneous expired requests and preserves order body/idempotency on retry',async()=>{
   const refresh=vi.spyOn(publicApi,'post').mockResolvedValue({data:{data:{accessToken:'new-token',refreshToken:'refresh-2',tokenType:'Bearer'}}});
   const adapter=vi.fn(async config=>{if(config.headers.Authorization==='Bearer old-token') throw unauthorized(config);return response(config,{ok:true});});

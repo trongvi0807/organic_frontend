@@ -44,6 +44,7 @@ export function returnService(management = false) {
     claim: (key) => post(`${base}/${id(key)}/claim`),
     preview: (key, body) => post(`${base}/${id(key)}/preview-decision`, body),
     approve: (key, body) => post(`${base}/${id(key)}/approve`, body),
+    saveProposal: (key, body) => post(`${base}/${id(key)}/proposal`, body),
     action: (key, action, body) => {
       const allowed = management ? ['request-information', 'reject'] : ['cancel', 'accept', 'decline', 'submit-information'];
       if (!allowed.includes(action)) throw new Error('Thao tác đổi trả không hợp lệ.');

@@ -35,7 +35,7 @@ export async function refreshSession() {
       const result = unwrap(await publicApi.post('/auth/refresh-token', { refreshToken: current.refreshToken }));
       if (!result?.accessToken || !result.refreshToken) throw new Error('Phản hồi làm mới phiên không hợp lệ.');
       if (getSession()?.accessToken !== current.accessToken) throw new Error('Tài khoản hoặc phiên đăng nhập đã thay đổi.');
-      const next = { ...current, ...result };
+      const next = { ...current, ...result, user: result.user || current.user };
       setSession(next);
       window.dispatchEvent(new Event('moc:session-refreshed'));
       return next;
@@ -47,7 +47,7 @@ export async function refreshSession() {
 }
 api.interceptors.response.use((response) => response, async (error) => {
   const config = error.config;
-  if (error.response?.status !== 401 || !config || config.url?.startsWith('/auth/')) throw error;
+  if (error.response?.status !== 401 || !config || config.url?.startsWith('/auth/') && config.url !== '/auth/session') throw error;
   const current = getSession();
   const sentToken = config.headers?.Authorization?.replace(/^Bearer /, '');
   try {

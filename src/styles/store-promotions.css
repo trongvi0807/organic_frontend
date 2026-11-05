@@ -1,118 +1,183 @@
 .store-promotions { margin: 32px 0; color: #234737; }
-.store-promotions--home { padding: 52px 0 56px; margin: 0; background: #fafbf6; border-block: 1px solid #edf0e5; }
+.store-promotions--home { padding: 56px 0 60px; margin: 0; background: #fafbf6; border-block: 1px solid #edf0e5; }
 .store-promotions-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 24px; }
-.store-promotions-kicker { display: inline-flex; align-items: center; gap: 8px; color: #67834c; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
-.store-promotions-heading h2 { margin: 10px 0 8px; font-family: var(--font-serif); font-size: clamp(24px, 3vw, 36px); font-weight: 400; line-height: 1.45; letter-spacing: normal; overflow-wrap: break-word; }
-.store-promotions-heading p { margin: 0; font-size: 12px; line-height: 1.8; color: #697568; }
-.store-promotions-more { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; font-size: 12px; text-decoration: underline; }
+.store-promotions-kicker { display: inline-flex; align-items: center; gap: 8px; color: #1B4D2E; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; }
+.store-promotions-heading h2 { margin: 10px 0 8px; font-family: var(--font-serif); font-size: clamp(26px, 3.2vw, 38px); font-weight: 500; line-height: 1.35; letter-spacing: -0.5px; overflow-wrap: break-word; color: #1B4D2E; }
+.store-promotions-heading p { margin: 0; font-size: 13px; line-height: 1.8; color: #56695b; }
+.store-promotions-more { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; font-size: 12px; font-weight: 500; color: #1B4D2E; text-decoration: underline; text-underline-offset: 4px; }
 .store-promotions-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+
 .store-offer { min-width: 0; padding: 24px; background: #fffefa; border: 1px solid #dce5d4; border-radius: 20px; display: flex; flex-direction: column; box-shadow: 0 6px 20px #29473505; }
 .store-offer-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: space-between; }
-.store-offer-badge { background: #e7efd9; color: #3b5a2a; padding: 7px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
-.store-offer-code { font: 11px monospace; color: #6f795f; overflow-wrap: anywhere; }
-.store-offer h3 { font-size: 20px; line-height: 1.4; font-weight: 500; margin: 18px 0 8px; }
-.store-offer-description { margin: 0 0 15px; font-size: 12px; line-height: 1.8; color: #6d786b; }
+.store-offer-badge { background: #e7efd9; color: #1B4D2E; padding: 7px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+.store-offer-code { font: 11px monospace; color: #56695b; overflow-wrap: anywhere; }
+.store-offer h3 { font-size: 20px; line-height: 1.4; font-weight: 500; margin: 18px 0 8px; color: #1F3324; }
+.store-offer-description { margin: 0 0 15px; font-size: 12px; line-height: 1.8; color: #56695b; }
 .store-offer-products { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 115px), 1fr)); gap: 16px; margin: 10px 0 18px; }
 .store-offer-product { min-width: 0; position: relative; }
 .store-offer-image { position: relative; display: flex; align-items: center; justify-content: center; aspect-ratio: 4 / 3; background: #edf1e6; border-radius: 12px; overflow: hidden; }
 .store-offer-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.store-offer-image > span { position: absolute; bottom: 7px; left: 7px; padding: 3px 7px; background: #fffef5ed; color: #35523a; font-size: 11px; border-radius: 4px; }
-.store-offer-plus { position: absolute; z-index: 1; top: 30px; left: -20px; padding: 5px; background: #fffefa; border: 1px solid #dce5d4; border-radius: 50%; }
-.store-offer-product-name { display: block; margin: 9px 0 4px; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
-.store-offer-product-name:hover { text-decoration: underline; }
-.store-offer-unit-price { display: block; font-size: 12px; }
+.store-offer-image > span { position: absolute; bottom: 7px; left: 7px; padding: 3px 7px; background: #fffef5ed; color: #1B4D2E; font-size: 11px; font-weight: 600; border-radius: 4px; }
+.store-offer-plus { position: absolute; z-index: 1; top: 30px; left: -20px; padding: 5px; background: #fffefa; border: 1px solid #dce5d4; border-radius: 50%; color: #1B4D2E; }
+.store-offer-product-name { display: block; margin: 9px 0 4px; font-size: 12px; line-height: 1.5; color: #1F3324; overflow-wrap: anywhere; }
+.store-offer-product-name:hover { text-decoration: underline; color: #1B4D2E; }
+.store-offer-unit-price { display: block; font-size: 13px; font-weight: 600; color: #1B4D2E; }
 .store-offer-variant { display: block; margin-top: 8px; }
-.store-offer-variant select { width: 100%; min-height: 34px; padding: 5px; border: 1px solid #dce5d4; border-radius: 6px; background: white; color: #52624c; font-size: 11px; }
-.store-offer-terms { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: auto; padding-bottom: 14px; font-size: 10px; line-height: 1.7; color: #7a806f; }
+.store-offer-variant select { width: 100%; min-height: 36px; padding: 6px; border: 1px solid #dce5d4; border-radius: 8px; background: white; color: #1F3324; font-size: 12px; }
+.store-offer-terms { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: auto; padding-bottom: 14px; font-size: 11px; line-height: 1.7; color: #56695b; }
 .store-offer-pricing { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 15px 0; border-top: 1px dashed #d9e1d1; }
-.store-offer-pricing small { display: block; color: #7a806f; font-size: 10px; margin-bottom: 3px; }
-.store-offer-pricing strong { font-size: 24px; font-weight: 600; }
-.store-offer-pricing del { margin-left: 8px; color: #9b9e91; font-size: 12px; }
-.store-offer-pricing > span { font-size: 11px; color: #617f3e; }
-.store-offer-action { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 11px 15px; border-radius: 9px; color: white; background: #254e3b; font-size: 12px; font-weight: 600; cursor: pointer; }
-.store-offer-action:hover { background: #193b2b; }
-.store-offer-action:disabled { background: #dfe4d8; color: #78836d; cursor: not-allowed; }
-.store-offer-footnote { font-size: 10px; line-height: 1.7; text-align: center; color: #8b8f7f; margin: 10px 0 0; }
-.store-offer-error, .store-promotions-error { font-size: 12px; line-height: 1.8; color: #9e4c24; margin: 10px 0; }
-.store-promotions-error button { text-decoration: underline; }
+.store-offer-pricing small { display: block; color: #56695b; font-size: 11px; margin-bottom: 3px; }
+.store-offer-pricing strong { font-size: 24px; font-weight: 700; color: #1B4D2E; }
+.store-offer-pricing del { margin-left: 8px; color: #8C968B; font-size: 13px; }
+.store-offer-pricing > span { font-size: 12px; font-weight: 600; color: #2E7D32; }
+.store-offer-action { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 11px 18px; border-radius: 100px; color: white; background: #1B4D2E; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s, transform .2s, box-shadow .2s; }
+.store-offer-action:hover { background: #266b41; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(27, 77, 46, 0.2); }
+.store-offer-action:disabled { background: #dfe4d8; color: #78836d; cursor: not-allowed; transform: none; box-shadow: none; }
+.store-offer-footnote { font-size: 11px; line-height: 1.7; text-align: center; color: #6b7762; margin: 10px 0 0; }
+.store-offer-error, .store-promotions-error { font-size: 12px; line-height: 1.8; color: #b91c1c; margin: 10px 0; }
+.store-promotions-error button { text-decoration: underline; color: #1B4D2E; }
 .store-promotions--cart .store-promotions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .store-promotions--cart .store-promotions-heading h2 { font-size: 25px; }
 .store-promotions--cart .store-offer { padding: 20px; }
-.store-offer-action:focus-visible, .store-offer-variant select:focus-visible { outline: 2px solid #93ac6a; outline-offset: 3px; }
-.combo-carousel { min-width: 0; }
+.store-offer-action:focus-visible, .store-offer-variant select:focus-visible { outline: 2px solid #1B4D2E; outline-offset: 3px; }
+
+/* Carousel Component */
+.combo-carousel { min-width: 0; position: relative; }
 .combo-carousel-track { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border-radius: 28px; isolation: isolate; }
 .combo-carousel-slide {
   grid-area: 1 / 1; min-width: 0; visibility: hidden; opacity: 0; pointer-events: none;
-  transform: translate3d(calc(var(--combo-direction, 1) * 38px), 0, 0);
-  transition: opacity .65s ease, transform .85s cubic-bezier(.22, 1, .36, 1), visibility 0s .85s;
+  transform: translate3d(calc(var(--combo-direction, 1) * 32px), 0, 0);
+  transition: opacity .55s ease, transform .7s cubic-bezier(.16, 1, .3, 1), visibility 0s .7s;
 }
-.combo-carousel-slide.is-outgoing { transform: translate3d(calc(var(--combo-direction, 1) * -38px), 0, 0); }
+.combo-carousel-slide.is-outgoing { transform: translate3d(calc(var(--combo-direction, 1) * -32px), 0, 0); }
 .combo-carousel-slide.is-active { visibility: visible; opacity: 1; pointer-events: auto; transform: translate3d(0, 0, 0); z-index: 1; transition-delay: 0s; }
 .combo-carousel-slide > .store-offer { height: 100%; }
-.combo-carousel:focus-visible { outline: 2px solid #77995e; outline-offset: 5px; border-radius: 28px; }
+.combo-carousel:focus-visible { outline: 2px solid #1B4D2E; outline-offset: 5px; border-radius: 28px; }
 
-/* Promotional banner: a compact buying story, separate from product discount cards. */
-.store-offer--banner {
-  display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 36px;
-  padding: 34px; border-radius: 28px; background: #edf3e5; border-color: #e0e8d6;
-  box-shadow: none; position: relative; overflow: hidden; align-items: center;
+.combo-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding: 4px 8px;
 }
-.store-offer--banner::before { content: ''; position: absolute; width: 340px; height: 340px; border-radius: 50%; background: #e3ecd8; left: -230px; bottom: -200px; pointer-events: none; }
+.combo-carousel-indicators {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.combo-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 100px;
+  border: 0;
+  padding: 0;
+  background: #cbd6c0;
+  cursor: pointer;
+  transition: width .3s cubic-bezier(.16, 1, .3, 1), background-color .3s;
+}
+.combo-carousel-dot.is-active {
+  width: 26px;
+  background: #1B4D2E;
+}
+.combo-carousel-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.combo-carousel-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #dbe2d4;
+  background: #ffffff;
+  color: #1B4D2E;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color .2s, border-color .2s, transform .2s;
+}
+.combo-carousel-btn:hover {
+  background: #edf2e6;
+  border-color: #c1ceb7;
+  transform: translateY(-1px);
+}
+.combo-carousel-btn:focus-visible {
+  outline: 2px solid #1B4D2E;
+  outline-offset: 2px;
+}
+.combo-carousel-btn--pause {
+  color: #56695b;
+}
+
+/* Promotional banner: a compact buying story */
+.store-offer--banner {
+  display: grid; grid-template-columns: minmax(0, .98fr) minmax(0, 1.02fr); gap: 36px;
+  padding: 36px; border-radius: 28px; background: #eef4e8; border-color: #dbe5d2;
+  box-shadow: 0 8px 30px rgba(27, 77, 46, 0.05); position: relative; overflow: hidden; align-items: center;
+}
+.store-offer--banner::before { content: ''; position: absolute; width: 340px; height: 340px; border-radius: 50%; background: #e2ecd6; left: -200px; bottom: -180px; pointer-events: none; }
 .store-offer-copy, .store-offer-visual { position: relative; min-width: 0; }
 .store-offer-copy { display: flex; flex-direction: column; align-items: flex-start; padding-block: 8px; }
 .store-offer--banner .store-offer-top { justify-content: flex-start; gap: 8px 14px; }
-.store-offer--banner .store-offer-badge { background: #fbefd0; color: #7b5d27; border: 1px solid #efe0b7; border-radius: 100px; font-size: 10px; line-height: 1.6; padding: 6px 12px; }
-.store-offer--banner .store-offer-code { color: #77856e; font-size: 10px; }
-.store-offer--banner .store-offer-copy h3 { font: 500 clamp(24px, 2.65vw, 36px)/1.35 var(--font-serif); letter-spacing: -.5px; color: #274d34; margin: 18px 0 12px; overflow-wrap: anywhere; text-wrap: balance; }
-.store-offer--banner .store-offer-description { font-size: 12px; line-height: 1.9; color: #67765d; margin: 0 0 12px; }
-.store-offer--banner .store-offer-pricing { width: 100%; border: 0; padding: 0; margin: 4px 0 14px; display: block; }
-.store-offer--banner .store-offer-pricing small { font-size: 10px; margin-bottom: 5px; }
-.store-offer--banner .store-offer-pricing strong { font-size: clamp(29px, 3vw, 40px); font-weight: 600; color: #234c32; letter-spacing: -1px; line-height: 1.25; white-space: nowrap; }
-.store-offer--banner .store-offer-pricing del { font-size: 13px; margin-left: 12px; white-space: nowrap; }
-.store-offer--banner .store-offer-pricing > span { display: inline-flex; margin-top: 8px; color: #456635; font-size: 11px; }
-.store-offer--banner .store-offer-terms { margin: 0 0 17px; padding: 0; gap: 4px 12px; line-height: 1.8; color: #728067; }
-.store-offer--banner .store-offer-action { min-height: 46px; padding: 13px 24px; border-radius: 100px; width: fit-content; min-width: 220px; transition: background .25s, box-shadow .25s; }
-.store-offer--banner .store-offer-action:not(:disabled):hover { box-shadow: 0 5px 15px #254e3b18; }
-.store-offer--banner .store-offer-footnote { text-align: left; margin-top: 10px; max-width: 350px; color: #7b876f; }
-.store-offer-visual { background: #ffffff9c; border: 1px solid #fff; border-radius: 22px; padding: 16px; }
-.store-offer-visual-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; color: #78836e; font-size: 10px; line-height: 1.6; }
-.store-offer-visual-heading > span:first-child { display: flex; align-items: center; gap: 6px; color: #48623b; font-weight: 500; }
-.store-offer--banner .store-offer-products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; max-height: 360px; overflow-y: auto; padding: 0 2px 3px; scrollbar-width: thin; scrollbar-color: #c5d3b6 transparent; }
-.store-offer--banner .store-offer-product { background: #fffefa; border: 1px solid #e8ecdf; border-radius: 15px; padding: 8px; }
-.store-offer--banner .store-offer-image { aspect-ratio: 1.25; max-height: 180px; border-radius: 9px; background: #f1f4e9; }
-.store-offer--banner .store-offer-image img { transition: transform .7s cubic-bezier(.22, 1, .36, 1); }
-.store-offer--banner .store-offer-image:hover img { transform: scale(1.04); }
-.store-offer--banner .store-offer-image > span { top: 7px; bottom: auto; border-radius: 100px; background: #fffef4f0; padding: 4px 8px; }
+.store-offer--banner .store-offer-badge { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; border-radius: 100px; font-size: 11px; font-weight: 700; line-height: 1.6; padding: 6px 14px; }
+.store-offer--banner .store-offer-code { color: #56695b; font-size: 11px; font-weight: 500; }
+.store-offer--banner .store-offer-copy h3 { font: 500 clamp(24px, 2.7vw, 36px)/1.3 var(--font-serif); letter-spacing: -.5px; color: #1B4D2E; margin: 18px 0 12px; overflow-wrap: anywhere; text-wrap: balance; }
+.store-offer--banner .store-offer-description { font-size: 13px; line-height: 1.8; color: #56695b; margin: 0 0 14px; }
+.store-offer--banner .store-offer-pricing { width: 100%; border: 0; padding: 0; margin: 4px 0 16px; display: block; }
+.store-offer--banner .store-offer-pricing small { font-size: 11px; color: #56695b; margin-bottom: 5px; }
+.store-offer--banner .store-offer-pricing strong { font-size: clamp(28px, 3.2vw, 42px); font-weight: 700; color: #1B4D2E; letter-spacing: -1px; line-height: 1.25; white-space: nowrap; }
+.store-offer--banner .store-offer-pricing del { font-size: 14px; margin-left: 12px; color: #8C968B; white-space: nowrap; }
+.store-offer--banner .store-offer-pricing > span { display: inline-flex; margin-top: 8px; color: #2E7D32; font-size: 12px; font-weight: 600; }
+.store-offer--banner .store-offer-terms { margin: 0 0 18px; padding: 0; gap: 6px 14px; line-height: 1.8; color: #56695b; font-size: 12px; }
+.store-offer--banner .store-offer-action { min-height: 48px; padding: 13px 28px; border-radius: 100px; width: fit-content; min-width: 220px; font-size: 13px; font-weight: 600; background: #1B4D2E; }
+.store-offer--banner .store-offer-action:not(:disabled):hover { background: #266b41; box-shadow: 0 6px 18px rgba(27, 77, 46, 0.25); }
+.store-offer--banner .store-offer-footnote { text-align: left; margin-top: 10px; max-width: 360px; color: #6b7762; font-size: 11px; }
+
+.store-offer-visual { background: #ffffffcc; border: 1px solid #ffffff; backdrop-filter: blur(8px); border-radius: 22px; padding: 20px; }
+.store-offer-visual-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; color: #56695b; font-size: 12px; line-height: 1.6; }
+.store-offer-visual-heading > span:first-child { display: flex; align-items: center; gap: 6px; color: #1B4D2E; font-weight: 600; }
+.store-offer--banner .store-offer-products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; max-height: 380px; overflow-y: auto; padding: 2px; scrollbar-width: thin; scrollbar-color: #c5d3b6 transparent; }
+.store-offer--banner .store-offer-product { background: #fffefa; border: 1px solid #e2e8da; border-radius: 16px; padding: 10px; transition: border-color .2s, box-shadow .2s; }
+.store-offer--banner .store-offer-product:hover { border-color: #bdceb2; box-shadow: 0 4px 12px rgba(27, 77, 46, 0.06); }
+.store-offer--banner .store-offer-image { aspect-ratio: 1.25; max-height: 180px; border-radius: 11px; background: #f1f4e9; }
+.store-offer--banner .store-offer-image img { transition: transform .6s cubic-bezier(.16, 1, .3, 1); }
+.store-offer--banner .store-offer-image:hover img { transform: scale(1.03); }
+.store-offer--banner .store-offer-image > span { top: 7px; bottom: auto; border-radius: 100px; background: #fffef4f0; padding: 4px 8px; font-size: 11px; font-weight: 600; color: #1B4D2E; }
 .store-offer--banner .store-offer-plus { display: none; }
-.store-offer--banner .store-offer-product-name { font-size: 11px; line-height: 1.65; min-height: 36px; margin: 10px 2px 4px; }
-.store-offer--banner .store-offer-unit-price { margin-inline: 2px; font-size: 12px; font-weight: 600; }
+.store-offer--banner .store-offer-product-name { font-size: 12px; line-height: 1.6; min-height: 38px; margin: 10px 2px 4px; color: #1F3324; }
+.store-offer--banner .store-offer-unit-price { margin-inline: 2px; font-size: 13px; font-weight: 600; color: #1B4D2E; }
 .store-offer--banner .store-offer-variant { margin-top: 9px; }
-.store-offer--banner .store-offer-variant select { min-height: 36px; padding: 6px 8px; border-radius: 7px; border-color: #e3e8db; font-size: 10px; background: #f8faf4; }
+.store-offer--banner .store-offer-variant select { min-height: 36px; padding: 6px 8px; border-radius: 8px; border-color: #dce3d5; font-size: 11px; background: #f8faf4; color: #1F3324; }
+
 @media (min-width: 701px) and (max-width: 1000px) {
   .store-offer--banner { padding: 24px; gap: 22px; }
-  .store-offer-visual { padding: 12px; }
+  .store-offer-visual { padding: 14px; }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .combo-carousel-slide, .store-offer--banner .store-offer-image img, .store-offer--banner .store-offer-action { transition: none; transform: none; }
+  .combo-carousel-slide, .store-offer--banner .store-offer-image img, .store-offer--banner .store-offer-action { transition: none !important; transform: none !important; }
 }
-@media(max-width: 700px) {
+
+@media (max-width: 700px) {
   .store-promotions-grid, .store-promotions--cart .store-promotions-grid { grid-template-columns: minmax(0, 1fr); }
   .store-promotions-heading { align-items: start; flex-direction: column; gap: 10px; }
   .store-offer { padding: 18px; }
   .store-offer h3 { font-size: 18px; }
   .store-offer-products { gap: 12px; }
   .store-offer-plus { left: -17px; }
-  .store-promotions--home { padding: 32px 0; }
-  .store-offer--banner { grid-template-columns: minmax(0, 1fr); gap: 22px; padding: 22px; border-radius: 22px; }
+  .store-promotions--home { padding: 36px 0; }
+  .store-offer--banner { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 22px 18px; border-radius: 22px; }
   .store-offer--banner .store-offer-copy { padding: 0; }
-  .store-offer--banner .store-offer-copy h3 { font-size: 27px; max-width: 440px; margin-top: 14px; }
-  .store-offer--banner .store-offer-pricing strong { font-size: 34px; }
-  .store-offer--banner .store-offer-action { width: 100%; min-width: 0; }
-  .store-offer-visual { padding: 12px; border-radius: 16px; }
-  .store-offer--banner .store-offer-products { gap: 9px; max-height: 310px; }
-  .store-offer--banner .store-offer-product { padding: 6px; border-radius: 11px; }
-  .store-offer--banner .store-offer-image { max-height: 145px; }
-  .store-offer--banner .store-offer-product-name { font-size: 10px; }
-  .store-offer-visual-heading { font-size: 9px; }
+  .store-offer--banner .store-offer-copy h3 { font-size: 26px; max-width: 440px; margin-top: 14px; }
+  .store-offer--banner .store-offer-pricing strong { font-size: 32px; }
+  .store-offer--banner .store-offer-action { width: 100%; min-width: 0; font-size: 13px; }
+  .store-offer-visual { padding: 14px; border-radius: 18px; }
+  .store-offer--banner .store-offer-products { gap: 12px; max-height: 340px; }
+  .store-offer--banner .store-offer-product { padding: 8px; border-radius: 13px; }
+  .store-offer--banner .store-offer-image { max-height: 150px; }
+  .store-offer--banner .store-offer-product-name { font-size: 12px; min-height: 34px; }
+  .store-offer-visual-heading { font-size: 11px; }
   .combo-carousel-track { border-radius: 22px; }
 }

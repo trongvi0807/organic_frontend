@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUp, Clock3, Leaf, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
+import { ArrowUp, Clock3, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { FOOTER_CONFIG } from '@/constants/footer';
 import { PaymentBrand } from '@/components/checkout/PaymentBrand';
@@ -16,11 +16,6 @@ export function StoreFooter({ content }) {
   const config = FOOTER_CONFIG;
   const email = content?.contactEmail || config.emails[0];
   return <footer id="lien-he" aria-label="Thông tin cửa hàng và hỗ trợ" className="organic-store-footer">
-    <div className="organic-footer-welcome"><div className="container organic-footer-welcome-inner">
-      <div className="organic-footer-welcome-copy"><span className="organic-footer-leaf"><Leaf size={27} strokeWidth={1.4} /></span><div><p>CÙNG BẠN CHỌN ĐIỀU TỐT LÀNH</p><h2>Mỗi bữa ăn, thêm một chút xanh.</h2></div></div>
-      <Link to="/diem-thuong" className="organic-footer-rewards">Điểm thưởng & ưu đãi<ArrowRight size={17} /></Link>
-    </div></div>
-
     <div className="container organic-footer-content">
       <div className="organic-footer-brand-row"><div><Logo /><p>{config.company.description}</p></div><div className="organic-footer-opening"><Clock3 size={19} /><div><strong>Mở cửa & tư vấn</strong><p>{config.hours}</p></div></div></div>
       <div className="organic-footer-certificates"><span><ShieldCheck size={15} />Thông tin chứng nhận công bố</span>{config.certificationReferences.map(item => <a key={item.code} href="https://organicfood.vn/" target="_blank" rel="noopener noreferrer">{item.label}: <strong>{item.code}</strong></a>)}</div>
