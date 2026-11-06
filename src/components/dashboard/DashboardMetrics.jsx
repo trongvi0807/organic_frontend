@@ -3,18 +3,19 @@ import { currency } from '@/lib/utils';
 
 const count = (value) => value == null ? '—' : value.toLocaleString('vi-VN', { signDisplay: 'negative' });
 
-export function DashboardMetrics({ model, loading }) {
+export function DashboardMetrics({ model, loading, financeLoading }) {
   const growth = model.growth;
   const GrowthIcon = growth != null && growth < 0 ? ArrowDownRight : ArrowUpRight;
   const entries = [
-    {
-      label: 'Doanh thu đã thanh toán', value: model.revenue == null ? '—' : currency(model.revenue), icon: Banknote, tone: 'green',
-      hint: model.revenue == null ? 'Chưa tải được dữ liệu đơn bán' : 'Theo ngày đặt đơn trong kỳ',
+    ...(model.revenueAllowed ? [{
+      label: 'Doanh thu thuần', value: model.revenue == null ? '—' : currency(model.revenue), icon: Banknote, tone: 'green',
+      hint: model.revenue == null ? 'Chưa tải được báo cáo doanh thu' : 'Tiền hàng sau hoàn + thu thanh lý',
+      loading: financeLoading,
       extra: model.revenue != null && <span className={`adk-metric-change ${growth == null ? 'is-neutral' : growth < 0 ? 'is-down' : 'is-up'}`}>
         {growth != null && <GrowthIcon size={14} />}
-        {growth == null ? 'Chưa có kỳ trước để so sánh' : growth === 0 ? 'Không đổi so với kỳ trước' : <><strong>{Math.abs(growth).toLocaleString('vi-VN', { signDisplay: 'negative', maximumFractionDigits: 1 })}%</strong><span>so với kỳ trước</span></>}
+        {growth == null ? 'Chưa đủ cơ sở so sánh' : growth === 0 ? 'Không đổi so với kỳ trước' : <><strong>{Math.abs(growth).toLocaleString('vi-VN', { signDisplay: 'negative', maximumFractionDigits: 1 })}%</strong><span>so với kỳ trước</span></>}
       </span>,
-    },
+    }] : []),
     {
       label: 'Đơn hàng cần xử lý', value: count(model.processing), icon: Clock3, tone: 'blue',
       hint: 'Chờ xác nhận hoặc chuẩn bị hàng',
@@ -31,10 +32,10 @@ export function DashboardMetrics({ model, loading }) {
       extra: <span className="adk-metric-detail">Tình trạng kho hiện tại</span>,
     },
   ];
-  return <section className="adk-metrics" aria-label="Chỉ số tổng quan cửa hàng">
-    {entries.map(({ label, value, icon: Icon, tone, hint, extra }) => <article key={label} className={`adk-metric adk-metric--${tone}`}>
+  return <section className={`adk-metrics ${model.revenueAllowed ? '' : 'adk-metrics--operations'}`} aria-label="Chỉ số tổng quan cửa hàng">
+    {entries.map(({ label, value, icon: Icon, tone, hint, extra, loading: cardLoading }) => <article key={label} className={`adk-metric adk-metric--${tone}`}>
       <div className="adk-metric-heading"><p>{label}</p><span className="adk-metric-icon"><Icon size={21} strokeWidth={1.7} /></span></div>
-      {loading ? <div className="adk-metric-skeleton" aria-label="Đang tải chỉ số" /> : <p className="adk-metric-value" aria-live="polite">{value}</p>}
+      {(cardLoading ?? loading) ? <div className="adk-metric-skeleton" aria-label="Đang tải chỉ số" /> : <p className="adk-metric-value" aria-live="polite">{value}</p>}
       <p className="adk-metric-hint">{hint}</p>
       <div className="adk-metric-footer">{extra}</div>
     </article>)}

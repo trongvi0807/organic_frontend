@@ -88,4 +88,23 @@
   .admin-kit .admin-section-tab, .admin-kit .table-actions .icon-button { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) { .admin-kit .admin-main, .admin-kit .adk-sidebar, .admin-kit .adk-nav-link, .admin-kit .admin-section-tab { transition: none; }.admin-kit .admin-route-content { animation: none; } }
+/* Keep identity labels contained, regardless of name length or role count. */
+.admin-kit .adk-account-trigger { min-width: 0; max-width: 100%; }
+.admin-kit .adk-account-copy { min-width: 0; }
+.admin-kit .adk-account-copy small,
+.admin-kit .adk-sidebar-user small,
+.admin-kit .adk-sidebar-note strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-kit .adk-account-trigger > .adk-avatar,
+.admin-kit .adk-account-trigger > svg,
+.admin-kit .adk-sidebar-user > .adk-avatar,
+.admin-kit .adk-sidebar-user > a { flex-shrink: 0; }
+.admin-kit .adk-sidebar-note > div { min-width: 0; }
+.admin-kit .adk-account-panel { width: 280px; max-width: calc(100vw - 24px); max-height: calc(100dvh - 90px); overflow-y: auto; z-index: 50; }
+.admin-kit .adk-account-panel span { overflow-wrap: anywhere; }
+.admin-kit .adk-account-panel span > svg { flex-shrink: 0; }
+.admin-kit .adk-account-roles { margin-top: 12px; font-size: 11px; color: #677486; }
+.admin-kit .adk-account-roles summary { cursor: pointer; padding-block: 7px; border-radius: 4px; }
+.admin-kit .adk-account-roles summary:focus-visible { outline: 2px solid #35765c; outline-offset: 2px; }
+.admin-kit .adk-account-roles ul { margin-top: 5px; padding-left: 16px; list-style: disc; }
+.admin-kit .adk-account-roles li { padding-block: 4px; line-height: 1.5; overflow-wrap: anywhere; }
 @media print { .admin-kit .adk-sidebar, .admin-kit .adk-nav-backdrop, .admin-kit .admin-topbar, .admin-kit .admin-footer { display: none !important; }.admin-kit .admin-main { width: 100% !important; margin-left: 0 !important; }.admin-kit .admin-content { padding: 0 !important; } }

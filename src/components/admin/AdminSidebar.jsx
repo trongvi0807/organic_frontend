@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ArrowUpRight, ChevronRight, LogOut, Moon, ShieldCheck, Sun, X } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { adminGroupPath, getAdminNavigation, isAdminItemActive } from '@/constants/adminNavigation';
-import { hasRole, roleLabel } from '@/lib/permissions';
+import { roleSummary } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { AdminAttentionBadge, useAdminAttention } from './AdminAttentionBadge';
 
@@ -22,7 +22,7 @@ export default function AdminSidebar({ user, open, mobile, compact, onClose, sid
   });
   const links = getAdminNavigation(user);
   const name = user?.fullName || user?.username || 'Tài khoản';
-  const role = roleLabel(user);
+  const role = roleSummary(user);
   const rail = compact && !mobile;
   function toggleTheme() {
     const next = !dark; setDark(next);

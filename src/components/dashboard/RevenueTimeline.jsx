@@ -1,0 +1,24 @@
+import { useId, useState } from 'react';
+import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine } from 'recharts';
+import { ChartNoAxesCombined, Table2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { purchaseMoney } from '@/lib/purchaseDocuments';
+import { adminDate } from '@/lib/adminFormat';
+
+const shortMoney = value => Math.abs(value)>=1e6?`${(value/1e6).toLocaleString('vi-VN',{maximumFractionDigits:1})}tr`:Math.abs(value)>=1000?`${(value/1000).toLocaleString('vi-VN',{maximumFractionDigits:0})}k`:String(value);
+function RevenueTooltip({active,payload}) {
+  if(!active||!payload?.length)return null;const row=payload[0].payload;
+  return <div className="adk-chart-tooltip"><strong>{adminDate(row.day)}{row.day!==row.endDay&&` – ${adminDate(row.endDay)}`}</strong><p>Doanh thu thuần <span>{purchaseMoney(row.revenue)}</span></p><p>Tiền hoàn <span>{purchaseMoney(row.refunds)}</span></p><p>Thu thanh lý <span>{purchaseMoney(row.liquidation)}</span></p><p>Đơn được tính <span>{row.orders}</span></p></div>;
+}
+export function RevenueTimeline({ rows, total, ready, loading, granularity, onGranularityChange, monthly=false }) {
+  const [table,setTable]=useState(false),id=useId(),gradient=`revenue-${id.replace(/:/g,'')}`;
+  return <Card className="adk-panel adk-revenue-panel"><CardHeader><div><CardTitle>Doanh thu thuần & hoàn tiền</CardTitle><CardDescription>Tiền hàng sau hoàn trả cộng thu bán thanh lý đã hoàn tất</CardDescription></div><div className="adk-chart-controls"><div className="adk-segmented-control">{[['day','Ngày'],['week','Tuần'],...(monthly?[['month','Tháng']]:[])].map(([value,label])=><button type="button" key={value} aria-pressed={granularity===value} onClick={()=>onGranularityChange(value)}>{label}</button>)}</div><button type="button" className="adk-icon-control" aria-label={table?'Hiện biểu đồ doanh thu':'Xem bảng số liệu doanh thu'} title={table?'Hiện biểu đồ':'Xem dữ liệu dạng bảng'} aria-pressed={table} aria-controls={id} onClick={()=>setTable(!table)}><Table2 size={17}/></button></div></CardHeader><CardContent>
+    <div className="adk-chart-overview"><div><span>Tổng doanh thu thuần</span><strong>{loading||total==null?'—':purchaseMoney(total)}</strong></div><div className="adk-chart-legend"><span><i/>Doanh thu thuần</span><span><i style={{background:'#c77964'}}/>Tiền hoàn</span></div></div>
+    {loading?<div className="adk-chart-empty" role="status">Đang tải số liệu doanh thu…</div>:!ready?<div className="adk-chart-empty" role="status"><ChartNoAxesCombined size={26}/><p>Chưa có dữ liệu báo cáo doanh thu. Vui lòng tải lại.</p></div>:table?<div id={id} className="adk-table-scroll adk-chart-table"><table className="adk-dashboard-table"><caption className="sr-only">Doanh thu thuần và tiền hoàn theo ngày đặt đơn</caption><thead><tr><th>Thời gian</th><th>Doanh thu thuần</th><th>Tiền hoàn</th><th>Thu thanh lý</th><th>Đơn được tính</th></tr></thead><tbody>{rows.map(row=><tr key={row.day}><td>{adminDate(row.day)}{row.day!==row.endDay&&` – ${adminDate(row.endDay)}`}</td><td>{purchaseMoney(row.revenue)}</td><td>{purchaseMoney(row.refunds)}</td><td>{purchaseMoney(row.liquidation)}</td><td>{row.orders}</td></tr>)}</tbody></table></div>:<div id={id} className="adk-revenue-chart" role="img" aria-label="Biểu đồ doanh thu thuần và tiền hoàn; có thể chuyển sang bảng số liệu"><ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{width:600,height:270}}><ComposedChart data={rows} margin={{top:12,right:0,bottom:4,left:-12}} accessibilityLayer>
+      <defs><linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#32846B" stopOpacity={0.18}/><stop offset="95%" stopColor="#32846B" stopOpacity={0.015}/></linearGradient></defs>
+      <CartesianGrid vertical={false} stroke="#EDF0F3" strokeDasharray="3 4"/><XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} tick={{fill:'#8D97A7',fontSize:11}} dy={8}/><YAxis domain={['auto','auto']} tickFormatter={shortMoney} tickLine={false} axisLine={false} tick={{fill:'#8D97A7',fontSize:11}} width={68}/><ReferenceLine y={0} stroke="#D6DFDA"/><Tooltip content={<RevenueTooltip/>}/>
+      <Area name="Doanh thu thuần" dataKey="revenue" type="monotone" stroke="#32846B" strokeWidth={2.8} fill={`url(#${gradient})`} dot={rows.length<10?{r:3.5,fill:'#32846B',stroke:'#fff',strokeWidth:2}:false} isAnimationActive={false}/><Line name="Tiền hoàn" dataKey="refunds" type="monotone" stroke="#c77964" strokeWidth={2} strokeDasharray="5 4" dot={false} isAnimationActive={false}/>
+    </ComposedChart></ResponsiveContainer></div>}
+    <p className="adk-panel-note">Theo ngày đặt đơn gốc; hoàn thành công được cập nhật đến hiện tại. Thu thanh lý theo ngày hoàn tất. Không gồm phí giao hàng.</p>
+  </CardContent></Card>;
+}

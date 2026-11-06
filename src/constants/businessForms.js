@@ -35,8 +35,8 @@ export const businessForms = [
     signatures: signatures('Người giao hàng', 'Người lập phiếu', 'Người nhận kho', 'Người xác nhận'),
     sections: [
       section('Thông tin chung', fields([f('supplierName', 'Nhà cung cấp:'), f('supplierCode', 'Mã NCC:'), f('purchaseOrderCode', 'Theo đơn đặt hàng số:'), f('inspectionNumber', 'Theo phiếu kiểm nhận số:'), f('deliverer', 'Người giao:'), f('receiverName', 'Người nhận:'), f('warehouse', 'Kho nhập:')], 2)),
-      table('Danh sách hàng hóa nhập kho', [...product, c('batchCode', 'Lô hàng'), c('manufactureDate', 'NSX', false, 'date'), c('expiryDate', 'HSD', false, 'date'), c('quantityReceived', 'SL nhập', true), c('unitPrice', 'Đơn giá', true), c('acceptedAmount', 'Thành tiền', true), c('storageLocation', 'Vị trí bảo quản'), c('note', 'Ghi chú')]),
-      summary(f('itemCount', 'Tổng số mặt hàng:', 'number'), f('totalAmount', 'Tổng giá trị nhập (đồng):', 'number')),
+      table('Danh sách hàng hóa nhập kho', [...product, c('batchCode', 'Lô hàng'), c('manufactureDate', 'NSX', false, 'date'), c('expiryDate', 'HSD', false, 'date'), c('quantityReceived', 'SL nhập', true, 'quantity'), c('unitPrice', 'Giá nhập (VNĐ)', true, 'money'), c('acceptedAmount', 'Thành tiền (VNĐ)', true, 'money'), c('storageLocation', 'Vị trí bảo quản'), c('note', 'Ghi chú')]),
+      summary(f('itemCount', 'Tổng số mặt hàng:', 'number'), f('totalAmount', 'Tổng giá trị nhập (VNĐ):', 'money')),
       section('Ghi chú nhập kho', notes('note')),
     ],
   },

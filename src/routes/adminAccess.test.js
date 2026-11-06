@@ -12,6 +12,9 @@ vi.mock('@/pages/client/HomePage', () => ({ default: () => h('p',{},'Cửa hàng
 vi.mock('@/pages/admin/ManagementPage', () => ({ default: ({type}) => h('p',{},`Trang ${type}`) }));
 vi.mock('@/pages/admin/PromotionsPage', () => ({ default: () => h('p',{},'Trang khuyến mãi') }));
 vi.mock('@/pages/admin/AdminDashboardPage', () => ({ default: () => h('p',{},'Trang tổng quan') }));
+vi.mock('@/pages/admin/LiquidationsPage', () => ({ default: () => h('p',{},'Trang thanh lý') }));
+vi.mock('@/pages/admin/RevenueReportPage', () => ({ default: () => h('p',{},'Trang báo cáo doanh thu') }));
+vi.mock('@/pages/admin/BestSellingProductsPage', () => ({ default: () => h('p',{},'Trang sản phẩm bán chạy') }));
 import { AppRoutes } from './AppRoutes';
 let root, container;
 beforeEach(() => { globalThis.IS_REACT_ACT_ENVIRONMENT=true; container=document.createElement('div'); document.body.append(container); root=createRoot(container); });
@@ -20,7 +23,16 @@ it.each([
   ['WAREHOUSE_STAFF','/admin/products','Trang products'],
   ['SALES_STAFF','/admin/promotions','Trang khuyến mãi'],
   ['ADMIN','/admin/categories','Trang categories'],
-  ['WAREHOUSE_STAFF','/admin/categories','Bạn chưa có quyền truy cập'],
+  ['WAREHOUSE_STAFF','/admin/categories','Trang categories'],
+  ['WAREHOUSE_STAFF','/admin/liquidations','Trang thanh lý'],
+  ['STORE_MANAGER','/admin/revenue-report','Trang báo cáo doanh thu'],
+  ['EXECUTIVE_DIRECTOR','/admin/revenue-report','Trang báo cáo doanh thu'],
+  ['WAREHOUSE_STAFF','/admin/revenue-report','Bạn chưa có quyền truy cập'],
+  ['SALES_STAFF','/admin/best-selling-products','Trang sản phẩm bán chạy'],
+  ['EXECUTIVE_DIRECTOR','/admin/best-selling-products','Trang sản phẩm bán chạy'],
+  ['WAREHOUSE_STAFF','/admin/best-selling-products','Bạn chưa có quyền truy cập'],
+  ['EXECUTIVE_DIRECTOR','/admin/liquidations','Trang thanh lý'],
+  ['SALES_STAFF','/admin/liquidations','Bạn chưa có quyền truy cập'],
   ['WAREHOUSE_STAFF','/admin/promotions','Bạn chưa có quyền truy cập'],
   ['SALES_STAFF','/admin/products','Bạn chưa có quyền truy cập'],
   ['QUAN_LY_CAO_CAP','/admin/products','Bạn chưa có quyền truy cập'],

@@ -215,6 +215,36 @@
       "EXECUTIVE_DIRECTOR",
       "STORE_MANAGER",
       "SALES_STAFF"
+    ],
+    "purchase.payment": [
+      "PROCUREMENT_MANAGER",
+      "STORE_MANAGER"
+    ],
+    "liquidation.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "PROCUREMENT_MANAGER",
+      "PROCUREMENT_STAFF",
+      "WAREHOUSE_STAFF"
+    ],
+    "liquidation.write": [
+      "WAREHOUSE_STAFF",
+      "STORE_MANAGER"
+    ],
+    "liquidation.approve": [
+      "STORE_MANAGER"
+    ],
+    "liquidation.execute": [
+      "WAREHOUSE_STAFF",
+      "STORE_MANAGER"
+    ],
+    "reports.read": [
+      "ADMIN",
+      "EXECUTIVE_DIRECTOR",
+      "STORE_MANAGER",
+      "SALES_STAFF",
+      "BUSINESS_STAFF"
     ]
   }
 }

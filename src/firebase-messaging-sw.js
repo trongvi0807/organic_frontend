@@ -23,8 +23,8 @@ if (firebaseConfigured(config)) {
 const messaging = getMessaging(initializeApp(config));
 onBackgroundMessage(messaging, async (payload) => {
   // FCM automatically displays notification payloads; do not display twice.
-  if (!payload.notification) await self.registration.showNotification('organicfood.vn · Thông báo kho', {
-    body: payload.data?.message || 'Có cập nhật tồn kho mới.',
+  if (!payload.notification) await self.registration.showNotification(payload.data?.type === 'CUSTOMER_INBOX' ? 'Organic Food · Thông báo mới' : 'organicfood.vn · Thông báo kho', {
+    body: payload.data?.message || 'Bạn có cập nhật mới. Mở website để xem chi tiết.',
     tag: payload.data?.notificationId || payload.messageId,
     data: payload.data,
   });

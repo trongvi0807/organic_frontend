@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { excelImportService, importAttempt, validateImportFile } from '@/services/admin/fileService';
 import { importConfig, importIssueText, importLabels } from '@/lib/excelImports';
 import { adminDate } from '@/lib/adminFormat';
+import { purchaseMoney, purchaseQuantity } from '@/lib/purchaseDocuments';
 import { currency, errorMessage } from '@/lib/utils';
 import { ProductCategoryMapping } from './ProductCategoryMapping';
 import { ExcelImportContextFields } from './ExcelImportContextFields';
@@ -16,7 +17,7 @@ import { supplierService } from '@/services/admin/managementService';
 const numeric = new Set(['quantity', 'quantityReceived', 'quantityRejected', 'quantityAvailableToReceive', 'sellingPrice', 'unitPrice']);
 const price = new Set(['sellingPrice', 'unitPrice']);
 const dates = new Set(['expectedDeliveryDate', 'manufactureDate', 'expiryDate']);
-const display = (column, value) => !value ? '—' : dates.has(column) ? adminDate(value) : price.has(column) && Number.isFinite(Number(value)) ? currency(Number(value)) : value;
+const display = (column, value) => !value ? '—' : dates.has(column) ? adminDate(value) : price.has(column) && Number.isFinite(Number(value)) ? purchaseMoney(Number(value)) : numeric.has(column) && Number.isFinite(Number(value)) ? purchaseQuantity(value) : value;
 
 export function ExcelImportPanel({ kind, purchaseOrderId, initialContext = {}, onSaved, onBusyChange, categoriesResource }) {
   const config = importConfig[kind];
@@ -127,6 +128,8 @@ export function ExcelImportPanel({ kind, purchaseOrderId, initialContext = {}, o
     {kind === 'products' && preview && !result && <ProductCategoryMapping key={preview.fileSha256} rows={preview.rows} resource={categoriesResource} disabled={!!busy || recovering} onApply={applyCategories} />}
     {recovering && !result && <div role="status" className="rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">Lần nhập trước chưa có kết quả. Bấm «Kiểm tra / thử lại lần nhập trước» để tiếp tục an toàn, tránh nhập trùng. Bạn không cần tạo lại đơn hoặc sửa tệp.</div>}
     {preview && !result && <>
+      {kind !== 'products' && <h3 className="font-semibold">Xem lại chứng từ trước khi lưu</h3>}
+      {kind !== 'products' && preview.canImport && <div className="flex justify-between rounded-xl bg-sage p-4 text-sm"><span>{kind === 'purchase_orders' ? 'Tổng tiền đặt mua' : 'Tổng tiền hàng đạt'}</span><strong>{purchaseMoney((preview.rows || []).reduce((sum, row) => sum + Number(row.values[kind === 'purchase_orders' ? 'quantity' : 'quantityReceived'] || 0) * Number(row.values.unitPrice || 0), 0))}</strong></div>}
       <div className="flex flex-wrap justify-between gap-2 text-sm"><strong>{preview.rowCount} dòng{kind === 'products' ? ` · ${preview.productCount} sản phẩm` : ''}</strong><span className={preview.canImport ? 'text-primary' : 'text-red-700'}>{preview.canImport ? 'File hợp lệ, sẵn sàng xác nhận' : `File có ${preview.errors?.length || 0} lỗi cần sửa`}</span></div>
       {!!preview.warnings?.length && <ul className="space-y-1 rounded-xl bg-sage p-4 text-xs leading-6 text-primary">{preview.warnings.map((warning, i) => <li key={i}>{warning}</li>)}</ul>}
       {!!preview.errors?.length && <div role="alert" className="max-h-56 overflow-auto rounded-xl border border-red-100 bg-red-50 p-4"><p className="text-sm font-semibold text-red-800">Kiểm tra các dòng sau trong Excel</p><ul className="!mt-2 space-y-2 text-xs leading-5 text-red-700">{preview.errors.map((issue, i) => <li key={i}>Dòng {issue.row}: {importIssueText(issue)}</li>)}</ul></div>}

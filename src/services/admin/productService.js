@@ -21,6 +21,12 @@ export const productService = {
     return unwrap(await (id ? api.put(`${url}/${encodeURIComponent(id)}`, payload) : api.post(url, payload)));
   },
   async removeVariant(productId, id) { requireBackend(); return unwrap(await api.delete(`/admin/products/${encodeURIComponent(productId)}/variants/${encodeURIComponent(id)}`)); },
+  async uploadImage(productId, file) {
+    requireBackend();
+    const data = new FormData(); data.append('file', file);
+    return unwrap(await api.post(`/admin/products/${encodeURIComponent(productId)}/images/upload`, data,
+      { timeout: 60000, headers: { 'Content-Type': undefined } }));
+  },
   async saveImage(productId, id, values) {
     requireBackend(); const url = `/admin/products/${encodeURIComponent(productId)}/images`, payload = imagePayload(values);
     return unwrap(await (id ? api.put(`${url}/${encodeURIComponent(id)}`, payload) : api.post(url, payload)));

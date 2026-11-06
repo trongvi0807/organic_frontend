@@ -14,7 +14,7 @@ const NotificationContext = createContext(null);
 export function NotificationProvider({ children }) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const allowed = !DEMO_MODE && can(user, 'inventory.read');
+  const allowed = !DEMO_MODE && (hasRole(user, 'CUSTOMER') || can(user, 'inventory.read'));
   const [enabled, setEnabled] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(''), [revision, setRevision] = useState(0);
   const seen = useRef(new Set());
   const inboxSeen = useRef({ owner: null, ids: new Set(), initialized: false });
@@ -49,7 +49,7 @@ export function NotificationProvider({ children }) {
   }
   useEffect(() => {
     let cancelled = false;
-    setError(''); setEnabled(false); seen.current.clear();
+    setError(''); setEnabled(allowed && ownsPushDevice(user)); seen.current.clear();
     if (!allowed) return;
     async function resume() {
       if (!pushOptedIn(user)) return;
@@ -65,12 +65,14 @@ export function NotificationProvider({ children }) {
     if (!allowed) return;
     let cancelled = false, unsubscribe = () => {};
     function receive(payload, foreground = true) {
-      if (cancelled || !ownsPushDevice(user)) return;
+      if (cancelled || !ownsPushDevice(user) || (payload.data?.accountId && payload.data.accountId !== user?.accountId)) return;
       const id = payload.data?.notificationId || payload.messageId;
       if (id && seen.current.has(id)) return;
+      const alreadyShown = id && inboxSeen.current.owner === owner && inboxSeen.current.ids.has(id);
       if (id) { seen.current.add(id); if (seen.current.size > 200) seen.current.delete(seen.current.values().next().value); }
+      if (id && inboxSeen.current.owner === owner) inboxSeen.current.ids.add(id);
       setRevision((value) => value + 1);
-      if (foreground) toast(payload.notification?.title || 'Cập nhật kho hàng', { description: payload.notification?.body || 'Có thông báo tồn kho mới.', action: { label: 'Xem tồn kho', onClick: () => navigate(notificationTarget(payload.data)) } });
+      if (foreground && !alreadyShown) toast(payload.notification?.title || 'Organic Food · Thông báo mới', { description: payload.notification?.body || 'Bạn có cập nhật mới.', action: { label: 'Xem chi tiết', onClick: () => navigate(notificationTarget(payload.data)) } });
     }
     const background = (event) => { if (event.data?.type === 'moc:notification') receive({ data: event.data.data }, false); };
     navigator.serviceWorker?.addEventListener('message', background);
@@ -86,6 +88,6 @@ export function NotificationProvider({ children }) {
     } catch (err) { setError(errorMessage(err)); }
     finally { setBusy(false); }
   }
-  return <NotificationContext.Provider value={{ enabled, busy, error, toggle, revision, items, unreadByCategory: inbox.data?.owner === owner ? inbox.data.unreadByCategory || {} : {}, orderActionCount: inbox.data?.owner === owner ? inbox.data.orderActionCount || 0 : 0, unread: (inbox.data?.owner === owner ? inbox.data.persistentUnread || 0 : 0) + items.filter(n => !n.persistent && !n.read).length, inboxLoading: inbox.loading, inboxError: inbox.error || inbox.refreshError || (inbox.data?.partialError ? 'Một nguồn thông báo chưa tải được. Bấm chuông để thử lại.' : ''), reloadInbox: inbox.reload, markRead }}>{children}</NotificationContext.Provider>;
+  return <NotificationContext.Provider value={{ pushAllowed: allowed, enabled, busy, error, toggle, revision, items, unreadByCategory: inbox.data?.owner === owner ? inbox.data.unreadByCategory || {} : {}, orderActionCount: inbox.data?.owner === owner ? inbox.data.orderActionCount || 0 : 0, unread: (inbox.data?.owner === owner ? inbox.data.persistentUnread || 0 : 0) + items.filter(n => !n.persistent && !n.read).length, inboxLoading: inbox.loading, inboxError: inbox.error || inbox.refreshError || (inbox.data?.partialError ? 'Một nguồn thông báo chưa tải được. Bấm chuông để thử lại.' : ''), reloadInbox: inbox.reload, markRead }}>{children}</NotificationContext.Provider>;
 }
 export const useNotifications = () => useContext(NotificationContext);

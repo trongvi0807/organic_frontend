@@ -1,11 +1,15 @@
 import {
-  Bell, Boxes, FileInput, FileText, Home, LayoutDashboard, Link2, MapPin, MessageCircle, MessageSquare, RotateCcw,
+  ChartNoAxesCombined, Bell, Boxes, FileInput, FileText, Home, LayoutDashboard, Link2, MapPin, MessageCircle, MessageSquare, RotateCcw,
   Package, Settings2, Shapes, ShieldCheck, ShoppingBag, Sprout, Tag, Truck, Users, WalletCards, Warehouse,
 } from 'lucide-react';
 import { can } from '@/lib/permissions';
 
 const navigation = [
   { id: 'dashboard', name: 'Tổng quan', path: 'dashboard', icon: LayoutDashboard },
+  { id: 'reports', name: 'Thống kê & Báo cáo', icon: ChartNoAxesCombined, permission: 'reports.read', children: [
+    { path: 'revenue-report', name: 'Báo cáo doanh thu', icon: WalletCards, permission: 'reports.read' },
+    { path: 'best-selling-products', name: 'Sản phẩm bán chạy', icon: ChartNoAxesCombined, permission: 'reports.read' },
+  ] },
   { id: 'transparency', name: 'Nguồn gốc & Minh bạch', icon: Sprout, permission: 'catalog.read', children: [
     { path: 'origins', name: 'Xuất xứ', icon: MapPin, permission: 'source.read' },
     { path: 'certifications', name: 'Chứng nhận', icon: ShieldCheck, permission: 'source.read' },
@@ -31,6 +35,7 @@ const navigation = [
     { path: 'purchase-orders', name: 'Đơn mua & Duyệt đơn', icon: ShoppingBag, aliases: ['order-approvals'], permission: 'purchase.read' },
     { path: 'goods-receipts', name: 'Phiếu nhập & Duyệt nhập', icon: FileInput, aliases: ['receipt-approvals'], permission: 'receipt.read' },
     { path: 'inventory', name: 'Tồn kho / Lô', icon: Boxes, permission: 'inventory.read' },
+    { path: 'liquidations', name: 'Thanh lý & xử lý hàng', icon: FileText, permission: 'liquidation.read' },
     { path: 'return-receipts', name: 'Hàng thu hồi', icon: RotateCcw, permission: 'return.warehouse.write' },
   ] },
   { id: 'system', name: 'Hệ thống', icon: Settings2, permission: 'system.manage', children: [

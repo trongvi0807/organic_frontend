@@ -1,0 +1,15 @@
+.revenue-report { min-width: 0; }
+.revenue-report-dates { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; align-items: end; gap: 18px; }
+.revenue-report-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.revenue-report-net { background: #f0f6ec; border-color: #cbdcbd; }
+.revenue-report .table-scroll { max-width: 100%; }
+.revenue-report .data-table th,.revenue-report .data-table td { text-align: left; }
+.revenue-report .data-table td:not(:first-child) { white-space: nowrap; }
+.revenue-report-rules summary { cursor: pointer; padding-block: 7px; font-size: 12px; color: #315c3f; }
+.adk-metrics.adk-metrics--operations { grid-template-columns: repeat(3,minmax(0,1fr)); }
+@media (max-width: 700px) {
+ .revenue-report-dates { grid-template-columns: minmax(0,1fr); }
+ .revenue-report-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+ .revenue-report-metrics strong { font-size: 18px; }
+ .adk-metrics.adk-metrics--operations { grid-template-columns: minmax(0,1fr); }
+}

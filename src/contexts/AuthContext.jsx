@@ -53,12 +53,16 @@ export function AuthProvider({ children }) {
   }
   async function login(values) { return finishLogin(await authService.login(values)); }
   async function logout() {
-    if (!DEMO_MODE && can(session?.user, 'inventory.read')) {
+    if (!DEMO_MODE && session?.user) {
       try { await disablePush(session.user, false); }
       catch { toast.error('Chưa gỡ hoàn toàn thông báo trên thiết bị. Kiểm tra kết nối trước khi dùng máy chung.'); }
     }
     try { await authService.logout(); }
     finally { setSession(null); updateSession(null); }
+  }
+  function clearSession() {
+    setSession(null); updateSession(null);
+    revokeLocalPush().catch(() => {});
   }
   const user = session?.user;
   const isAdmin = hasRole(user, 'ADMIN');
@@ -69,6 +73,6 @@ export function AuthProvider({ children }) {
       setSession(next); return next;
     });
   }
-  return <AuthContext.Provider value={{ user, isAdmin, isStaff: hasRole(user, ...STAFF_ROLES), login, finishLogin, logout, updateProfile }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, isAdmin, isStaff: hasRole(user, ...STAFF_ROLES), login, finishLogin, logout, clearSession, updateProfile }}>{children}</AuthContext.Provider>;
 }
 export const useAuth = () => useContext(AuthContext);

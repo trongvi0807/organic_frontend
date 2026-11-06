@@ -7,6 +7,13 @@ export const roleCodes = user => (user?.roles || []).map(role => role.replace(/^
 export const hasRole = (user, ...roles) => roleCodes(user).some(role => roles.includes(role));
 export const can = (user, permission) => hasRole(user, ...rolesFor(permission));
 export const roleLabel = user => roleCodes(user).map(role => STAFF_ROLE_NAMES[role]).filter(Boolean).join(' · ') || 'Khách hàng';
+export const roleNames = user => [...new Set(roleCodes(user).map(role => STAFF_ROLE_NAMES[role]).filter(Boolean))];
+export function roleSummary(user) {
+  const names = roleNames(user);
+  if (names.length <= 1) return names[0] || 'Khách hàng';
+  if (hasRole(user, 'ADMIN')) return 'Quản trị viên tổng hợp';
+  return `${names[0]} +${names.length - 1}`;
+}
 export const PRODUCT_MANAGERS = rolesFor('catalog.read');
 export const PROMOTION_MANAGERS = rolesFor('promotion.read');
 

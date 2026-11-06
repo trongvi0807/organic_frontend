@@ -1,3 +1,4 @@
+import { purchaseUnit } from './purchaseDocuments';
 import { orderStatuses } from './procurement';
 
 function lineData(line, context) {
@@ -6,7 +7,7 @@ function lineData(line, context) {
     id: line.id,
     productCode: product?.productCode ?? line.productCode ?? line.variant?.productCode,
     productName: line.variant?.productName,
-    unit: line.variant?.variantName ?? line.variant?.unitId,
+    unit: purchaseUnit(line),
     quantity: line.quantityOrdered,
     unitPrice: line.unitPrice,
     amount: line.lineAmount,
@@ -26,7 +27,7 @@ export function purchaseOrderPrintData(order, context = {}) {
     totalAmount: order.totalAmount,
     productRequirements: order.note,
     delivery: { expectedDate: order.expectedDeliveryDate },
-    terms: { otherNotes: [orderStatuses[order.status] && `Trạng thái đơn: ${orderStatuses[order.status]}`, order.approvalNote].filter(Boolean).join('. ') },
+    terms: { otherNotes: [orderStatuses[order.status] && `Trạng thái đơn: ${orderStatuses[order.status]}`, order.approvalNote, `Thanh toán nhà cung cấp: ${order.supplierPaymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán'}`].filter(Boolean).join('. ') },
   };
 }
 

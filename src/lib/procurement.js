@@ -1,11 +1,11 @@
+import { purchaseUnit, validPurchaseQuantity } from './purchaseDocuments';
 import { today } from './apiData';
 import { addReceiptDays } from './receiptDefaults';
 
 export const orderStatuses = { pending_approval: 'Chờ duyệt', approved: 'Đã duyệt', partially_received: 'Giao hàng một phần', rejected: 'Từ chối', received: 'Đã nhập kho', closed: 'Đã đóng', cancelled: 'Đã hủy' };
 export const receiptStatuses = { draft: 'Bản nháp', pending_approval: 'Chờ duyệt', confirmed: 'Đã nhập kho', rejected: 'Từ chối', cancelled: 'Đã hủy' };
-export const canEditOrder = (order) => !order.goodsReceiptId && !order.receiptCount && ['pending_approval', 'approved', 'rejected'].includes(order.status);
+export const canEditOrder = (order) => order.supplierPaymentStatus !== 'paid' && !order.goodsReceiptId && !order.receiptCount && ['pending_approval', 'approved', 'rejected'].includes(order.status);
 export const canEditReceipt = (receipt) => ['draft', 'rejected'].includes(receipt.status);
-const integer = (value) => value !== '' && Number.isSafeInteger(Number(value)) && Number(value) >= 0 && Number(value) <= 99999999999;
 
 export function orderPayload(values) {
   if (!values.supplierId) throw new Error('Chọn nhà cung cấp.');
@@ -15,9 +15,9 @@ export function orderPayload(values) {
   const items = values.items.map((line, index) => {
     if (!line.variantId || ids.has(line.variantId)) throw new Error(`Dòng ${index + 1}: chọn sản phẩm và không lặp sản phẩm.`);
     ids.add(line.variantId);
-    if (!integer(line.quantity) || Number(line.quantity) < 1) throw new Error(`Dòng ${index + 1}: số lượng phải là số gói/hộp nguyên từ 1.`);
+    if (!validPurchaseQuantity(line.quantity, purchaseUnit(line))) throw new Error(`Dòng ${index + 1}: số lượng phải lớn hơn 0; gói/hộp/chai/túi dùng số nguyên, kg/g/lít/ml tối đa 3 số lẻ.`);
     if (!/^\d+(\.\d{1,2})?$/.test(String(line.unitPrice)) || Number(line.unitPrice) <= 0 || Number(line.unitPrice) >= 1e12) throw new Error(`Dòng ${index + 1}: giá mua phải lớn hơn 0, tối đa 2 số lẻ.`);
-    return { variantId: line.variantId, quantity: Number(line.quantity), unitPrice: Number(line.unitPrice) };
+    return { variantId: line.variantId, quantity: Number(line.quantity), unitPrice: Number(line.unitPrice), purchaseUnit: purchaseUnit(line) };
   });
   return { supplierId: values.supplierId, expectedDeliveryDate: values.expectedDeliveryDate || null, note: values.note.trim() || null, items };
 }
@@ -26,7 +26,7 @@ export function receiptLines(order, receipt, documentDate = today()) {
     const saved = receipt?.items.find((item) => item.purchaseOrderDetailId === line.id);
     const capacity = line.quantityAvailableToReceive ?? line.quantityOrdered;
     const manufactureDate = saved?.batch?.manufactureDate || documentDate.slice(0, 10);
-    return { purchaseOrderDetailId: line.id, variant: line.variant, quantityOrdered: line.quantityOrdered, quantityReceivedPreviously: line.quantityReceived ?? 0, quantityAvailableToReceive: capacity, unitPrice: line.unitPrice,
+    return { purchaseOrderDetailId: line.id, variant: line.variant, purchaseUnit: purchaseUnit(line), quantityOrdered: line.quantityOrdered, quantityReceivedPreviously: line.quantityReceived ?? 0, quantityAvailableToReceive: capacity, unitPrice: line.unitPrice,
       quantityReceived: saved?.quantityReceived ?? capacity, quantityRejected: saved?.quantityRejected ?? 0,
       discrepancyReason: saved?.discrepancyReason || '', batchCode: saved?.batch?.batchCode || '', manufactureDate,
       expiryDate: saved?.batch?.expiryDate || addReceiptDays(manufactureDate), expiryDateAutomatic: !saved?.batch?.expiryDate,
@@ -38,8 +38,8 @@ export function receiptPayload(values) {
   const items = values.items.map((line, index) => {
     const received = Number(line.quantityReceived), rejected = Number(line.quantityRejected), ordered = Number(line.quantityAvailableToReceive ?? line.quantityOrdered);
     const prefix = `Dòng ${index + 1}: `;
-    if (!integer(line.quantityReceived) || !integer(line.quantityRejected)) throw new Error(prefix + 'số lượng đạt và bị loại phải là số nguyên không âm.');
-    if (received + rejected > ordered) throw new Error(prefix + 'số đạt + bị loại vượt số còn được nhận của đơn mua. Hãy tải lại tiến độ.');
+    if (!validPurchaseQuantity(line.quantityReceived, purchaseUnit(line), true) || !validPurchaseQuantity(line.quantityRejected, purchaseUnit(line), true)) throw new Error(prefix + 'số lượng không âm và phải đúng đơn vị tính của đơn mua.');
+    if (Math.round(received * 1000) + Math.round(rejected * 1000) > Math.round(ordered * 1000)) throw new Error(prefix + 'số đạt + bị loại vượt số còn được nhận của đơn mua. Hãy tải lại tiến độ.');
     if (received < ordered && !line.discrepancyReason.trim()) throw new Error(prefix + 'ghi rõ nguyên nhân chênh lệch và thỏa thuận với nhà cung cấp.');
     if (received > 0) {
       if (!line.batchCode.trim() || !line.expiryDate) throw new Error(prefix + 'cần mã lô và hạn sử dụng cho hàng đạt.');

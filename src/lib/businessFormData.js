@@ -1,3 +1,4 @@
+import { purchaseUnit } from './purchaseDocuments';
 import { adminDate } from './adminFormat';
 import { receiptStatuses } from './procurement';
 
@@ -9,7 +10,7 @@ export function receiptFormData(receipt, order = {}, context = {}, formId = 'goo
   const supplier = context.supplier || order.supplier || {};
   let items = (receipt.items || []).map((line) => ({
     id: line.id, productCode: context.products?.[line.variant?.productId]?.productCode,
-    productName: line.variant?.productName, unit: line.variant?.variantName,
+    productName: line.variant?.productName, unit: purchaseUnit(line),
     quantityOrdered: line.quantityOrdered, quantityExpected: line.quantityExpected ?? line.quantityOrdered,
     quantityReceivedPreviously: line.quantityReceivedPreviously ?? 0,
     quantityReceived: line.quantityReceived, quantityRejected: line.quantityRejected,
@@ -23,6 +24,7 @@ export function receiptFormData(receipt, order = {}, context = {}, formId = 'goo
   return {
     documentNumber: formId === 'goods_receipt' ? receipt.receiptCode : undefined,
     createdAt: formId === 'goods_receipt' ? receipt.receiptDate : undefined,
+    time: formId === 'goods_receipt' && receipt.receiptDate ? adminDate(receipt.receiptDate, true).split(' ').slice(1).join(' ') : undefined,
     supplierName: supplier.supplierName, supplierCode: supplier.supplierCode,
     purchaseOrderCode: receipt.purchaseOrderCode || order.orderCode, orderDate: order.orderDate,
     inspector: receipt.receivedByEmployee?.fullName, receiverName: receipt.receivedByEmployee?.fullName,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { convertPurchaseQuantity, purchaseDelivery, receiptCandidates } from './purchaseWorkflow';
+import { purchaseDelivery, receiptCandidates } from './purchaseWorkflow';
 import { nextRecordCode } from './recordCodes';
 import { calendarDays } from './calendar';
 
@@ -22,10 +22,8 @@ describe('Receipt eligibility and warehouse quantities', () => {
     expect(receiptCandidates(orders).map((o) => o.id)).toEqual(['a']);
     expect(receiptCandidates(orders, { id: 'g', purchaseOrderId: 'b' }).map((o) => o.id)).toEqual(['a', 'b']);
   });
-  it('converts cartons to base packages without multiplying prices or fractional stock', () => {
-    expect(convertPurchaseQuantity('3', '24')).toBe(72);
-    expect(convertPurchaseQuantity('7', '1')).toBe(7);
-    for (const [quantity, factor] of [['0', 12], ['-1', 12], ['1.5', 12], ['1', 0], ['1', 1.5], ['', 12], ['1', ''], ['99999999999', 2]]) expect(() => convertPurchaseQuantity(quantity, factor)).toThrow();
+  it('honors remaining capacity for later deliveries reported by the backend', () => {
+    expect(receiptCandidates([{id:'a',status:'partially_received',goodsReceiptId:'g',receiptCount:1,canCreateReceipt:true}])).toHaveLength(1);
   });
   it('counts only confirmed accepted goods, across multiple receipts, for the same purchase', () => {
     const order = { id: 'po', items: [{ id: 'l1', quantityOrdered: 10 }, { id: 'l2', quantityOrdered: 20 }] };

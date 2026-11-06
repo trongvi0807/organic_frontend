@@ -35,8 +35,10 @@ export async function loadInbox(user) {
     }));
   }
   const results = await Promise.allSettled(requests);
-  const items = results.flatMap((r) => r.status === 'fulfilled' ? (r.value.items || r.value) : [])
+  const loaded = results.flatMap((r) => r.status === 'fulfilled' ? (r.value.items || r.value) : [])
     .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  const persistedOrders = new Set(loaded.filter(item => item.persistent && item.source === 'order').map(item => item.target));
+  const items = loaded.filter(item => item.persistent || item.source !== 'order' || !persistedOrders.has(item.target));
   const persistentUnread = results.reduce((total, result) => total + (result.status === 'fulfilled' ? Number(result.value.unreadCount || 0) : 0), 0);
   const persistent = results.find(result => result.status === 'fulfilled' && result.value.unreadCount !== undefined)?.value;
   const unreadByCategory = persistent?.unreadByCategory || items.filter(item => item.persistent && !item.read).reduce((counts, item) => ({ ...counts, [item.source]: (counts[item.source] || 0) + 1 }), {});

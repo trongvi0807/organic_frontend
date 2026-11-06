@@ -1,5 +1,6 @@
+import { revenueFixture } from '../test/revenueFixture';
 import { describe, expect, it } from 'vitest';
-import { buildDashboard, categoryBreakdown, dashboardDay, dashboardRange, deliveryOutcome, documentActivities, expiryAlerts, revenueGrowth } from './adminDashboard';
+import { buildDashboard, dashboardDay, dashboardRange, deliveryOutcome, documentActivities, expiryAlerts, revenueGrowth } from './adminDashboard';
 import { createDashboardDemo } from '@/constants/demoDashboard';
 const today = '2026-10-28';
 const order = (id, day, status, paymentStatus, amount = 100000, extra = {}) => ({ id, orderedAt: `${day}T12:00:00+07:00`, status, paymentStatus, pricing: { totalAmount: amount, currency: 'VND', items: [] }, ...extra });
@@ -13,14 +14,14 @@ describe('Dashboard periods and paid-order metrics', () => {
     expect(dashboardRange(today, 0).days).toBe(7);
     expect(() => dashboardRange('invalid')).toThrow('Ngày thống kê không hợp lệ');
   });
-  it('never counts pending/review-required/refunded/cancelled payments as revenue and compares equal periods', () => {
-    const orders = [order('a', '2026-10-22', 'confirmed', 'paid', 120000), order('b', today, 'completed', 'paid', 80000), order('c', '2026-10-21', 'completed', 'paid', 100000),
-      order('d', today, 'pending_payment', 'pending'), order('e', today, 'confirmed', 'requires_review'), order('f', today, 'cancelled', 'paid'), order('g', today, 'completed', 'refunded'), order('h', today, 'completed', 'partially_refunded'),
-      order('i', '2026-10-29', 'completed', 'paid')];
-    const model = buildDashboard({ sources: { orders: ready(orders) } }, { today });
-    expect(model.revenue).toBe(200000); expect(model.previousRevenue).toBe(100000); expect(model.growth).toBe(100);
-    expect(model.currentOrders).toHaveLength(7); expect(model.chart.reduce((sum, row) => sum + row.orders, 0)).toBe(7);
-    expect(model.excludedRevenueCount).toBe(1); expect(model.processing).toBe(2);
+  it('uses authoritative net revenue and refunds from the API rather than recomputing paid order totals', () => {
+    const orders=[order('a',today,'completed','paid',999999),order('b',today,'preparing','paid',888888)];
+    const report=revenueFixture('2026-10-22',today,'day');
+    const model=buildDashboard({sources:{orders:ready(orders)}},{today,revenueReport:report});
+    expect(model.revenue).toBe(160000);expect(model.previousRevenue).toBe(100000);expect(model.growth).toBe(60);
+    expect(model.chart.reduce((sum,row)=>sum+row.revenue,0)).toBe(160000);
+    expect(model.chart.reduce((sum,row)=>sum+row.refunds,0)).toBe(50000);expect(model.processing).toBe(1);
+    expect(model.categories.total).toBe(150000);
   });
   it('does not produce infinite/fictional growth when the previous period has no revenue', () => {
     expect(revenueGrowth(100000, 0)).toBeNull(); expect(revenueGrowth(null, 100)).toBeNull(); expect(revenueGrowth(0, 100)).toBe(-100); expect(revenueGrowth(0, 0)).toBeNull();
@@ -38,14 +39,15 @@ describe('Dashboard periods and paid-order metrics', () => {
     const model = buildDashboard({ sources: { orders: { status: 'error', data: [] }, stock: { status: 'forbidden', data: [] } } }, { today });
     expect(model.revenue).toBeNull(); expect(model.processing).toBeNull(); expect(model.warningCount).toBeNull();
     const usd = order('usd', today, 'completed', 'paid', 10, { pricing: { totalAmount: 10, currency: 'USD', items: [] } });
-    expect(buildDashboard({ sources: { orders: ready([usd]) } }, { today }).revenue).toBe(0);
+    expect(buildDashboard({ sources: { orders: ready([usd]) } }, { today }).revenue).toBeNull();
   });
-  it('aggregates weekly chart buckets without changing totals', () => {
-    const sample = createDashboardDemo(today), sources = Object.fromEntries(Object.entries(sample).map(([key, rows]) => [key, ready(rows)]));
-    const daily = buildDashboard({ sources }, { today, days: 30 }), weekly = buildDashboard({ sources }, { today, days: 30, granularity: 'week' });
-    expect(daily.chart).toHaveLength(30); expect(weekly.chart).toHaveLength(5);
-    expect(weekly.chart.reduce((sum, row) => sum + row.revenue, 0)).toBe(daily.revenue);
-    expect(weekly.chart.reduce((sum, row) => sum + row.orders, 0)).toBe(daily.currentOrders.length);
+  it('uses exact daily/weekly report periods and rejects stale reports from a different range', () => {
+    const daily=buildDashboard(null,{today,days:30,revenueReport:revenueFixture('2026-09-29',today,'day')});
+    const weekly=buildDashboard(null,{today,days:30,granularity:'week',revenueReport:revenueFixture('2026-09-29',today,'week')});
+    expect(daily.chart).toHaveLength(30);expect(weekly.chart).toHaveLength(5);
+    expect(weekly.chart.reduce((sum,row)=>sum+row.revenue,0)).toBe(daily.revenue);
+    expect(buildDashboard(null,{today,days:7,revenueReport:revenueFixture('2026-09-29',today,'day')}).revenue).toBeNull();
+    expect(buildDashboard(null,{today,revenueAllowed:false,revenueReport:revenueFixture('2026-10-22',today,'day')}).revenue).toBeNull();
   });
 });
 describe('Organic stock, classification and operations', () => {
@@ -54,10 +56,9 @@ describe('Organic stock, classification and operations', () => {
       { id: 'draft', confirmed: false, quantityOnHand: 10, expiryDate: today }, { id: 'empty', confirmed: true, quantityOnHand: 0, expiryDate: today }, { id: 'bad', confirmed: true, quantityOnHand: 2, expiryDate: 'invalid' }, { id: 'far', confirmed: true, quantityOnHand: 2, expiryDate: '2026-12-01' }];
     const alerts = expiryAlerts(batches, today, 7); expect(alerts.map((row) => row.id)).toEqual(['expired', 'today', 'soon']); expect(alerts[0].statusLabel).toBe('Đã quá hạn'); expect(alerts[1].expiryLabel).toBe('Hết hạn hôm nay'); expect(alerts[2].daysLeft).toBe(2);
   });
-  it('joins category through product/variant IDs, never through guessed product names, and excludes shipping', () => {
-    const lines = [{ variantId: 'extra-variant', productName: 'Name changed', lineAmount: 100000, discountAmount: 10000 }, { variantId: 'unknown', productName: 'Cà rốt', lineAmount: 50000, discountAmount: 0 }];
-    const result = categoryBreakdown([order('o', today, 'completed', 'paid', 155000, { pricing: { totalAmount: 155000, shippingFee: 15000, items: lines } })], [{ id: 'p', defaultVariantId: 'default-v', categoryId: 'c', categoryName: 'Rau củ' }], [{ variant: { id: 'extra-variant', productId: 'p' } }]);
-    expect(result.total).toBe(140000); expect(result.unclassified).toBe(50000); expect(result.entries.find((row) => row.name === 'Rau củ').value).toBe(90000);
+  it('uses refunded category values from the same API even when catalogue/stock sources are absent', () => {
+    const report=revenueFixture('2026-10-22',today,'day');report.categories=[{id:null,name:'Hoàn chưa phân bổ',netRevenue:-100},{id:'c',name:'Rau',netRevenue:150100}];
+    const result=buildDashboard(null,{today,revenueReport:report});expect(result.categories.total).toBe(150000);expect(result.categories.entries[0].value).toBe(-100);
   });
   it('does not label rejection timestamps as approvals or substitute the current user as actor', () => {
     const activities = documentActivities([{ id: 'p', orderCode: 'PO01', status: 'rejected', orderDate: `${today}T08:00`, approvedAt: `${today}T09:00`, approvedByEmployee: { fullName: 'Người từ chối' } }], [{ id: 'r', receiptCode: 'PN01', status: 'rejected', receiptDate: `${today}T10:00`, receivedByEmployee: { fullName: 'Người lập' }, confirmedAt: `${today}T11:00`, confirmedByEmployee: { fullName: 'Người từ chối phiếu' } }]);

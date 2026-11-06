@@ -5,6 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useResource } from '@/hooks/useResource';
 import { useOrderRefresh } from '@/hooks/useOrderRefresh';
 import { dashboardService } from '@/services/admin/dashboardService';
+import { salesReportService } from '@/services/admin/salesReportService';
+import { dashboardRange } from '@/lib/adminDashboard';
+import '@/styles/revenue-report.css';
 import { buildDashboard } from '@/lib/adminDashboard';
 import { adminDate } from '@/lib/adminFormat';
 import { hasRole, can, roleCodes } from '@/lib/permissions';
@@ -25,15 +28,21 @@ function DashboardContent({ user }) {
   const [days, setDays] = useState(7), [granularity, setGranularity] = useState('day'), [expiryDays, setExpiryDays] = useState(14), [selection, setSelection] = useState(null);
   const demo = false;
   const day = today();
+  const revenueAllowed = can(user, 'reports.read');
+  const financeRange = dashboardRange(day, days);
+  const finance = useResource(() => revenueAllowed ? salesReportService.revenue({ from: financeRange.start, to: financeRange.end, granularity }) : null, [revenueAllowed, financeRange.start, financeRange.end, granularity]);
+  useOrderRefresh(finance.reload, { enabled: revenueAllowed, interval: 60000 });
   const snapshot = useResource(() => dashboardService.snapshot(user, { demo, today: day }), [demo, day]);
   useOrderRefresh(snapshot.reload, { enabled: !demo, interval: 60000 });
   const data = snapshot.data?.demo === demo ? snapshot.data : null;
   const loading = snapshot.loading || (!data && !snapshot.error);
-  const model = useMemo(() => buildDashboard(data, { today: day, days, granularity, expiryDays }), [data, day, days, granularity, expiryDays]);
+  const model = useMemo(() => buildDashboard(data, { today: day, days, granularity, expiryDays, revenueReport: finance.data, revenueAllowed }), [data, day, days, granularity, expiryDays, finance.data, revenueAllowed]);
   const sources = data?.sources || {}, errors = Object.values(sources).filter((source) => source.status === 'error');
   const canStock = can(user, 'inventory.read'), canManage = can(user, 'purchase.approve');
   const shortcuts = [
     ['/admin/sales-orders', 'Đơn bán & giao hàng', can(user, 'order.read')], ['/admin/order-approvals', 'Duyệt đơn mua', canManage],
+    ['/admin/revenue-report', 'Báo cáo doanh thu', revenueAllowed],
+    ['/admin/best-selling-products', 'Sản phẩm bán chạy', can(user, 'reports.read')],
     ['/admin/inventory', 'Tồn kho / Lô', canStock], ['/admin/business-forms', 'Biểu mẫu & bản in', true],
   ].filter(([, , allowed]) => allowed);
 
@@ -42,20 +51,22 @@ function DashboardContent({ user }) {
       <div><p className="adk-dashboard-breadcrumb"><LayoutDashboard size={14} /> Quản trị <span>/</span> Tổng quan</p><h1>Tổng quan cửa hàng</h1><p className="adk-dashboard-greeting">Chào {user?.fullName || 'bạn'}, đây là tình hình hoạt động của cửa hàng.</p></div>
       <div className="adk-dashboard-heading-actions">
         <div className="adk-period-control" aria-label="Khoảng thời gian thống kê"><CalendarDays size={16} />{[[1, 'Hôm nay'], [7, '7 ngày'], [30, '30 ngày']].map(([value, label]) => <button key={value} type="button" aria-pressed={days === value} onClick={() => setDays(value)}>{label}</button>)}</div>
-        <Button variant="outline" className="adk-refresh-button" onClick={() => snapshot.reload({ background: !!snapshot.data })} disabled={snapshot.loading}><RefreshCw size={15} className={snapshot.loading ? 'animate-spin' : ''} />Cập nhật</Button>
+        <Button variant="outline" className="adk-refresh-button" onClick={() => { snapshot.reload({ background: !!snapshot.data }); finance.reload({ background: !!finance.data }); }} disabled={snapshot.loading || finance.loading}><RefreshCw size={15} className={snapshot.loading ? 'animate-spin' : ''} />Cập nhật</Button>
       </div>
     </header>
 
     <div className="adk-data-status"><p><span className="adk-status-dot" />Tình hình kinh doanh<span className="adk-status-divider">|</span>{adminDate(model.range.start)} – {adminDate(model.range.end)}</p><div>{snapshot.data?.loadedAt && <span>Cập nhật {adminDate(snapshot.data.loadedAt, true)}</span>}</div></div>
     {(errors.length > 0 || snapshot.error || snapshot.refreshError) && <div role="status" className="adk-dashboard-notice"><strong>Dữ liệu chưa đầy đủ.</strong> {snapshot.refreshError ? 'Chưa làm mới được số liệu; dữ liệu dưới đây là lần tải gần nhất.' : snapshot.error ? 'Chưa tải được Dashboard.' : `Chưa tải được: ${errors.map((source) => source.label).join(', ')}.`} Bấm Cập nhật để thử lại. Các phần chưa tải được không được coi là số 0.</div>}
 
-    <DashboardMetrics model={model} loading={loading} />
-    <DashboardCharts model={model} granularity={granularity} onGranularityChange={setGranularity} loading={loading} />
+    {revenueAllowed && (finance.error || finance.refreshError) && <div role="status" className="adk-dashboard-notice">{finance.refreshError ? 'Chưa làm mới được báo cáo doanh thu; số liệu giữ từ lần tải gần nhất.' : 'Chưa tải được báo cáo doanh thu. Bấm Cập nhật để thử lại.'}</div>}
+    {model.revenueWarnings?.length > 0 && <div role="status" className="adk-dashboard-notice">{model.revenueWarnings.map(warning => <p key={warning}>{warning}</p>)}</div>}
+    <DashboardMetrics model={model} loading={loading} financeLoading={finance.loading} />
+    {revenueAllowed && <DashboardCharts model={model} granularity={granularity} onGranularityChange={setGranularity} loading={finance.loading} />}
     <div className="adk-dashboard-grid adk-dashboard-grid--operations"><DashboardAlerts model={model} sources={sources} expiryDays={expiryDays} onExpiryDaysChange={setExpiryDays} onOpen={(type, row) => { if (row) setSelection({ type, row }); }} loading={loading} /><DashboardTasks model={model} sources={sources} onOpen={(type, row) => setSelection({ type, row })} loading={loading} /></div>
     <div className="adk-dashboard-grid adk-dashboard-grid--recent"><DashboardRecentOrders model={model} source={sources.orders} loading={loading} onOpen={(type, row) => setSelection({ type, row })} /><DashboardActivities model={model} sources={sources} loading={loading} onOpen={(type, row) => { if (row) setSelection({ type, row }); }} /></div>
 
     <nav className="adk-shortcuts" aria-label="Lối tắt vận hành"><p><ShieldCheck size={18} />Truy cập nhanh</p><div>{shortcuts.map(([href, label]) => <Link key={href} to={href}>{label}<ArrowUpRight size={14} /></Link>)}</div></nav>
-    <p className="adk-dashboard-footnote"><CircleHelp size={15} /><span>Bộ lọc thời gian áp dụng doanh thu, biểu đồ và đơn gần đây. Cảnh báo kho, đơn còn mở và công việc chờ duyệt phản ánh tình trạng hiện tại.{model.excludedRevenueCount > 0 && ` Có ${model.excludedRevenueCount} đơn hoàn một phần hoặc dùng ngoại tệ chưa được tính vào doanh thu vì thiếu số tiền thuần bằng VNĐ.`}</span></p>
+    <p className="adk-dashboard-footnote"><CircleHelp size={15} /><span>Doanh thu lấy từ cùng báo cáo đã trừ hoàn thành công và cộng thu bán thanh lý hoàn tất. Cảnh báo kho, đơn còn mở và công việc chờ duyệt phản ánh tình trạng hiện tại.</span></p>
     {selection && <DashboardRecordDialog key={`${selection.type}:${selection.row.id || selection.row.variant?.id}`} selection={selection} demo={demo} user={user} onClose={() => setSelection(null)} />}
   </div>;
 }

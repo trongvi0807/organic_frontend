@@ -7,7 +7,7 @@ const state = vi.hoisted(() => ({ user: undefined, logout: vi.fn(), shop: { cart
 vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ user: state.user, logout: state.logout }) }));
 vi.mock('@/contexts/ShopContext', () => ({ useShop: () => state.shop }));
 vi.mock('@/contexts/NotificationContext', () => ({ useNotifications: () => state.inbox }));
-vi.mock('@/services/client/catalogService', () => ({ catalogService: { products: vi.fn() } }));
+vi.mock('@/services/client/catalogService', () => ({ catalogService: { products: vi.fn(), availability: vi.fn(async()=>({availableQuantity:{}})), categoryTree: vi.fn(async()=>[]) } }));
 import { catalogService } from '@/services/client/catalogService';
 import { StoreSearch } from './StoreSearch';
 import { StoreAccountMenu } from './StoreAccountMenu';
@@ -80,7 +80,7 @@ describe('Account, cart and notification controls', () => {
     state.user = { username: 'an', roles: ['CUSTOMER'] };
     state.inbox.items = [{ key: 'a', source: 'order', title: 'Đơn #OM01', message: 'Chờ thanh toán', target: '/don-hang/order-uuid', read: false }, { key: 'b', source: 'promotion', title: 'Ưu đãi XANH10', message: 'Giảm 10%', promotionCode: 'XANH10', target: '/gio-hang', read: false }]; state.inbox.unread = 2;
     await render(h(NotificationBell, { storefront: true })); await click(container.querySelector('[aria-haspopup="dialog"]')); expect(container.textContent).toContain('Chờ thanh toán');
-    await click(button('Ưu đãi')); expect(container.textContent).not.toContain('Đơn #OM01'); expect(container.textContent).toContain('XANH10');
+    await click([...container.querySelectorAll('[aria-label="Loại thông báo"] button')].find(item=>item.textContent.startsWith('Ưu đãi'))); expect(container.textContent).not.toContain('Đơn #OM01'); expect(container.textContent).toContain('XANH10');
     await click([...container.querySelectorAll('li button')].find((item) => item.textContent.includes('Ưu đãi XANH10')));
     expect(state.inbox.markRead).toHaveBeenCalledWith(state.inbox.items[1]); expect(container.querySelector('output').textContent).toBe('/gio-hang');
   });

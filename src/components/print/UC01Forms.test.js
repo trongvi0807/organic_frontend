@@ -34,7 +34,7 @@ it('renders BM-NV01-02 with A–F, two-column blocks, expected totals and the or
   const dom = parse(h(PurchaseOrderPrintForm, { data: { documentNumber: 'PO-99', createdAt: '2026-10-27', items: twoProducts, buyer: { contactName: 'Người mua', phone: '0123456789', email: 'buyer@example.test', receivingLocation: 'Kho A' }, supplier: { name: 'NCC A', code: 'NCC-01', contactName: 'Đại diện A', phone: '0987654321', email: 'ncc@example.test', address: 'Địa chỉ NCC' }, productRequirements: 'Chứng nhận còn hiệu lực', delivery: { expectedDate: '2026-11-02', timeWindow: '08:00–10:00', address: 'Kho A', receiverName: 'Người nhận A', receiverPhone: '0123456789', transportMethod: 'Xe lạnh' }, terms: { paymentMethod: 'Chuyển khoản', paymentDeadline: 'Sau 7 ngày', shippingCost: 0, otherNotes: 'Đối chiếu khi nhận' } } }));
   expect(dom.textContent).toContain('BM-NV01-02'); expect(dom.querySelector('.print-form-metadata').textContent).toContain('Số đơn:'); expect(dom.querySelector('.print-form-metadata').textContent).toContain('Ngày đặt:');
   expect(dom.querySelectorAll('.print-two-columns')).toHaveLength(2); expect(dom.querySelectorAll('.print-form-section')).toHaveLength(6); expect(dom.querySelectorAll('.print-form-table thead th')).toHaveLength(8);
-  expect(dom.querySelector('.print-po-totals').textContent).toContain('820.000 đồng'); expect(dom.querySelector('.print-po-totals').textContent).toContain('Tổng số mặt hàng: 2');
+  expect(dom.querySelector('.print-po-totals').textContent).toContain('820.000 VNĐ'); expect(dom.querySelector('.print-po-totals').textContent).toContain('Tổng số mặt hàng: 2');
   for (const text of ['Khung giờ dự kiến:', 'Người nhận hàng:', 'Chi phí vận chuyển:', '0 đồng', 'Chứng nhận còn hiệu lực']) expect(dom.textContent).toContain(text);
 });
 it('keeps ordering-side confirmation last and leaves it unstamped, preserving supplier confirmation date in the middle', () => {
@@ -52,7 +52,7 @@ it('uses actual product codes and stored amounts, leaving missing business infor
 });
 it('preserves backend totals instead of recomputing taxes or overwriting amounts with quantity × price', () => {
   const dom = parse(h(PurchaseOrderPrintForm, { data: { totalAmount: 999000, items: [{ quantity: 2, unitPrice: 30000, amount: 55000 }] } }));
-  expect(dom.querySelector('.print-po-totals').textContent).toContain('999.000 đồng'); expect(dom.querySelector('.print-form-table tbody tr').textContent).toContain('55.000');
+  expect(dom.querySelector('.print-po-totals').textContent).toContain('999.000 VNĐ'); expect(dom.querySelector('.print-form-table tbody tr').textContent).toContain('55.000');
 });
 it('pads blank tables without dropping rows when there are more than eight products', () => {
   const dom = parse(h(PrintFormTable, { columns: [{ key: 'id', label: 'SP' }], rows: Array.from({ length: 25 }, (_, i) => ({ id: i })) }));

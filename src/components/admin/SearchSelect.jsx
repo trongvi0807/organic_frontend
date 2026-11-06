@@ -1,4 +1,4 @@
-import { useContext, useEffect, useId, useRef, useState } from 'react';
+import { Fragment, useContext, useEffect, useId, useRef, useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { matchesSearch } from '@/lib/adminFormat';
 import { ValidationContext } from './AdminForm';
@@ -9,7 +9,7 @@ export function SearchSelect({ options, value, onChange, placeholder = 'Tìm và
   const chosen = options.find((option) => String(option.value) === String(value));
   const [query, setQuery] = useState(chosen?.label || ''), [open, setOpen] = useState(false), [active, setActive] = useState(-1);
   const search = chosen && query === chosen.label ? '' : query;
-  const rows = options.filter((option) => !option.disabled && matchesSearch(`${option.label} ${option.search || ''}`, search)).slice(0, 40);
+  const rows = options.filter((option) => !option.disabled && matchesSearch(`${option.label} ${option.search || ''} ${option.group || ''}`, search)).slice(0, 40);
   useEffect(() => {
     if (!input.current) return;
     if (editing.current) { editing.current = false; return; }
@@ -47,7 +47,7 @@ export function SearchSelect({ options, value, onChange, placeholder = 'Tìm và
       }} /><ChevronDown aria-hidden="true" size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-stone-400" /></div>
     <input type="hidden" name={name} disabled={disabled} value={value ?? ''} />
     {open && <ul id={`${id}-options`} role="listbox" aria-label={label || 'Kết quả gợi ý'} className="absolute z-30 !mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-line bg-white p-1 shadow-lg">
-      {rows.map((option, index) => <li id={`${id}-${index}`} key={option.value} role="option" aria-selected={String(option.value) === String(value)}><button type="button" tabIndex={-1} onMouseDown={(event) => event.preventDefault()} onClick={() => choose(option)} className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-xs leading-6 hover:bg-sage ${active === index ? 'bg-sage' : ''}`}><span>{option.label}</span>{String(option.value) === String(value) && <Check size={14} />}</button></li>)}
+      {rows.map((option, index) => <Fragment key={option.value}>{option.group && (index === 0 || rows[index - 1].group !== option.group) && <li role="presentation" className="px-3 pt-3 pb-1 text-[11px] font-semibold text-primary border-t border-line first:border-t-0">{option.group}</li>}<li id={`${id}-${index}`} key={option.value} role="option" aria-selected={String(option.value) === String(value)}><button type="button" tabIndex={-1} onMouseDown={(event) => event.preventDefault()} onClick={() => choose(option)} className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-xs leading-6 hover:bg-sage ${active === index ? 'bg-sage' : ''}`}><span>{option.label}</span>{String(option.value) === String(value) && <Check size={14} />}</button></li></Fragment>)}
       {!rows.length && <li className="p-3 text-xs text-stone-500">Không tìm thấy kết quả phù hợp.</li>}
     </ul>}
   </div>;

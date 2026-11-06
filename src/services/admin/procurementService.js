@@ -14,11 +14,15 @@ function documents(base) {
 }
 export const purchaseOrderService = {
   ...documents('/purchase-orders'),
+  productOptions: async (supplierId, params) => normalizePage(await get('/purchase-orders/product-options', { ...params, supplierId })),
+  nextCode: () => get('/purchase-orders/next-code'),
+  payment: async (id, status) => { requireBackend(); return unwrap(await api.patch(`/purchase-orders/${id}/supplier-payment`, { status })); },
   history: async (id, params) => normalizePage(await get(`/purchase-orders/${encodeURIComponent(id)}/history`, params)),
   close: (id, data) => post(`/purchase-orders/${id}/close`, data),
 };
 export const goodsReceiptService = {
   ...documents('/goods-receipts'),
+  nextCode: () => get('/goods-receipts/next-code'),
   submit: (id) => post(`/goods-receipts/${id}/submit`),
 };
 export const inventoryService = {

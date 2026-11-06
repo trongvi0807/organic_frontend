@@ -1,3 +1,4 @@
+import { purchaseUnit, validPurchaseQuantity } from './purchaseDocuments';
 import { searchText } from './adminFormat';
 import { nextRecordCode } from './recordCodes';
 export const defaultProductRules = { codePrefix: 'SP', defaultUnit: 'kg', defaultQuantity: 1, defaultPackage: 'Gói', units: ['g', 'kg', 'ml', 'l'], packages: ['Gói', 'Thùng', 'Hộp', 'Túi', 'Chai'] };
@@ -22,11 +23,10 @@ export const duplicateProduct = (rows, values, id) => rows.find((row) => (!id ||
 export function receiptLineErrors(line, day) {
   const errors = {};
   const received = Number(line.quantityReceived), rejected = Number(line.quantityRejected);
-  const integer = (v) => v !== '' && Number.isSafeInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 99999999999;
-  if (!integer(line.quantityReceived)) errors.quantityReceived = 'Số đạt phải là số nguyên không âm.';
-  if (!integer(line.quantityRejected)) errors.quantityRejected = 'Số loại phải là số nguyên không âm.';
+  if (!validPurchaseQuantity(line.quantityReceived, purchaseUnit(line), true)) errors.quantityReceived = 'Số đạt phải không âm và đúng đơn vị; đơn vị đóng gói cần số nguyên.';
+  if (!validPurchaseQuantity(line.quantityRejected, purchaseUnit(line), true)) errors.quantityRejected = 'Số loại phải không âm và đúng đơn vị; đơn vị đóng gói cần số nguyên.';
   const capacity = Number(line.quantityAvailableToReceive ?? line.quantityOrdered);
-  if (received + rejected > capacity) errors.quantityReceived = 'Tổng số đạt và số loại không được vượt số còn được nhận của đơn mua.';
+  if (Math.round(received * 1000) + Math.round(rejected * 1000) > Math.round(capacity * 1000)) errors.quantityReceived = 'Tổng số đạt và số loại không được vượt số còn được nhận của đơn mua.';
   if (received < capacity && !line.discrepancyReason?.trim()) errors.discrepancyReason = 'Bổ sung lý do thiếu hàng hoặc loại hàng.';
   if (received > 0) {
     if (!line.batchCode?.trim()) errors.batchCode = 'Vui lòng nhập mã lô.';

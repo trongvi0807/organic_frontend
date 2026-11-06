@@ -1,3 +1,4 @@
+import { ProductImagePicker } from './ProductImagePicker';
 import { CategoryTreeSelect } from './CategoryTreeSelect';
 import { BusinessCodeInput } from './BusinessCodeInput';
 import { useRef, useState } from 'react';
@@ -6,6 +7,8 @@ import { toast } from 'sonner';
 import { Modal } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Select, Textarea } from '@/components/ui/field';
+import { MoneyInput } from '@/components/ui/money-input';
+import { purchaseMoney } from '@/lib/purchaseDocuments';
 import { ResourceState } from '@/components/common/ResourceState';
 import { useResource } from '@/hooks/useResource';
 import { productService } from '@/services/admin/productService';
@@ -18,7 +21,7 @@ import { categoryIdentityErrors, cleanCategoryName, generateCategoryCode } from 
 import { variantPayload } from '@/lib/catalogAssets';
 import { saveCatalogWorkflow } from '@/lib/catalogWorkflow';
 import { DEMO_MODE } from '@/services/api';
-import { slugify, errorMessage, currency } from '@/lib/utils';
+import { slugify, errorMessage } from '@/lib/utils';
 import { AdminForm } from './AdminForm';
 import { SearchSelect } from './SearchSelect';
 import { ProductRulesDialog } from './ProductRulesDialog';
@@ -39,7 +42,7 @@ export function CatalogForm({ type, item, categories, onClose, onSaved }) {
     ]);
     return { detail, options: { ...options, existing, suppliers, origins, trace, purchases } };
   }, [item?.id, type]);
-  return <Modal open onOpenChange={(open) => { if (!open && !busy) onClose(); }} title={`${item?.id ? 'Chỉnh sửa' : 'Thêm'} ${product ? 'sản phẩm' : 'loại sản phẩm'}`} description={product ? 'Hoàn thiện thông tin và nguồn cung. Mã sản phẩm được cấp tự động khi lưu.' : 'Sắp xếp danh mục sản phẩm.'} className="catalog-form-modal !max-w-[920px]"><ResourceState loading={resource.loading} error={resource.error} onRetry={resource.reload} />{!resource.loading && !resource.error && <Editor type={type} item={resource.data?.detail} options={resource.data?.options} categories={categories} onClose={onClose} onSaved={onSaved} busy={busy} setBusy={setBusy} />}</Modal>;
+  return <Modal open onOpenChange={(open) => { if (!open && !busy) onClose(); }} title={`${item?.id ? 'Chỉnh sửa' : 'Thêm'} ${product ? 'sản phẩm' : 'loại sản phẩm'}`} description={product ? 'Nhập thông tin sản phẩm. Nhà cung cấp và xuất xứ có thể bổ sung sau; mã sản phẩm được cấp tự động khi lưu.' : 'Sắp xếp danh mục sản phẩm.'} className="catalog-form-modal !max-w-[920px]"><ResourceState loading={resource.loading} error={resource.error} onRetry={resource.reload} />{!resource.loading && !resource.error && <Editor type={type} item={resource.data?.detail} options={resource.data?.options} categories={categories} onClose={onClose} onSaved={onSaved} busy={busy} setBusy={setBusy} />}</Modal>;
 }
 function Editor({ type, item, options, categories, onClose, onSaved, busy, setBusy }) {
   const product = type === 'products', first = item?.variants?.[0];
@@ -52,7 +55,9 @@ function Editor({ type, item, options, categories, onClose, onSaved, busy, setBu
   const [certifications, setCertifications] = useState(item?.certifications?.map((cert) => cert.id) || item?.certificationIds || []);
   const [quantity, setQuantity] = useState(first?.netQuantity ?? rules.defaultQuantity), [unit, setUnit] = useState(first?.unitId || rules.defaultUnit), [pack, setPack] = useState(first?.variantName || rules.defaultPackage);
   const [price, setPrice] = useState(first?.sellingPrice ?? item?.minPrice ?? ''), [compare, setCompare] = useState(first?.compareAtPrice ?? '');
-  const persisted = useRef({ productId: item?.id || null, variantId: first?.id || null, currentStatus: item?.status || 'draft' });
+  const [imageFile, setImageFile] = useState(null);
+  const existingImage = item?.images?.find((image) => image.isPrimary)?.imageUrl || item?.images?.[0]?.imageUrl || item?.imageUrl || '';
+  const persisted = useRef({ productId: item?.id || null, variantId: first?.id || null, currentStatus: item?.status || 'draft', hasImage: !!existingImage });
   const origins = options.origins?.filter((origin) => origin.supplierId === supplierId) || [];
   const duplicate = product && name.trim() && duplicateProduct(options.existing || [], { productCode: code || '-', productName: name }, persisted.current.productId);
   const categoryErrors = product ? {} : categoryIdentityErrors(categoryRows, { categoryName: name, categoryCode: code }, item?.id);
@@ -79,16 +84,17 @@ function Editor({ type, item, options, categories, onClose, onSaved, busy, setBu
     }
     values.productName = name.trim(); values.productCode = code; values.slug = slug; values.categoryId = categoryId; values.certificationIds = certifications;
     try {
+      if (!imageFile && !existingImage) throw new Error('Vui lòng chọn ảnh sản phẩm.');
       if (!categoryId) throw new Error('Vui lòng chọn loại sản phẩm.');
-      if (!DEMO_MODE && (!supplierId || !originId || !origins.some((origin) => origin.id === originId))) throw new Error('Chọn nhà cung cấp và xuất xứ thuộc nhà cung cấp đó.');
+      if (!DEMO_MODE && originId && !origins.some((origin) => origin.id === originId)) throw new Error('Chọn nhà cung cấp và xuất xứ thuộc nhà cung cấp đó.');
       const pricePayload = !DEMO_MODE ? variantPayload({ ...first, sku: first?.sku || '', variantName: pack, netQuantity: quantity, unitId: unit, sellingPrice: price, compareAtPrice: compare, status: first?.status || 'active', reorderLevel: first?.reorderLevel ?? 0 }) : null;
       setBusy(true);
       const rows = await allPages(productService.list);
       if (DEMO_MODE && !persisted.current.productId) { values.productCode = generateProductCode({ id: categoryId }, rules, rows); setCode(values.productCode); if (pricePayload) pricePayload.sku = `${values.productCode}-01`; }
       if (duplicateProduct(rows, values, persisted.current.productId)) throw new Error('Mã hoặc tên sản phẩm đã tồn tại. Vui lòng dùng tên khác.');
-      if (DEMO_MODE) { await productService.save(item?.id, { ...values, minPrice: Number(price), unit: pack, stock: Number(values.stock || 0) }); }
+      if (DEMO_MODE) { const imageUrl = imageFile ? await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(imageFile); }) : existingImage; await productService.save(item?.id, { ...values, imageUrl, minPrice: Number(price), unit: pack, stock: Number(values.stock || 0) }); }
       else {
-        await saveCatalogWorkflow({ values, price: pricePayload, originId, state: persisted.current }, { products: productService, traceability: traceabilityService });
+        await saveCatalogWorkflow({ values, price: pricePayload, originId, imageFile, state: persisted.current }, { products: productService, traceability: traceabilityService });
       }
       toast.success('Đã lưu thông tin, giá bán và nguồn cung sản phẩm.'); onSaved();
     } catch (err) { setError(`${errorMessage(err)}${persisted.current.productId && !item?.id ? ' Sản phẩm đã có hồ sơ; bấm Lưu để tiếp tục hoàn thiện cùng hồ sơ, không tạo thêm.' : ''}`); }
@@ -99,15 +105,16 @@ function Editor({ type, item, options, categories, onClose, onSaved, busy, setBu
     <Field label={product ? 'Tên sản phẩm *' : 'Tên loại sản phẩm *'} error={product ? duplicate ? 'Tên hoặc mã sản phẩm đã tồn tại.' : '' : categoryErrors.categoryName}><Input name={product ? 'productName' : 'categoryName'} value={name} disabled={product && !categoryId} onChange={(e) => { setName(e.target.value); setError(''); if (!item?.id) setSlug(slugify(e.target.value)); }} required maxLength={product ? 200 : 255} placeholder={product ? 'Ví dụ: Cà rốt hữu cơ Đà Lạt' : 'Rau củ hữu cơ'} /></Field>
     <div className="form-grid">{!product && <Field label="Mã loại sản phẩm tự động" error={categoryErrors.categoryCode}><BusinessCodeInput kind="categories" name="categoryCode" existing={!!item?.id} value={code} maxLength={255} /></Field>}<Field label="Trạng thái"><Select name="status" defaultValue={item?.status || (product ? 'draft' : 'active')}>{product && <option value="draft">Bản nháp</option>}<option value="active">{product ? 'Đang bán' : 'Hoạt động'}</option><option value="inactive">{product ? 'Ngừng bán' : 'Tạm ẩn'}</option></Select></Field>{product && <Field label="Xác minh hữu cơ"><Select name="organicClaimStatus" defaultValue={item?.organicClaimStatus || 'pending'}><option value="pending">Đang xác minh</option><option value="verified">Đã xác minh</option><option value="rejected">Chưa đạt</option></Select></Field>}</div>
     {product ? <><Field label="Đường dẫn sản phẩm *"><Input value={slug} onChange={(e) => setSlug(e.target.value)} required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxLength={220} /></Field>
-      {!DEMO_MODE && <div className="form-grid"><Field label="Nhà cung cấp *"><SearchSelect required aria-label="Nhà cung cấp sản phẩm" value={supplierId} options={(options.suppliers || []).map((supplier) => ({ value: supplier.id, label: supplier.supplierName }))} onChange={(id) => { setSupplierId(id); setOriginId(''); }} /></Field><Field label="Vùng / cơ sở sản xuất thuộc nhà cung cấp *"><SearchSelect required aria-label="Xuất xứ sản phẩm" disabled={!supplierId} value={originId} options={origins.map((origin) => ({ value: origin.id, label: `${origin.originName} · ${origin.country}` }))} onChange={setOriginId} /></Field></div>}
+      <ProductImagePicker file={imageFile} existingUrl={existingImage} onChange={setImageFile} disabled={busy} />
+      {!DEMO_MODE && <div className="form-grid"><Field label="Nhà cung cấp (không bắt buộc)" hint="Có thể để trống và bổ sung nguồn cung sau."><SearchSelect aria-label="Nhà cung cấp sản phẩm" value={supplierId} options={(options.suppliers || []).map((supplier) => ({ value: supplier.id, label: supplier.supplierName }))} onChange={(id) => { setSupplierId(id); setOriginId(''); }} /></Field><Field label="Vùng / cơ sở sản xuất (không bắt buộc)"><SearchSelect aria-label="Xuất xứ sản phẩm" disabled={!supplierId} value={originId} options={origins.map((origin) => ({ value: origin.id, label: `${origin.originName} · ${origin.country}` }))} onChange={setOriginId} /></Field></div>}
       {!DEMO_MODE && supplierId && !origins.length && <p className="form-note !text-amber-800">Nhà cung cấp chưa có xuất xứ đang hoạt động. Thêm xuất xứ và liên kết nhà cung cấp ở mục Xuất xứ organic trước.</p>}
       <div className="form-grid">
         <Field label="Đơn vị tính *"><SearchSelect required clearOnSearch={false} aria-label="Đơn vị tính" placeholder="Chọn gói, thùng, hộp, túi, chai…" value={pack} options={productPackageOptions(rules, pack)} onChange={setPack} /></Field>
         <Field label="Trọng lượng / dung tích *"><Input required type="number" min="0.001" max="999999999.999" step="0.001" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></Field>
         <Field label="Đơn vị trọng lượng *"><SearchSelect required clearOnSearch={false} aria-label="Đơn vị trọng lượng" placeholder="Chọn g, kg, ml hoặc l" value={unit} options={productMassUnitOptions(rules, unit)} onChange={setUnit} /></Field>
-        <Field label="Giá bán (₫) *"><Input type="number" required min="0.01" max="999999999999.99" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} /></Field>
-        <Field label="Giá gốc (₫)" hint="Giá trước khi giảm; để trống nếu sản phẩm không giảm giá." error={compare !== '' && Number(compare) < Number(price) ? 'Giá gốc không được thấp hơn giá bán.' : ''}><Input type="number" min={price || '0.01'} max="999999999999.99" step="0.01" value={compare} onChange={(e) => setCompare(e.target.value)} /></Field>
-        <Field label="Giá nhập gần nhất" hint="Giá nhập được lưu theo từng Đơn mua, có thể khác nhau giữa các lần nhập."><Input readOnly value={latestImport == null ? 'Ghi nhận khi lập Đơn mua' : currency(latestImport)} /></Field>
+        <Field label="Giá bán (VNĐ) *"><MoneyInput required value={price} onChange={setPrice} placeholder="Ví dụ: 1.250.000" /></Field>
+        <Field label="Giá gốc (VNĐ)" hint="Giá trước khi giảm; để trống nếu sản phẩm không giảm giá." error={compare !== '' && Number(compare) < Number(price) ? 'Giá gốc không được thấp hơn giá bán.' : ''}><MoneyInput value={compare} onChange={setCompare} placeholder="Ví dụ: 1.500.000" /></Field>
+        <Field label="Giá nhập gần nhất (VNĐ)" hint="Giá nhập được lưu theo từng Đơn mua, có thể khác nhau giữa các lần nhập."><Input readOnly value={latestImport == null ? 'Ghi nhận khi lập Đơn mua' : purchaseMoney(latestImport)} /></Field>
       </div>
       {!!item?.variants?.length && item.variants.length > 1 && <p className="form-note">Giá và quy cách phía trên thuộc sản phẩm đầu tiên. Các sản phẩm có quy cách khác được chỉnh tại Sản phẩm & ảnh.</p>}
       {!DEMO_MODE && <Field label="Thương hiệu"><Select name="brandId" defaultValue={item?.brandId || ''}><option value="">Chưa chọn thương hiệu</option>{options.brands?.map((brand) => <option key={brand.id} value={brand.id}>{brand.brandName}</option>)}</Select></Field>}

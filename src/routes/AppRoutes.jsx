@@ -21,6 +21,8 @@ const HighlightsPage = lazy(() => import('@/pages/client/HighlightsPage'));
 const PolicyPage = lazy(() => import('@/pages/client/PolicyPage'));
 const AccountPage = lazy(() => import('@/pages/client/AccountPage'));
 const AuthPage = lazy(() => import('@/pages/auth/AuthPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const LogoutPage = lazy(() => import('@/pages/auth/LogoutPage'));
 const StaffAccountsPage = lazy(() => import('@/pages/admin/StaffAccountsPage'));
 const DeliverySettingsPage = lazy(() => import('@/pages/admin/DeliverySettingsPage'));
@@ -31,6 +33,9 @@ const HomeManagementPage = lazy(() => import('@/pages/admin/HomeManagementPage')
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const ProcurementPage = lazy(() => import('@/pages/admin/ProcurementPage'));
 const BusinessFormsPage = lazy(() => import('@/pages/admin/BusinessFormsPage'));
+const RevenueReportPage = lazy(() => import('@/pages/admin/RevenueReportPage'));
+const BestSellingProductsPage = lazy(() => import('@/pages/admin/BestSellingProductsPage'));
+const LiquidationsPage = lazy(() => import('@/pages/admin/LiquidationsPage'));
 const InventoryPage = lazy(() => import('@/pages/admin/InventoryPage'));
 const NotificationsPage = lazy(() => import('@/pages/admin/NotificationsPage'));
 const OrdersPage = lazy(() => import('@/pages/client/OrderHistoryPage'));
@@ -53,9 +58,9 @@ export function AppRoutes() {
   useStoreScrollRestoration();
   const { pathname, hash } = useLocation();
   useEffect(() => {
-    const names = { '/diem-noi-bat': 'Điểm nổi bật', '/ve-cua-hang': 'Về cửa hàng', '/gio-hang': 'Giỏ hàng', '/thanh-toan': 'Thanh toán', '/': 'Trang chủ', '/san-pham': 'Sản phẩm', '/dang-nhap': 'Đăng nhập', '/dang-ky': 'Đăng ký', '/dang-xuat': 'Đăng xuất', '/admin/products': 'Quản lý sản phẩm', '/admin/categories': 'Quản lý loại sản phẩm', '/tai-khoan': 'Tài khoản', '/admin/customers': 'Quản lý khách hàng', '/admin/suppliers': 'Quản lý nhà cung cấp', '/admin/origins': 'Xuất xứ organic', '/admin/certifications': 'Chứng nhận organic', '/admin/traceability': 'Truy xuất sản phẩm', '/admin/home': 'Quản lý trang chủ' };
+    const names = { '/diem-noi-bat': 'Điểm nổi bật', '/ve-cua-hang': 'Về cửa hàng', '/gio-hang': 'Giỏ hàng', '/thanh-toan': 'Thanh toán', '/': 'Trang chủ', '/san-pham': 'Sản phẩm', '/dang-nhap': 'Đăng nhập', '/quen-mat-khau': 'Quên mật khẩu', '/dat-lai-mat-khau': 'Đặt mật khẩu mới', '/doi-mat-khau': 'Đổi mật khẩu', '/dang-ky': 'Đăng ký', '/dang-xuat': 'Đăng xuất', '/admin/products': 'Quản lý sản phẩm', '/admin/categories': 'Quản lý loại sản phẩm', '/tai-khoan': 'Tài khoản', '/admin/customers': 'Quản lý khách hàng', '/admin/suppliers': 'Quản lý nhà cung cấp', '/admin/origins': 'Xuất xứ organic', '/admin/certifications': 'Chứng nhận organic', '/admin/traceability': 'Truy xuất sản phẩm', '/admin/home': 'Quản lý trang chủ' };
     document.title = `${names[pathname] || (/^\/(san-pham|products)\//.test(pathname) ? 'Chi tiết sản phẩm' : 'Trang không tồn tại')} | organicfood.vn`;
-    const operations = { 'purchase-orders': 'Đơn đặt mua', 'order-approvals': 'Duyệt đơn mua', 'goods-receipts': 'Phiếu nhập', 'receipt-approvals': 'Duyệt nhập', inventory: 'Tồn kho / lô', notifications: 'Thông báo' };
+    const operations = { 'purchase-orders': 'Đơn đặt mua', 'order-approvals': 'Duyệt đơn mua', 'goods-receipts': 'Phiếu nhập', 'receipt-approvals': 'Duyệt nhập', 'revenue-report': 'Báo cáo doanh thu', 'best-selling-products': 'Sản phẩm bán chạy', liquidations: 'Thanh lý & xử lý hàng', inventory: 'Tồn kho / lô', notifications: 'Thông báo' };
     if (operations[pathname.replace('/admin/', '')]) document.title = `${operations[pathname.replace('/admin/', '')]} | organicfood.vn`;
     const commerce = { '/don-hang': 'Đơn hàng', '/yeu-thich': 'Sản phẩm yêu thích', '/diem-thuong': 'Điểm thưởng', '/danh-gia-cua-toi': 'Đánh giá của tôi', '/payment/result': 'Kết quả thanh toán', '/payment/cancel': 'Quay lại từ thanh toán', '/admin/sales-orders': 'Đơn bán & giao hàng', '/admin/promotions': 'Khuyến mãi', '/admin/payment-review': 'Đối soát thanh toán' };
     if (commerce[pathname] || pathname.startsWith('/don-hang/')) document.title = `${commerce[pathname] || 'Chi tiết đơn hàng'} | organicfood.vn`;
@@ -99,6 +104,7 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}><Route path="tai-khoan" element={<AccountPage />} /></Route>
       <Route path="*" element={<NotFoundPage />} />
     </Route>
+    <Route path="quen-mat-khau" element={<ForgotPasswordPage />} /><Route path="dat-lai-mat-khau" element={<ResetPasswordPage purpose="forgot" />} /><Route path="doi-mat-khau" element={<ResetPasswordPage purpose="change" />} />
     <Route path="dang-nhap" element={<AuthPage />} /><Route path="dang-ky" element={<AuthPage mode="register" />} /><Route path="dang-xuat" element={<LogoutPage />} />
     <Route element={<ProtectedRoute roles={STAFF_ROLES} />}>
       <Route path="admin" element={<AdminLayout />}>
@@ -115,7 +121,9 @@ export function AppRoutes() {
         <Route element={<ProtectedRoute permission="promotion.read" />}><Route path="promotions" element={<PromotionsPage />} /></Route>
         <Route element={<ProtectedRoute permission="purchase.read" />}><Route path="purchase-orders" element={<ProcurementPage key="purchase-orders" />} /></Route>
         <Route element={<ProtectedRoute permission="receipt.read" />}><Route path="goods-receipts" element={<ProcurementPage key="goods-receipts" kind="receipts" />} /></Route>
-        <Route element={<ProtectedRoute permission="inventory.read" />}><Route path="inventory" element={<InventoryPage />} /></Route>
+        <Route element={<ProtectedRoute permission="reports.read" />}><Route path="revenue-report" element={<RevenueReportPage />} /><Route path="best-selling-products" element={<BestSellingProductsPage />} /></Route>
+        <Route element={<ProtectedRoute permission="liquidation.read" />}><Route path="liquidations" element={<LiquidationsPage />} /></Route>
+      <Route element={<ProtectedRoute permission="inventory.read" />}><Route path="inventory" element={<InventoryPage />} /></Route>
         <Route element={<ProtectedRoute permission="inventory.read" />}><Route path="notifications" element={<NotificationsPage />} /></Route>
         <Route element={<ProtectedRoute permission="order.read" />}><Route path="sales-orders" element={<SalesOrdersPage />} /></Route>
         <Route element={<ProtectedRoute permission="customer.read" />}><Route path="customers" element={<RecordsPage key="customers" module="customers" />} /></Route>

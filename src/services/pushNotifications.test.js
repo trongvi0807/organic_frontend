@@ -58,3 +58,13 @@ it('resolves matching public project config for page and worker; runtime takes p
   expect(firebaseConfig({ VITE_FIREBASE_PROJECT_ID: 'runtime' }, { VITE_FIREBASE_PROJECT_ID: 'build' }).projectId).toBe('runtime');
   expect(firebaseConfig().projectId).toBe('backend-organic');
 });
+it('registers and unregisters a customer device through the same authenticated flow',async()=>{
+  await enablePush({username:'customer',roles:['CUSTOMER']},true);
+  expect(notificationService.register).toHaveBeenCalledWith('fcm-device');
+  await disablePush({username:'customer',roles:['CUSTOMER']});expect(notificationService.unregister).toHaveBeenCalledWith('fcm-device');
+});
+it('routes customer pushes to allowlisted private screens and rejects unsafe links',()=>{
+  const id='11111111-1111-4111-8111-111111111111';
+  for(const target of [`/don-hang/${id}`,`/phan-hoi?feedbackId=${id}`,`/doi-tra?requestId=${id}`])expect(notificationTarget({type:'CUSTOMER_INBOX',target})).toBe(target);
+  for(const target of ['https://evil.example','//evil.example','/admin/inventory','/don-hang/../admin','/don-hang/'+id+'?redirect=https://evil.example'])expect(notificationTarget({type:'CUSTOMER_INBOX',target})).toBe('/tai-khoan');
+});

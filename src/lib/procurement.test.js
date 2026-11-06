@@ -5,7 +5,7 @@ const order = { supplierId: 's', note: '', expectedDeliveryDate: '', items: [{ v
 const receipt = { purchaseOrderId: 'o', note: '', items: [{ purchaseOrderDetailId: 'line', quantityOrdered: 10, quantityReceived: '8', quantityRejected: '1', discrepancyReason: '1 hỏng, thiếu 1; đã thống nhất đóng đơn', batchCode: ' LOT ', manufactureDate: '', expiryDate: '2099-01-01', originDescription: '' }] };
 describe('Procurement business safeguards', () => {
   it('sends agreed buying price, whole package quantities and only request fields', () => {
-    expect(orderPayload(order)).toEqual({ supplierId: 's', note: null, expectedDeliveryDate: null, items: [{ variantId: 'v', quantity: 10, unitPrice: 12500.5 }] });
+    expect(orderPayload(order)).toEqual({ supplierId: 's', note: null, expectedDeliveryDate: null, items: [{ variantId: 'v', quantity: 10, unitPrice: 12500.5, purchaseUnit: 'gói' }] });
   });
   it('rejects duplicate variants and fractional quantities', () => {
     expect(() => orderPayload({ ...order, items: [...order.items, ...order.items] })).toThrow('không lặp');

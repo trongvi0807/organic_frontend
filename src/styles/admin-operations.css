@@ -64,3 +64,16 @@
 @media (max-width: 1050px) { .business-form-workspace { grid-template-columns: 1fr; }.business-form-catalog { position: static; max-height: 280px; }.business-form-catalog { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }.business-form-catalog section + section { margin-top: 0; } }
 @media (max-width: 850px) { .quick-entry { grid-template-columns: 1fr 1fr; }.quick-entry > :first-child { grid-column: 1 / -1; } }
 @media (max-width: 480px) { .admin-shell .operations-filters, .quick-entry { grid-template-columns: 1fr; } }
+
+/* Keep purchase-entry headers, fields and values on the same left edge. */
+.procurement-modal .purchase-entry-table { width: 100%; min-width: 1080px; table-layout: fixed; }
+.procurement-modal .purchase-entry-table th,
+.procurement-modal .purchase-entry-table td { text-align: left; vertical-align: middle; padding: 12px; }
+.procurement-modal .purchase-entry-table th:first-child,
+.procurement-modal .purchase-entry-table td:first-child { padding-left: 12px; }
+.procurement-modal .purchase-entry-table .input { width: 100%; min-width: 0; text-align: left; }
+.procurement-modal .purchase-entry-table td > strong { display: block; line-height: 1.5; }
+.procurement-modal .purchase-entry-table td > small { display: block; margin-top: 4px; line-height: 1.5; }
+.procurement-modal .purchase-entry-table .purchase-cell { font-variant-numeric: tabular-nums; }
+/* A native fixed-unit menu is rendered outside the table's overflow clip. */
+.procurement-modal select.purchase-unit-select { appearance: auto; cursor: pointer; width: 100%; min-width: 0; padding-right: 12px; }

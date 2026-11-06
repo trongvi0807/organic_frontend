@@ -6,7 +6,7 @@ import { businessForm } from '@/constants/businessForms';
 
 function format(value, type) {
   if (value == null || value === '') return '';
-  return type === 'date' ? printDate(value) : type === 'number' ? printNumber(value) : value;
+  return type === 'date' ? printDate(value) : type === 'money' ? printNumber(value, 2) : type === 'quantity' ? printNumber(value, 3) : type === 'number' ? printNumber(value) : value;
 }
 function Fields({ items, data, columns = 1 }) {
   return <div className="print-schema-fields" style={{ '--field-columns': columns }}>{items.map((field) => <DottedField key={field.key} label={field.label} value={format(data[field.key], field.format)} />)}</div>;

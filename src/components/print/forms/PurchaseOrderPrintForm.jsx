@@ -1,3 +1,4 @@
+import { adminDate } from '@/lib/adminFormat';
 import { forwardRef } from 'react';
 import PrintFormLayout, { DottedField, DottedNotes, PrintFormSection, PrintFormTable, printDate, printNumber } from '../PrintFormLayout';
 
@@ -8,7 +9,7 @@ export const PurchaseOrderPrintForm = forwardRef(function PurchaseOrderPrintForm
   const buyer = data.buyer || {}, supplier = data.supplier || {}, delivery = data.delivery || {}, terms = data.terms || {};
   const items = (data.items || []).map((item) => ({ ...item, amount: item.amount ?? (isAmount(item.quantity) && isAmount(item.unitPrice) ? Number(item.quantity) * Number(item.unitPrice) : undefined) }));
   const total = data.totalAmount ?? (items.length && items.every((row) => isAmount(row.amount)) ? items.reduce((sum, row) => sum + Number(row.amount), 0) : undefined);
-  return <PrintFormLayout {...layoutProps} ref={ref} sheetClassName="print-uc01-po" title="ĐƠN ĐẶT HÀNG - PURCHASE ORDER" formCode="BM-NV01-02" documentNumberLabel="Số đơn:" createdAtLabel="Ngày đặt:" documentNumber={data.documentNumber} createdAt={data.createdAt} signatures={[
+  return <PrintFormLayout {...layoutProps} ref={ref} sheetClassName="print-uc01-po" title="ĐƠN ĐẶT HÀNG - PURCHASE ORDER" formCode="BM-NV01-02" documentNumberLabel="Số đơn:" createdAtLabel="Ngày đặt:" documentNumber={data.documentNumber} createdAt={data.createdAt} time={data.createdAt ? adminDate(data.createdAt, true).split(' ').slice(1).join(' ') : undefined} signatures={[
     { title: 'Người lập đơn (Purchasing)', name: data.creatorName ?? buyer.contactName },
     { title: 'Đại diện nhà cung cấp', name: data.supplierRepresentative, dateLabel: 'Ngày NCC xác nhận:', date: data.supplierConfirmedAt },
     { title: 'Người xác nhận bên đặt', name: data.confirmerName },
@@ -37,12 +38,12 @@ export const PurchaseOrderPrintForm = forwardRef(function PurchaseOrderPrintForm
         { key: 'productCode', label: 'Mã SP', width: '10%' },
         { key: 'productName', label: 'Tên sản phẩm', width: '24%' },
         { key: 'unit', label: 'ĐVT', width: '8%' },
-        { key: 'quantity', label: 'SL đặt', width: '9%', numeric: true },
-        { key: 'unitPrice', label: 'Đơn giá dự kiến', width: '14%', numeric: true },
-        { key: 'amount', label: 'Thành tiền dự kiến', width: '17%', numeric: true },
+        { key: 'quantity', label: 'SL đặt', width: '9%', numeric: true, fractionDigits: 3 },
+        { key: 'unitPrice', label: 'Giá nhập (VNĐ)', width: '14%', numeric: true, fractionDigits: 2 },
+        { key: 'amount', label: 'Thành tiền (VNĐ)', width: '17%', numeric: true, fractionDigits: 2 },
         { key: 'note', label: 'Ghi chú', width: '13%' },
       ]} />
-      <div className="print-po-totals"><span>Tổng số mặt hàng: <strong>{items.length ? printNumber(items.length) : ''}</strong></span><span>Tổng giá trị dự kiến: {isAmount(total) ? printNumber(total) : '..................'} đồng</span></div>
+      <div className="print-po-totals"><span>Tổng số mặt hàng: <strong>{items.length ? printNumber(items.length) : ''}</strong></span><span>Tổng tiền đặt mua: {isAmount(total) ? printNumber(total, 2) : '..................'} VNĐ</span></div>
     </PrintFormSection>
     <PrintFormSection title="D. Yêu cầu / Ghi chú về hàng hóa" keepTogether><DottedNotes value={data.productRequirements} lines={1} /></PrintFormSection>
     <div className="print-two-columns">

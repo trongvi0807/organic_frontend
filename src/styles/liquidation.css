@@ -1,0 +1,9 @@
+.liquidation-form .table-scroll { max-width: 100%; }
+.liquidation-form .data-table th,
+.liquidation-form .data-table td,
+.liquidation-form .data-table input { text-align: left; }
+@media (max-width: 640px) {
+  .liquidation-form .form-grid { grid-template-columns: minmax(0, 1fr); }
+  .liquidation-form .form-actions { flex-wrap: wrap; }
+  .liquidation-form .form-actions > button { flex: 1 1 140px; }
+}
