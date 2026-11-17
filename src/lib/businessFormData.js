@@ -58,7 +58,7 @@ export function inventoryFormData(batches = [], context = {}, formId = 'stock_ca
 export function saleFormData(order, shipment, formId) {
   const paid = order.paymentStatus === 'paid', quote = order.pricing || {};
   const items = (quote.items || []).map((line) => ({
-    id: line.variantId, productName: line.productName, unit: line.variantName,
+    id: line.selectionKey || line.variantId, productName: line.productName, unit: line.variantName, expiryDate: line.expiryDate,
     quantity: line.quantity, requestedQuantity: line.quantity,
     confirmedQuantity: ['confirmed', 'paid', 'preparing', 'shipping', 'delivered', 'completed'].includes(order.status) ? line.quantity : undefined,
     unitPrice: line.unitPrice, lineAmount: line.lineAmount, discountAmount: line.discountAmount,

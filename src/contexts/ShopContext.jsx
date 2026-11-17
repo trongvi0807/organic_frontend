@@ -8,6 +8,7 @@ import { catalogService } from '@/services/client/catalogService';
 import { readStorage, writeStorage } from '@/lib/storage';
 import { cartItemKey, changeCartQuantity, parseCartQuantity, quantityLimit, selectAllCartItems, selectCartItem } from '@/lib/cart';
 import { cartFromServer } from '@/lib/checkout';
+import { saleFields, saleKey } from '@/lib/saleOptions';
 import { sellableVariants } from '@/lib/productDetail';
 import { errorMessage } from '@/lib/utils';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -101,7 +102,14 @@ export function ShopProvider({ children }) {
       }
       if (!variantId) throw new Error('Sản phẩm chưa có quy cách đang bán. Vui lòng xem chi tiết.');
       if (!sameScope()) throw new Error('Phiên đã thay đổi. Vui lòng thử lại.');
-      return service.add(variantId, quantity);
+      let selection = product.expiryDate ? { expiryDate: product.expiryDate, salePromotionId: product.salePromotionId || null } : {};
+      if (!product.expiryDate) {
+        const stock = await catalogService.availability(product.id, { fresh: true });
+        const choice = (stock.saleOptions || []).find(option => option.variantId === variantId && !option.combo);
+        if (Array.isArray(stock.saleOptions) && !choice) throw new Error("Quy cách này chưa có hàng mua riêng. Vui lòng xem chi tiết hoặc chọn combo.");
+        selection = saleFields(choice);
+      }
+      return service.add(variantId, quantity, selection);
     }).then((success) => { if (success) announce(); return success; });
     if (product.stock === 0 || product.minPrice == null || !Number.isInteger(quantity) || quantity < 1) return false;
     const variantId = product.variantId || product.defaultVariantId, cartKey = variantId ? `${product.id}:${variantId}` : product.id;
@@ -115,7 +123,7 @@ export function ShopProvider({ children }) {
       if (!success || !sameScope()) return false;
       const affected = new Set(items.map(item => item.variantId));
       const next = cartRef.current.map(row => affected.has(row.variantId) ? { ...row, selected: true } : row);
-      cartRef.current = next; setCart(next); setPromoCode(offer.promotionCode);
+      cartRef.current = next; setCart(next); if (offer.saleScope !== "expiry") setPromoCode(offer.promotionCode);
       setCartAdded({ sequence: ++addedSequence.current, productName: offer.name, quantity: items.reduce((sum, item) => sum + item.quantity, 0) });
       toast.success('Đã thêm các món vào giỏ hàng', { description: `Đã chọn mã ${offer.promotionCode}. Ưu đãi được kiểm tra lại khi thanh toán.` });
       return true;
@@ -123,11 +131,11 @@ export function ShopProvider({ children }) {
   }
   function updateQuantity(key, amount) {
     if (DEMO_MODE) { setCart((items) => changeCartQuantity(items, key, amount)); return; }
-    return mutate((service) => { const item = cartRef.current.find((line) => cartItemKey(line) === key); if (!item) throw new Error('Dòng giỏ hàng đã thay đổi.'); return service.quantity(item.variantId, item.quantity + amount); });
+    return mutate((service) => { const item = cartRef.current.find((line) => cartItemKey(line) === key); if (!item) throw new Error('Dòng giỏ hàng đã thay đổi.'); return service.quantity(item.selectionKey || item.variantId, item.quantity + amount); });
   }
   function removeFromCart(key) {
     if (DEMO_MODE) { setCart((items) => items.filter((item) => cartItemKey(item) !== key)); return; }
-    return mutate((service) => { const item = cartRef.current.find((line) => cartItemKey(line) === key); if (!item) throw new Error('Dòng giỏ hàng đã thay đổi.'); return service.remove(item.variantId); });
+    return mutate((service) => { const item = cartRef.current.find((line) => cartItemKey(line) === key); if (!item) throw new Error('Dòng giỏ hàng đã thay đổi.'); return service.remove(item.selectionKey || item.variantId); });
   }
   function setQuantity(key, value) {
     const item = cartRef.current.find((line) => cartItemKey(line) === key);
@@ -135,7 +143,7 @@ export function ShopProvider({ children }) {
       if (!item) throw new Error('Dòng giỏ hàng đã thay đổi.');
       const quantity = parseCartQuantity(value, quantityLimit(item));
       if (DEMO_MODE) { setCart((items) => items.map((line) => cartItemKey(line) === key ? { ...line, quantity } : line)); return true; }
-      return mutate((service) => service.quantity(item.variantId, quantity));
+      return mutate((service) => service.quantity(item.selectionKey || item.variantId, quantity));
     } catch (e) { toast.error(e.message, { position: 'top-left', id: 'cart-quantity' }); return false; }
   }
   function clearCart() {
@@ -146,10 +154,10 @@ export function ShopProvider({ children }) {
     return mutate(async (service) => {
       let data = await service.get();
       for (const purchased of items) {
-        const row = data.items.find((line) => line.variantId === purchased.variantId);
+        const row = data.items.find((line) => saleKey(line) === saleKey(purchased));
         // Keep changed quantities; never clear unrelated or newly edited lines.
         if (row?.quantity === purchased.quantity) {
-          try { data = await service.remove(row.variantId, purchased.quantity); }
+          try { data = await service.remove(row.selectionKey || row.variantId, purchased.quantity); }
           catch (error) {
             if (error.response?.status !== 409) throw error;
             data = await service.get();

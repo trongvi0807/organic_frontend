@@ -62,7 +62,7 @@ function CheckoutForm({ user }) {
   }, [options.data, attempt]);
   let deliveryAddress = '';
   try { if (fulfillment === 'delivery' && options.data) deliveryAddress = formatShippingAddress(address, options.data.addresses); } catch { /* Wait for a complete address. */ }
-  const signature = JSON.stringify({ deliveryPoint, values, rewardPoints, address: { ...address, search: '' }, fulfillment, items: selected.map(({ variantId, quantity, minPrice }) => [variantId, quantity, minPrice]) });
+  const signature = JSON.stringify({ deliveryPoint, values, rewardPoints, address: { ...address, search: '' }, fulfillment, items: selected.map(({ variantId, quantity, minPrice, expiryDate, salePromotionId }) => [variantId, quantity, minPrice, expiryDate, salePromotionId]) });
   const currentSignature = useRef(signature); currentSignature.current = signature;
   const quote = quoted?.signature === signature ? quoted.value : null;
   function field(key, value) { touched.current = true; setValues((old) => ({ ...old, [key]: value })); setError(''); }

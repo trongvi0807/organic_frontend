@@ -1,3 +1,4 @@
+import { saleKey } from './saleOptions';
 import { canPurchase } from './cart';
 import { currency } from './utils';
 
@@ -9,7 +10,7 @@ export const productKey = row => row.productId || row.id;
 
 export function comboProgress(offer, rows) {
   const totals = new Map();
-  rows.filter(row => row.selected !== false && canPurchase(row)).forEach(row => totals.set(productKey(row), (totals.get(productKey(row)) || 0) + row.quantity));
+  rows.filter(row => row.selected !== false && canPurchase(row) && (offer.saleScope !== "expiry" || row.salePromotionId === offer.id)).forEach(row => totals.set(productKey(row), (totals.get(productKey(row)) || 0) + row.quantity));
   const products = offer.products || [];
   return {
     related: products.some(p => (totals.get(p.productId) || 0) > 0),
@@ -21,7 +22,7 @@ export function offerVariant(product, choices = {}, rows = [], needed = product.
   const variants = product.variants || [];
   const chosen = choices[product.productId];
   if (chosen) return variants.find(v => v.id === chosen);
-  const capacity = v => Number(v.availableQuantity) - rows.filter(row => row.variantId === v.id).reduce((sum, row) => sum + row.quantity, 0);
+  const capacity = v => Number(v.availableQuantity) - rows.filter(row => row.variantId === v.id && (!v.selectionKey || saleKey(row) === v.selectionKey)).reduce((sum, row) => sum + row.quantity, 0);
   return variants.find(v => capacity(v) >= needed) || variants[0];
 }
 export function comboEstimate(offer, choices = {}) {
@@ -37,9 +38,9 @@ export function comboAdditions(offer, rows, choices = {}, missingOnly = false) {
   const needs = missingOnly ? progress.missing.map(p => ({ ...p, requiredQuantity: p.missingQuantity })) : offer.products;
   return needs.map(p => {
     const variant = offerVariant(p, choices, rows, p.requiredQuantity);
-    const existing = rows.filter(row => row.variantId === variant?.id).reduce((sum, row) => sum + row.quantity, 0);
+    const existing = rows.filter(row => row.variantId === variant?.id && (!variant?.selectionKey || saleKey(row) === variant.selectionKey)).reduce((sum, row) => sum + row.quantity, 0);
     if (!variant || variant.availableQuantity < existing + p.requiredQuantity || existing + p.requiredQuantity > 999)
       throw new Error(`${p.productName}: chưa đủ hàng ở quy cách này. Hãy chọn quy cách khác hoặc điều chỉnh giỏ hàng.`);
-    return { variantId: variant.id, quantity: p.requiredQuantity };
+    return { variantId: variant.id, quantity: p.requiredQuantity, ...(variant.expiryDate ? { expiryDate: variant.expiryDate, salePromotionId: variant.salePromotionId } : {}) };
   });
 }

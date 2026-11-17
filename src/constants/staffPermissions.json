@@ -245,6 +245,9 @@
       "STORE_MANAGER",
       "SALES_STAFF",
       "BUSINESS_STAFF"
+    ],
+    "promotion.approve": [
+      "STORE_MANAGER"
     ]
   }
 }

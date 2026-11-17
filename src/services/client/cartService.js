@@ -6,7 +6,7 @@ export function createCartService(authenticated) {
   const request = async (method, path = '', data, params) => unwrap(await client.request({ method, url: `/cart${path}`, data, ...(params ? { params } : {}), withCredentials: true }));
   return {
     get: () => request('get'),
-    add: (variantId, quantity) => request('post', '/items', { variantId, quantity }),
+    add: (variantId, quantity, selection = {}) => request('post', '/items', { variantId, quantity, ...selection }),
     addMany: (items) => request('post', '/items/batch', { items }),
     quantity: (variantId, quantity) => request('patch', `/items/${encodeURIComponent(variantId)}`, { quantity }),
     remove: (variantId, expectedQuantity) => request('delete', `/items/${encodeURIComponent(variantId)}`, undefined, expectedQuantity == null ? undefined : { expectedQuantity }),

@@ -26,7 +26,7 @@ export default function LiquidationsPage() {
   const { user }=useAuth(),[params,setParams]=useSearchParams(),id=params.get('id');
   const [status,setStatus]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(0),term=useDebouncedValue(search);
   const [editor,setEditor]=useState(null),[action,setAction]=useState(null),[historyPage,setHistoryPage]=useState(0);
-  useEffect(()=>{if(params.get("new")==="dispose"){setEditor({method:"dispose",reasonType:params.get("reasonType")||"damaged",batchId:params.get("batchId")||undefined});setParams({},{replace:true});}},[params,setParams]);
+  useEffect(()=>{const method=params.get('new');if(['dispose','sale'].includes(method)){setEditor({method,reasonType:params.get('reasonType')||(method==='dispose'?'damaged':'clearance'),batchId:params.get('batchId')||undefined});setParams({},{replace:true});}},[params,setParams]);
   const list=useResource(()=>liquidationService.list({page,size:10,status:status||undefined,search:term||undefined}),[page,status,term]);
   const detail=useResource(()=>id?liquidationService.get(id):null,[id]);
   const history=useResource(()=>id?liquidationService.history(id,{page:historyPage,size:10}):null,[id,historyPage]);

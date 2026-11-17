@@ -1,3 +1,4 @@
+import { saleKey } from './saleOptions';
 import { voucherExchangeValueError } from './promotionRules';
 
 export const paymentNames = { cod: 'Thanh toán khi nhận hàng (COD)', payos: 'Chuyển khoản ngân hàng · VietQR', vnpay: 'VNPay', stripe: 'Thẻ quốc tế · Stripe', paypal: 'PayPal' };
@@ -7,16 +8,16 @@ export const paymentLabels = { pending: 'Chờ thanh toán', creating: 'Đang t�
 export const shipmentLabels = { pending: 'Chờ lấy hàng', picked_up: 'Đã lấy hàng', in_transit: 'Đang vận chuyển', delivered: 'Giao thành công', failed: 'Giao thất bại', returned: 'Đã trả về', cancelled: 'Đã hủy chuyến' };
 export const shipmentNext = { pending: ['picked_up', 'cancelled'], picked_up: ['in_transit', 'delivered', 'failed'], in_transit: ['delivered', 'failed'], failed: ['returned'] };
 export function cartFromServer(data, previous = []) {
-  const selected = new Map(previous.map((item) => [item.variantId, item.selected !== false]));
-  return (data.items || []).map((item) => ({ ...item, serverCart: true, id: item.productId, cartKey: `${item.productId}:${item.variantId}`, minPrice: item.unitPrice, unit: item.variantName,
-    maxQuantity: Math.min(data.limits?.maxQuantityPerLine || 999, 999), selected: selected.get(item.variantId) ?? true }));
+  const selected = new Map(previous.map((item) => [saleKey(item), item.selected !== false]));
+  return (data.items || []).map((item) => ({ ...item, serverCart: true, id: item.productId, cartKey: item.selectionKey || `${item.productId}:${item.variantId}`, minPrice: item.unitPrice, unit: item.variantName,
+    maxQuantity: Math.min(data.limits?.maxQuantityPerLine || 999, 999), selected: selected.get(saleKey(item)) ?? true }));
 }
 export function checkoutPayload(values, items) {
   if (!items.length || items.length > 100) throw new Error('Chọn từ 1 đến 100 quy cách sản phẩm.');
   const ids = new Set();
   const lines = items.map((item) => {
-    if (!item.variantId || ids.has(item.variantId) || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 999) throw new Error('Quy cách hoặc số lượng không hợp lệ. Vui lòng kiểm tra lại giỏ hàng.');
-    ids.add(item.variantId); return { variantId: item.variantId, quantity: item.quantity };
+    if (!item.variantId || ids.has(saleKey(item)) || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 999) throw new Error('Quy cách hoặc số lượng không hợp lệ. Vui lòng kiểm tra lại giỏ hàng.');
+    ids.add(saleKey(item)); return { variantId: item.variantId, quantity: item.quantity, ...(item.expiryDate ? { expiryDate: item.expiryDate, salePromotionId: item.salePromotionId || null } : {}) };
   });
   const receiverName = values.receiverName.trim(), receiverPhone = values.receiverPhone.trim(), shippingAddress = values.shippingAddress.trim();
   if (!receiverName || receiverName.length > 100 || !/^[+0-9 ()-]{8,20}$/.test(receiverPhone) || !shippingAddress || shippingAddress.length > 500) throw new Error('Kiểm tra tên, số điện thoại và địa chỉ nhận hàng.');
@@ -38,7 +39,7 @@ export function paymentRedirect(payment) {
 }
 export const canCancelOrder = (order) => order.paymentMethod !== 'exchange' && ['pending_payment', 'confirmed'].includes(order.status) && !['paid', 'partially_refunded', 'refunded', 'requires_review'].includes(order.paymentStatus);
 export const canPayOrder = (order) => order.paymentMethod !== 'exchange' && order.status === 'pending_payment' && !['paid', 'partially_refunded', 'refunded', 'requires_review'].includes(order.paymentStatus);
-export const quoteFingerprint = (quote) => JSON.stringify({ subtotal: quote.subtotal, promotionCode: quote.promotionCode, voucherCode: quote.voucherCode, publicPromotionDiscount: quote.publicPromotionDiscount, voucherDiscount: quote.voucherDiscount, promotionDiscount: quote.promotionDiscount, pointsUsed: quote.pointsUsed, pointsDiscount: quote.pointsDiscount, shippingFee: quote.shippingFee, totalAmount: quote.totalAmount, items: quote.items.map(({ variantId, quantity, unitPrice, discountAmount }) => ({ variantId, quantity, unitPrice, discountAmount })) });
+export const quoteFingerprint = (quote) => JSON.stringify({ subtotal: quote.subtotal, promotionCode: quote.promotionCode, voucherCode: quote.voucherCode, publicPromotionDiscount: quote.publicPromotionDiscount, voucherDiscount: quote.voucherDiscount, promotionDiscount: quote.promotionDiscount, pointsUsed: quote.pointsUsed, pointsDiscount: quote.pointsDiscount, shippingFee: quote.shippingFee, totalAmount: quote.totalAmount, items: quote.items.map(({ variantId, quantity, unitPrice, discountAmount, expiryDate, salePromotionId }) => ({ variantId, quantity, unitPrice, discountAmount, expiryDate, salePromotionId })) });
 export function promotionPayload(values, { automaticCode = false } = {}) {
   const payload = { ...values, promotionCode: automaticCode ? null : values.promotionCode.trim().toUpperCase(), name: values.name.trim(), description: values.description.trim() || null,
     discountValue: Number(values.discountValue), minOrderValue: Number(values.minOrderValue), maxDiscountAmount: values.maxDiscountAmount === '' ? null : Number(values.maxDiscountAmount), usageLimit: values.usageLimit === '' ? null : Number(values.usageLimit), perUserLimit: values.perUserLimit === '' ? null : Number(values.perUserLimit) };

@@ -3,16 +3,16 @@ import { act, createElement as h } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-const mocks = vi.hoisted(() => ({ get: vi.fn(), add: vi.fn(), addMany: vi.fn(), success: vi.fn(), error: vi.fn(), session: { user: { username: 'an', roles: ['CUSTOMER'] }, accessToken: 'test-only', sessionId: 'test-session' } }));
+const mocks = vi.hoisted(() => ({ availability: vi.fn(), get: vi.fn(), add: vi.fn(), addMany: vi.fn(), success: vi.fn(), error: vi.fn(), session: { user: { username: 'an', roles: ['CUSTOMER'] }, accessToken: 'test-only', sessionId: 'test-session' } }));
 vi.mock('./AuthContext', () => ({ useAuth: () => ({ user: mocks.session.user }) }));
 vi.mock('@/services/api', () => ({ DEMO_MODE: false, getSession: () => mocks.session }));
 vi.mock('@/services/client/cartService', () => ({ createCartService: () => ({ get: mocks.get, add: mocks.add, addMany: mocks.addMany }) }));
-vi.mock('@/services/client/catalogService', () => ({ catalogService: {} }));
+vi.mock('@/services/client/catalogService', () => ({ catalogService: { availability: mocks.availability } }));
 vi.mock('sonner', () => ({ toast: { success: mocks.success, error: mocks.error, dismiss: vi.fn() } }));
 import { ShopProvider, useShop } from './ShopContext';
 let root, container, shop;
 function Probe() { shop = useShop(); return h('output', {}, shop.cartAdded ? shop.cartAdded.productName : 'Chưa thêm'); }
-beforeEach(() => { globalThis.IS_REACT_ACT_ENVIRONMENT = true; vi.clearAllMocks(); mocks.session.user = { username: 'an', roles: ['CUSTOMER'] }; localStorage.clear(); mocks.get.mockResolvedValue({ items: [{ productId: 'p', variantId: 'v', quantity: 2, unitPrice: 32000, available: true }] }); container = document.createElement('div'); document.body.append(container); root = createRoot(container); });
+beforeEach(() => { globalThis.IS_REACT_ACT_ENVIRONMENT = true; vi.clearAllMocks(); mocks.session.user = { username: 'an', roles: ['CUSTOMER'] }; localStorage.clear(); mocks.availability.mockResolvedValue({ saleOptions: [{ variantId: "v", expiryDate: "2026-11-20", promotionId: null, selectionKey: "v~2026-11-20~", availableQuantity: 10, price: 32000 }] }); mocks.get.mockResolvedValue({ items: [{ productId: 'p', variantId: 'v', quantity: 2, unitPrice: 32000, available: true }] }); container = document.createElement('div'); document.body.append(container); root = createRoot(container); });
 afterEach(async () => { await act(async () => root.unmount()); container.remove(); });
 it('emits prominent cart feedback only after successful add, with a view-cart action preserving the browsing position', async () => {
   await act(async () => root.render(h(MemoryRouter, { initialEntries: ['/san-pham?q=rau'] }, h(ShopProvider, {}, h(Probe)))));

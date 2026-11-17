@@ -1,3 +1,5 @@
+import { useResource } from '@/hooks/useResource';
+import { clearanceService } from '@/services/admin/clearanceService';
 import { useState } from 'react';
 import { ArrowRight, ArrowUpRight, Leaf, SearchX, ShieldCheck, ShoppingBag, Sparkles, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -70,7 +72,8 @@ export function HomeCategories({ categories, products }) {
 
 export function HomeOffers({ products, onView }) {
   // Only display products that truly have discounts according to available data
-  const offers = discountedProductCards(products).slice(0, 8);
+  const stockOffers = useResource(() => clearanceService.discounted(), []);
+  const offers = [...new Map([...discountedProductCards(products), ...(stockOffers.data || [])].map(product => [product.id, product])).values()].slice(0, 8);
   if (!offers.length) return null;
 
   return (
