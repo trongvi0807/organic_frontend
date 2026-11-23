@@ -1,11 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { effectiveSale, saleChoices, saleFields, saleKey } from './saleOptions';
+import { currentSale, effectiveSale, saleChoices, saleFields, saleKey } from './saleOptions';
 import { cartFromServer, checkoutPayload, quoteFingerprint } from './checkout';
 import { comboAdditions, comboProgress } from './storeOffers';
 
 const first = { variantId: 'v', expiryDate: '2026-11-20', promotionId: 'offer', selectionKey: 'v~2026-11-20~offer', availableQuantity: 2, price: 7000, regularPrice: 10000 };
 const second = { ...first, expiryDate: '2026-11-30', promotionId: null, selectionKey: 'v~2026-11-30~', price: 10000 };
 describe('date-specific stock selection', () => {
+  it('shows one nearest ordinary expiry as information while retaining an undated checkout selection', () => {
+    expect(currentSale([second, first])).toEqual(first);
+    const ordinary = currentSale([second, { ...second, expiryDate: '2026-12-30', availableQuantity: 5 }]);
+    expect(ordinary).toMatchObject({ expiryDate: null, nearestExpiryDate: '2026-11-30', promotionId: null, selectionKey: 'v', availableQuantity: 7 });
+    expect(saleFields(ordinary)).toEqual({expiryDate:null,salePromotionId:null,selectionKey:'v'});
+    expect(currentSale([{...second,expiryDate:null,nearestExpiryDate:'2026-12-15'}]).nearestExpiryDate).toBe('2026-12-15');
+    expect(currentSale([{ ...first, combo: true }])).toBeNull();
+  });
   it('keeps same SKU with different expiry dates as separate checkout and cart lines', () => {
     const rows = [first, second].map(o => ({ ...o, ...saleFields(o), quantity: 1 }));
     const payload = checkoutPayload({ receiverName: 'An', receiverPhone: '0901234567', shippingAddress: '123 Street', note: '', points: 0, promotionCode: '', voucherCode: '', paymentMethod: 'cod' }, rows);

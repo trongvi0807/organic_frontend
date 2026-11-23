@@ -16,3 +16,10 @@ it('validates a policy as a pair and clears both fields when restoring defaults'
     expect(() => expiryPolicyPayload(true, warning, clearance)).toThrow();
   }
 });
+it('saves the explicit policy group and stop-selling buffer independently of warning defaults', () => {
+  expect(expiryPolicyPayload(false, '', '', { policyGroup: 'dairy', minimumRemainingHours: '24' }))
+    .toEqual({ warningDays: null, clearanceDays: null, policyGroup: 'dairy', minimumRemainingHours: 24 });
+  expect(expiryPolicyPayload(true, '7', '3', { policyGroup: '', minimumRemainingHours: '' }))
+    .toEqual({ warningDays: 7, clearanceDays: 3, policyGroup: null, minimumRemainingHours: null });
+  expect(() => expiryPolicyPayload(false, '', '', { minimumRemainingHours: '-1' })).toThrow();
+});

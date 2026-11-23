@@ -26,12 +26,12 @@ export function useProductAvailability(product, variantId, { lazy = false } = {}
   useEffect(() => {
     if (!visible || !product?.id) return;
     const refresh = () => { if (document.visibilityState === 'visible') reload(); };
-    window.addEventListener('focus', refresh);
-    window.addEventListener('moc:payment-updated', refresh);
+    const events = ['focus', 'moc:payment-updated', 'moc:order-updated', 'moc:inventory-updated'];
+    events.forEach(name => window.addEventListener(name, refresh));
     document.addEventListener('visibilitychange', refresh);
     // Refresh loaded cards too: an earlier zero must not remain after a stock receipt.
     const timer = setInterval(refresh, 30000);
-    return () => { window.removeEventListener('focus', refresh); window.removeEventListener('moc:payment-updated', refresh); document.removeEventListener('visibilitychange', refresh); if (timer) clearInterval(timer); };
+    return () => { events.forEach(name => window.removeEventListener(name, refresh)); document.removeEventListener('visibilitychange', refresh); if (timer) clearInterval(timer); };
   }, [visible, product?.id, lazy, reload]);
   const data = state.productId === product?.id ? state.data : null;
   const quantity = data ? availableVariantQuantity(data, variantId) : state.error ? null : inlineAvailableQuantity(product, variantId);

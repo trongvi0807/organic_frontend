@@ -5,7 +5,12 @@ import { normalizeHomeProduct } from '@/lib/apiData';
 
 const availabilityCache = new Map(), availabilityFlight = new Map();
 const availabilityQueue = [];
-let runningAvailability = 0, categoryFlight, categoryCache, categoryGeneration = 0;
+let runningAvailability = 0, categoryFlight, categoryCache, categoryGeneration = 0, availabilityGeneration = 0;
+export function invalidateProductAvailability() {
+  availabilityGeneration += 1;
+  availabilityCache.clear();
+  availabilityFlight.clear();
+}
 export function invalidateCategoryTree() { categoryGeneration += 1; categoryCache = null; categoryFlight = null; }
 function drainAvailability() {
   while (runningAvailability < 3 && availabilityQueue.length) {
@@ -46,14 +51,16 @@ export const catalogService = {
     const cached = availabilityCache.get(id);
     if (!fresh && cached && Date.now() - cached.savedAt < 15000) return cached.data;
     if (!availabilityFlight.has(id)) {
+      const generation = availabilityGeneration;
       const pending = new Promise((resolve, reject) => { availabilityQueue.push({ resolve, reject, task: async () => {
         const data = unwrap(await api.get(`/products/${encodeURIComponent(id)}/availability`));
         if (data?.productId !== id || !data.availableQuantity || typeof data.availableQuantity !== 'object') throw new Error('Chưa nhận được số lượng khả dụng của sản phẩm.');
         if (availabilityCache.size >= 128) availabilityCache.delete(availabilityCache.keys().next().value);
-        availabilityCache.set(id, { data, savedAt: Date.now() }); return data;
+        if (generation === availabilityGeneration) availabilityCache.set(id, { data, savedAt: Date.now() });
+        return data;
       } }); drainAvailability(); });
       availabilityFlight.set(id, pending);
-      pending.finally(() => { availabilityFlight.delete(id); }).catch(() => {});
+      pending.finally(() => { if (availabilityFlight.get(id) === pending) availabilityFlight.delete(id); }).catch(() => {});
     }
     return availabilityFlight.get(id);
   },

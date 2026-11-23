@@ -17,7 +17,7 @@ import { Modal } from '@/components/ui/dialog';
 import { ResourceState } from '@/components/common/ResourceState';
 import { Pagination } from '@/components/common/Pagination';
 import { dateText } from '@/lib/apiData';
-import { productMeasure } from '@/lib/adminFormat';
+import { adminDate, productMeasure } from '@/lib/adminFormat';
 import { errorMessage } from '@/lib/utils';
 import { purchaseQuantity } from '@/lib/purchaseDocuments';
 import { expiryFilters, remainingDaysText } from '@/lib/inventoryExpiry';
@@ -123,7 +123,7 @@ export default function InventoryPage() {
     </Modal>
     <Modal open={!!batchId} onOpenChange={open => { if (!open) setBatchId(null); }} title="Thông tin lô hàng"><DetailState resource={detail}>{detail.data && <>
       <div className="!mb-5"><ExpiryBadge assessment={detail.data.expiry?.assessment} /></div>
-      <DocumentMeta entries={[["Mã lô nội bộ", detail.data.lotCode || detail.data.batchCode], ["Mã lô nhà cung cấp", detail.data.batchCode], ['Sản phẩm', detail.data.variant.productName], ['Đơn vị tính', detail.data.variant.variantName], ['Trọng lượng', productMeasure(detail.data.variant)], ['Nguồn gốc', detail.data.originDescription], ['Ngày sản xuất', detail.data.manufactureDate ? dateText(detail.data.manufactureDate) : 'Chưa có'], ['Hạn sử dụng', detail.data.expiryDate ? dateText(detail.data.expiryDate) : 'Chưa có'], ['Tồn thực tế', quantity(detail.data.quantityOnHand)], ['Giữ cho đơn / thanh lý', quantity(detail.data.expiry?.reservedQuantity ?? detail.data.quantityReserved)], ['Đang cách ly', quantity(detail.data.expiry?.quarantinedQuantity)], ['Có thể bán', quantity(detail.data.availableQuantity)]]} />
+      <DocumentMeta entries={[["Mã lô nội bộ", detail.data.lotCode || detail.data.batchCode], ["Mã lô nhà cung cấp", detail.data.batchCode], ['Sản phẩm', detail.data.variant.productName], ['Đơn vị tính', detail.data.variant.variantName], ['Trọng lượng', productMeasure(detail.data.variant)], ['Nguồn gốc', detail.data.originDescription], ['Ngày sản xuất', detail.data.manufactureDate ? dateText(detail.data.manufactureDate) : 'Chưa có'], ['Hạn sử dụng', detail.data.expiryDate ? dateText(detail.data.expiryDate) : 'Chưa có'], ['Ngừng nhận đơn từ', adminDate(detail.data.expiry?.sellUntilAt, true)], ['Tồn thực tế', quantity(detail.data.quantityOnHand)], ['Giữ cho đơn / thanh lý', quantity(detail.data.expiry?.reservedQuantity ?? detail.data.quantityReserved)], ['Đang cách ly', quantity(detail.data.expiry?.quarantinedQuantity)], ['Có thể bán', quantity(detail.data.availableQuantity)]]} />
       <div className="!mt-5 flex flex-wrap gap-3"><Link className="button inline-flex rounded-xl border border-line px-5 py-3 text-sm" to={`/admin/business-forms?form=stock_card&sourceId=${encodeURIComponent(detail.data.id)}`}>In biểu mẫu của lô này</Link>
         {can(user, 'liquidation.write') && Number(detail.data.expiry?.processableQuantity) > 0 && <>
           {!detail.data.expired && can(user, 'promotion.write') && <Link className="button inline-flex rounded-xl border border-line px-5 py-3 text-sm" to={`/admin/promotions?expiryBatch=${encodeURIComponent(detail.data.id)}`}>Tạo ưu đãi theo hạn dùng</Link>}

@@ -64,7 +64,10 @@ export function ShopProvider({ children }) {
   useEffect(() => {
     if (DEMO_MODE || !allowed) return;
     const focus = () => { if (document.visibilityState === 'visible') refreshCart().catch(() => {}); };
-    window.addEventListener('focus', focus); return () => window.removeEventListener('focus', focus);
+    const inventory = () => { if (cartRef.current.length && pending.current === 0) focus(); };
+    window.addEventListener('focus', focus);
+    window.addEventListener('moc:inventory-updated', inventory);
+    return () => { window.removeEventListener('focus', focus); window.removeEventListener('moc:inventory-updated', inventory); };
   }, [refreshCart, allowed]);
   function mutate(task, message) {
     if (!allowed) { toast.error('Giỏ hàng dành cho khách hàng. Vui lòng dùng tài khoản khách hoặc đăng xuất.'); return Promise.resolve(false); }

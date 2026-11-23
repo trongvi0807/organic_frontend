@@ -11,8 +11,9 @@ export function useStoreOffers() {
     const refresh = () => { if (document.visibilityState !== 'hidden') resource.reload({ background: true }); };
     const polling = setInterval(refresh, 60000);
     window.addEventListener('focus', refresh);
+    window.addEventListener('moc:inventory-updated', refresh);
     document.addEventListener('visibilitychange', refresh);
-    return () => { clearInterval(timer); clearInterval(polling); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
+    return () => { clearInterval(timer); clearInterval(polling); window.removeEventListener('focus', refresh); window.removeEventListener('moc:inventory-updated', refresh); document.removeEventListener('visibilitychange', refresh); };
   }, [resource.reload]);
   const [anchor, setAnchor] = useState(null);
   useEffect(() => { if (resource.data) setAnchor({ server: Date.parse(resource.data.generatedAt), local: Date.now() }); }, [resource.data]);
