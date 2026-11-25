@@ -9,6 +9,7 @@ import { comboAdditions, comboEstimate, comboProgress, offerActive, offerBenefit
 import { currency, errorMessage } from '@/lib/utils';
 import { safeMediaUrl } from '@/lib/productDetail';
 import { ComboCarousel } from './ComboCarousel';
+import { Modal } from '@/components/ui/dialog';
 import '@/styles/store-promotions.css';
 
 const productHref = product => `/san-pham/${encodeURIComponent(product.slug)}`;
@@ -18,20 +19,25 @@ export function PromotionBanners({ mode = 'home', productId }) {
   const source = useStoreOffers();
   const { cart, cartBusy, cartLoading } = useShop();
   const [expanded, setExpanded] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
   const offers = source.offers.filter(offer => offer.promotionType === 'combo' &&
     (mode === 'home' || (mode === 'product' ? offer.products.some(p => p.productId === productId) : comboProgress(offer, cart).related)));
   if (source.loading && !source.data) return null;
   if (!offers.length && !source.error && !source.refreshError) return null;
   const carousel = mode !== 'cart';
   const shown = carousel || expanded ? offers : offers.slice(0, 2);
+  const selected = offers.find(offer => offer.id === selectedId);
   return <section className={`store-promotions store-promotions--${mode}`} aria-label={mode === 'cart' ? 'Gợi ý combo cho giỏ hàng' : 'Chương trình khuyến mãi'}>
     <div className={mode === 'home' ? 'container' : ''}>
       <div className="store-promotions-heading"><div><span className="store-promotions-kicker"><TicketPercent size={15} />ƯU ĐÃI ĐANG DIỄN RA</span><h2>{mode === 'home' ? 'Mua cùng nhau, thêm ưu đãi.' : mode === 'product' ? 'Mua kèm để tiết kiệm hơn' : 'Thêm vừa đủ, nhận ưu đãi'}</h2><p>{mode === 'home' ? 'Chọn những món bạn cần, xem rõ giá và điều kiện trước khi mua.' : mode === 'product' ? 'Các combo đang áp dụng cho sản phẩm bạn đang xem.' : 'Gợi ý dựa trên những sản phẩm bạn đã chọn để thanh toán.'}</p></div>{offers.length > shown.length && <button className="store-promotions-more" onClick={() => setExpanded(true)}>Xem tất cả ({offers.length}) <ArrowUpRight size={16} /></button>}</div>
       {(source.error || source.refreshError) && <p role="status" className="store-promotions-error">Chưa cập nhật được ưu đãi. <button onClick={() => source.reload()}>Tải lại</button></p>}
       {offers.length > 0 && (carousel
-        ? <ComboCarousel offers={offers} busy={cartBusy || cartLoading}>{offer => <PromotionCard offer={offer} mode={mode} productId={productId} now={source.now} onRefresh={source.reload} />}</ComboCarousel>
+        ? <ComboCarousel offers={offers} busy={cartBusy || cartLoading || !!selected} onView={offer => setSelectedId(offer.id)}>{offer => <PromotionCard offer={offer} mode={mode} productId={productId} now={source.now} onRefresh={source.reload} />}</ComboCarousel>
         : <div className="store-promotions-grid">{shown.map(offer => <PromotionCard key={offer.id} offer={offer} mode={mode} productId={productId} now={source.now} onRefresh={source.reload} />)}</div>)}
     </div>
+    <Modal open={!!selected} onOpenChange={open => { if (!open) setSelectedId(null); }} title="Chi tiết combo" description="Xem sản phẩm, chọn quy cách và đối chiếu điều kiện ưu đãi trước khi mua." className="combo-detail-dialog !max-w-[1050px]">
+      {selected && <PromotionCard key={selected.id} offer={selected} mode="detail" now={source.now} onRefresh={source.reload} />}
+    </Modal>
   </section>;
 }
 

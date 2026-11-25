@@ -93,7 +93,7 @@ export default function HomePage() {
       {/* 3. DANH MỤC "HÔM NAY, MÌNH CHỌN GÌ?" */}
       <HomeCategories categories={home.categories || []} products={allProducts} />
 
-      {/* 4. BANNER COMBO TIẾT KIỆM (Combo Carousel 6s) */}
+      {/* 4. BANNER COMBO TIẾT KIỆM (Combo Carousel 4s) */}
       <PromotionBanners />
 
       {/* 5. ƯU ĐÃI THỰC TẾ "CHỌN ĐIỀU LÀNH, THÊM TIẾT KIỆM" */}

@@ -11,7 +11,7 @@ import { Modal } from '@/components/ui/dialog';
 import { ResourceState } from '@/components/common/ResourceState';
 import { Pagination } from '@/components/common/Pagination';
 import { errorMessage } from '@/lib/utils';
-import { STAFF_ROLE_NAMES } from '@/lib/permissions';
+import { hasRole, roleCodes, STAFF_ROLE_NAMES } from '@/lib/permissions';
 
 const roles = STAFF_ROLE_NAMES;
 const descriptions = {
@@ -29,10 +29,11 @@ export default function StaffAccountsPage() {
   const [search, setSearch] = useState(''), term = useDebouncedValue(search);
   const [page, setPage] = useState(0), [editor, setEditor] = useState(null), [form, setForm] = useState(blank), [error, setError] = useState(''), [busy, setBusy] = useState(false);
   const lock = useRef(false);
+  const editingAdmin = hasRole(editor, 'ADMIN');
   const list = useResource(() => staffAccountService.list({ search: term || undefined, page, size: 10 }), [term, page]);
   function edit(employee) {
     setEditor(employee || {}); setError('');
-    setForm(employee ? { ...blank(), ...employee, email: employee.email || '', roles: employee.roles.filter(role => roles[role]) } : blank());
+    setForm(employee ? { ...blank(), ...employee, email: employee.email || '', roles: roleCodes(employee).filter(role => roles[role]) } : blank());
   }
   const change = key => event => setForm(old => ({ ...old, [key]: event.target.value }));
   async function save(event) {
@@ -40,6 +41,8 @@ export default function StaffAccountsPage() {
     lock.current = true; setBusy(true); setError('');
     try {
       if (!form.roles.length) throw new Error('Vui lòng chọn ít nhất một vai trò.');
+      if (!editingAdmin && form.roles.includes('ADMIN')) throw new Error('Không được tạo thêm hoặc cấp quyền Quản trị viên cho tài khoản khác.');
+      if (editingAdmin && (!form.active || !form.roles.includes('ADMIN'))) throw new Error('Không được khóa hoặc bỏ quyền tài khoản Quản trị viên.');
       const payload = { fullName: form.fullName.trim(), phoneNumber: form.phoneNumber, email: form.email.trim() || null, roles: form.roles };
       if (editor.id) payload.active = form.active;
       else { payload.username = form.username.trim(); payload.password = form.password; }
@@ -59,8 +62,9 @@ export default function StaffAccountsPage() {
       <AdminForm onSubmit={save}><fieldset disabled={busy} className="min-w-0 space-y-5"><Field label="Họ tên *"><Input required maxLength={150} value={form.fullName} onChange={change('fullName')} /></Field>
         {!editor?.id && <><Field label="Tên đăng nhập *"><Input required autoComplete="off" minLength={3} maxLength={50} pattern="[a-zA-Z0-9._-]{3,50}" value={form.username} onChange={change('username')} /></Field><Field label="Mật khẩu ban đầu *"><Input required type="password" autoComplete="new-password" minLength={8} maxLength={72} value={form.password} onChange={change('password')} /></Field></>}
         <div className="grid gap-5 sm:grid-cols-2"><Field label="Số điện thoại *"><Input required type="tel" pattern="0[0-9]{9}" maxLength={10} value={form.phoneNumber} onChange={change('phoneNumber')} /></Field><Field label="Email"><Input type="email" maxLength={200} value={form.email} onChange={change('email')} /></Field></div>
-        <fieldset className="space-y-3"><legend className="mb-3 text-sm font-semibold">Vai trò *</legend><p className="text-xs text-stone-500">Chọn theo nhiệm vụ được phân công. Có thể chọn nhiều vai trò khi nhân viên kiêm nhiệm.</p><div className="grid gap-3 sm:grid-cols-2">{Object.entries(roles).map(([value, label]) => <label key={value} className={`flex cursor-pointer items-start gap-3 rounded-xl border p-3 ${form.roles.includes(value) ? 'border-emerald-600 bg-emerald-50' : 'border-line'}`}><input type="checkbox" className="mt-1 accent-emerald-700" checked={form.roles.includes(value)} onChange={event => setForm(old => ({ ...old, roles: event.target.checked ? [...old.roles, value] : old.roles.filter(role => role !== value) }))} /><span><strong className="text-sm">{label}</strong><small className="mt-1 block text-xs leading-5 text-stone-500">{descriptions[value]}</small></span></label>)}</div></fieldset>
-        {editor?.id && <Field label="Trạng thái tài khoản"><Select value={form.active ? 'active' : 'locked'} onChange={event => setForm(old => ({ ...old, active: event.target.value === 'active' }))}><option value="active">Hoạt động</option><option value="locked">Khóa tài khoản</option></Select></Field>}
+        <fieldset className="space-y-3"><legend className="mb-3 text-sm font-semibold">Vai trò *</legend><p className="text-xs text-stone-500">Chọn theo nhiệm vụ được phân công. Có thể chọn nhiều vai trò khi nhân viên kiêm nhiệm.</p><div className="grid gap-3 sm:grid-cols-2">{Object.entries(roles).filter(([value]) => value !== 'ADMIN' || editingAdmin).map(([value, label]) => <label key={value} className={`flex items-start gap-3 rounded-xl border p-3 ${value === 'ADMIN' ? 'cursor-default' : 'cursor-pointer'} ${form.roles.includes(value) ? 'border-emerald-600 bg-emerald-50' : 'border-line'}`}><input type="checkbox" className="mt-1 accent-emerald-700" disabled={value === 'ADMIN'} checked={form.roles.includes(value)} onChange={event => setForm(old => ({ ...old, roles: event.target.checked ? [...old.roles, value] : old.roles.filter(role => role !== value) }))} /><span><strong className="text-sm">{label}</strong><small className="mt-1 block text-xs leading-5 text-stone-500">{descriptions[value]}</small></span></label>)}</div></fieldset>
+        {editingAdmin && <p className="form-note">Hệ thống chỉ có một tài khoản Quản trị viên. Không được xóa, khóa hoặc chuyển quyền này sang tài khoản khác.</p>}
+        {editor?.id && <Field label="Trạng thái tài khoản"><Select disabled={editingAdmin} aria-label="Trạng thái tài khoản" value={form.active ? 'active' : 'locked'} onChange={event => setForm(old => ({ ...old, active: event.target.value === 'active' }))}><option value="active">Hoạt động</option><option value="locked">Khóa tài khoản</option></Select></Field>}
         {error && <p className="form-error" role="alert">{error}</p>}<div className="form-actions"><Button variant="outline" onClick={() => { setEditor(null); setForm(blank()); }}>Đóng</Button><Button type="submit">{busy ? 'Đang lưu…' : 'Lưu nhân viên'}</Button></div>
       </fieldset></AdminForm>
     </Modal>

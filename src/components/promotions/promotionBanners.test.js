@@ -14,7 +14,7 @@ const fixture = () => ({ id:'promo', name:'Combo rau', promotionCode:'TESTCOMBO1
     {productId:'b',productName:'Cà rốt',slug:'ca-rot',requiredQuantity:1,variants:[{id:'vb',price:30000,availableQuantity:5,variantName:'1kg'}]}] });
 let root,container;
 beforeEach(() => { globalThis.IS_REACT_ACT_ENVIRONMENT=true; vi.clearAllMocks(); mocks.shop={cart:[],cartAllowed:true,cartBusy:false,cartLoading:false,addComboToCart:vi.fn().mockResolvedValue(true),setPromoCode:vi.fn()}; mocks.source={offers:[fixture()],now:Date.now(),reload:vi.fn()};container=document.createElement('div');document.body.append(container);root=createRoot(container); });
-afterEach(async()=>{await act(async()=>root.unmount());container.remove();});
+afterEach(async()=>{await act(async()=>root.unmount());container.remove();vi.useRealTimers();});
 const render = async (props={}) => act(async()=>root.render(h(MemoryRouter,{},h(PromotionCard,{offer:fixture(),...props}))));
 const click = async text => act(async()=>[...container.querySelectorAll('button')].find(b=>b.textContent===text).click());
 it('adds the selected variants in one call and prevents a second click while pending',async()=>{
@@ -50,4 +50,24 @@ it('uses a carousel only for combos and leaves ordinary promotions out of the ba
   await act(async()=>root.render(h(MemoryRouter,{},h(PromotionBanners))));
   expect(container.querySelectorAll('.combo-carousel-slide')).toHaveLength(1);
   expect(container.textContent).not.toContain('Mã giảm giá thông thường');
+});
+it('opens the correct combo details on double click and pauses the carousel while viewing',async()=>{
+  vi.useFakeTimers();
+  mocks.source.offers=[fixture(),{...fixture(),id:'second',name:'Combo bữa sáng'}];
+  await act(async()=>root.render(h(MemoryRouter,{},h(PromotionBanners))));
+  const banner=container.querySelector('.combo-carousel-track');
+  await act(async()=>banner.dispatchEvent(new MouseEvent('click',{bubbles:true,detail:1})));
+  await act(async()=>vi.advanceTimersByTime(100));
+  await act(async()=>{
+    banner.dispatchEvent(new MouseEvent('click',{bubbles:true,detail:2}));
+    banner.dispatchEvent(new MouseEvent('dblclick',{bubbles:true,detail:2}));
+  });
+  const dialog=document.querySelector('[role="dialog"]');
+  expect(dialog.textContent).toContain('Chi tiết combo');
+  expect(dialog.textContent).toContain('Combo rau');
+  expect(dialog.textContent).not.toContain('Combo bữa sáng');
+  await act(async()=>vi.advanceTimersByTime(8000));
+  expect(container.querySelector('.combo-carousel-slide.is-active').getAttribute('aria-label')).toContain('Combo rau');
+  await act(async()=>dialog.querySelector('[aria-label="Đóng"]').click());
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
 });

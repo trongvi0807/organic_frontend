@@ -12,7 +12,8 @@
 .store-search-option img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
 .store-account { position: relative; flex-shrink: 0; }
 .store-account-trigger { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; color: #294735; border-radius: 20px; }
-.store-account-trigger > span { max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.store-account-trigger > .store-account-name { max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.store-account-avatar { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; }
 .store-account-trigger:hover { color: #6b8650; }
 .store-account-panel { position: absolute; right: 0; top: 100%; padding-top: 12px; z-index: 47; width: 250px; }
 .store-account-surface { overflow: hidden; border: 1px solid #e3e9da; border-radius: 16px; box-shadow: 0 14px 40px #24412b24; background: white; padding-bottom: 6px; }
@@ -44,12 +45,12 @@
   .store-header .header-inner nav { gap: 22px; }
   .store-header .header-actions { gap: 10px; }
   .store-search-form { width: 205px; }
-  .store-account-trigger > span { max-width: 45px; }
+  .store-account-trigger > .store-account-name { max-width: 45px; }
 }
 @media (max-width: 760px) {
   .store-header .header-actions { gap: 7px; }
   .store-account-trigger { width: 30px; min-height: 30px; }
-  .store-account-trigger > span, .store-account-chevron { display: none; }
+  .store-account-trigger > .store-account-name, .store-account-chevron { display: none; }
   .store-search { position: static; }
   .store-search.is-expanded .store-search-form { position: absolute; top: calc(100% + 8px); left: 12px; width: calc(100% - 24px); height: 45px; background: white; box-shadow: 0 8px 24px #24412b20; z-index: 46; }
   .store-search.is-expanded .store-search-toggle { display: flex; }

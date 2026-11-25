@@ -1,7 +1,8 @@
 import { AdminDateInput, AdminForm } from '@/components/admin/AdminForm';
 import { ProfileAddressEditor } from './ProfileAddressEditor';
 import { useMemo, useState } from 'react';
-import { Pencil, Plus, MapPin, Upload, Trash2, UserRound } from 'lucide-react';
+import { Pencil, Plus, MapPin, Upload, Trash2 } from 'lucide-react';
+import { UserAvatar } from '@/components/common/UserAvatar';
 import { toast } from 'sonner';
 import { createProfileService } from '@/services/client/profileService';
 import { useResource } from '@/hooks/useResource';
@@ -27,12 +28,12 @@ export function ProfilePanel({ id = 'me', self = false, onChanged = () => {} }) 
   const [address, setAddress] = useState(null);
   const [removing, setRemoving] = useState(null);
   const data = resource.data;
-  async function mutate(operation, formatError = errorMessage) {
+  async function mutate(operation, formatError = errorMessage, successMessage = 'Đã cập nhật hồ sơ.') {
     setBusy(true); setError(''); setAvatarFailed(false);
     try {
       const profile = await operation(); resource.setData(profile);
       if (self) updateProfile(profile);
-      onChanged(); toast.success('Đã cập nhật hồ sơ.'); return true;
+      onChanged(); toast.success(successMessage); return true;
     } catch (err) { setError(formatError(err)); return false; }
     finally { setBusy(false); }
   }
@@ -41,7 +42,7 @@ export function ProfilePanel({ id = 'me', self = false, onChanged = () => {} }) 
     event.target.value = '';
     if (!file) return;
     setUploading(true);
-    try { setAvatarFailed(!await mutate(() => service.uploadAvatar(file), avatarUploadError)); }
+    try { setAvatarFailed(!await mutate(() => service.uploadAvatar(file), avatarUploadError, 'Ảnh đại diện đã được cập nhật.')); }
     finally { setUploading(false); }
   }
   async function saveProfile(event) {
@@ -49,7 +50,7 @@ export function ProfilePanel({ id = 'me', self = false, onChanged = () => {} }) 
     if (await mutate(() => service.save(values))) setEditing(false);
   }
   return <div className="profile-panel"><ResourceState loading={resource.loading} error={resource.error} onRetry={resource.reload} />{!resource.loading && !resource.error && data && <>
-    <div className="profile-overview"><div className="profile-photo">{data.avatarUrl ? <img src={data.avatarUrl} alt={`Ảnh ${data.fullName}`} /> : <UserRound size={36} strokeWidth={1.2} />}</div><div><h2>{data.fullName}</h2><p>{data.customerId} · {data.username || 'Chưa liên kết tài khoản'}</p><StatusBadge status={data.status} /></div><div className="profile-photo-actions"><label className={`upload-control ${busy ? 'is-disabled' : ''}`}><Upload size={15} />{uploading ? 'Đang tải ảnh…' : 'Đổi ảnh'}<input aria-label="Tải ảnh đại diện" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={uploadAvatar} /></label>{data.avatarUrl && <Button variant="ghost" size="sm" disabled={busy} onClick={() => setRemoving({ avatar: true })}>Gỡ ảnh</Button>}</div></div>
+    <div className="profile-overview"><UserAvatar user={data} className="profile-photo" iconSize={36} /><div><h2>{data.fullName}</h2><p>{data.customerId} · {data.username || 'Chưa liên kết tài khoản'}</p><StatusBadge status={data.status} /></div><div className="profile-photo-actions"><label className={`upload-control ${busy ? 'is-disabled' : ''}`}><Upload size={15} />{uploading ? 'Đang tải ảnh…' : 'Đổi ảnh'}<input aria-label="Tải ảnh đại diện" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={uploadAvatar} /></label>{data.avatarUrl && <Button variant="ghost" size="sm" disabled={busy} onClick={() => setRemoving({ avatar: true })}>Gỡ ảnh</Button>}</div></div>
     <p className="form-note">Ảnh đại diện: JPEG, PNG hoặc WebP, tối đa 5 MB.</p>
     {uploading && <p className="form-note" role="status">Đang tải và xử lý ảnh. Vui lòng chờ trong giây lát.</p>}
     {error && <p className="form-error" role="alert">{error}</p>}

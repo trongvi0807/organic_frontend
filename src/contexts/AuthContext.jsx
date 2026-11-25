@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { authService } from '@/services/auth/authService';
 import { api, unwrap, getSession, setSession } from '@/services/api';
@@ -15,6 +15,7 @@ function restoreSession() {
 }
 export function AuthProvider({ children }) {
   const [session, updateSession] = useState(restoreSession);
+  const profileRevision = useRef(0);
   useEffect(() => {
     const expired = () => { updateSession(null); revokeLocalPush().catch(() => toast.error('Chưa thu hồi được thông báo trên thiết bị. Kiểm tra kết nối mạng.')); toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'); };
     window.addEventListener('moc:session-expired', expired);
@@ -29,10 +30,11 @@ export function AuthProvider({ children }) {
     async function synchronize() {
       if (pending || document.visibilityState === 'hidden') return;
       pending = true;
+      const revision = profileRevision.current;
       try {
         const profile = unwrap(await api.get('/auth/session'));
         const current = getSession();
-        if (!active || current?.sessionId !== sessionId || !Array.isArray(profile?.roles)) return;
+        if (!active || current?.sessionId !== sessionId || revision !== profileRevision.current || !Array.isArray(profile?.roles)) return;
         if (JSON.stringify(current.user) !== JSON.stringify(profile)) {
           const next = { ...current, user: profile };
           setSession(next); updateSession(next);
@@ -67,8 +69,9 @@ export function AuthProvider({ children }) {
   const user = session?.user;
   const isAdmin = hasRole(user, 'ADMIN');
   function updateProfile(profile) {
+    profileRevision.current += 1;
     updateSession((old) => {
-      if (!old) return old;
+      if (!old || old.sessionId !== session?.sessionId) return old;
       const next = { ...old, user: { ...old.user, fullName: profile.fullName, email: profile.email, phoneNumber: profile.phoneNumber, avatarUrl: profile.avatarUrl, profileCompletionRequired: !profile.phoneNumber?.trim() } };
       setSession(next); return next;
     });

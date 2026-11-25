@@ -11,7 +11,7 @@ import { discountedProductCards, shoppingCategories } from '@/lib/homeMerchandis
 
 const categoryHref = (id) => `/san-pham?category=${encodeURIComponent(id)}`;
 const imageFor = (category, products) =>
-  safeMediaUrl(products.find((item) => item.categoryId === category.id && safeMediaUrl(item.imageUrl))?.imageUrl);
+  safeMediaUrl(category.imageUrl) || safeMediaUrl(products.find((item) => item.categoryId === category.id && safeMediaUrl(item.imageUrl))?.imageUrl);
 
 function CategoryImage({ src, name }) {
   const [failed, setFailed] = useState(false);

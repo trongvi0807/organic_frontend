@@ -43,6 +43,8 @@
 
 /* Carousel Component */
 .combo-carousel { min-width: 0; position: relative; }
+.combo-carousel-track { cursor: pointer; }
+.combo-detail-dialog .store-offer { box-shadow: none; }
 .combo-carousel-track { display: grid; grid-template-columns: minmax(0, 1fr); overflow: hidden; border-radius: 28px; isolation: isolate; }
 .combo-carousel-slide {
   grid-area: 1 / 1; min-width: 0; visibility: hidden; opacity: 0; pointer-events: none;
@@ -53,63 +55,6 @@
 .combo-carousel-slide.is-active { visibility: visible; opacity: 1; pointer-events: auto; transform: translate3d(0, 0, 0); z-index: 1; transition-delay: 0s; }
 .combo-carousel-slide > .store-offer { height: 100%; }
 .combo-carousel:focus-visible { outline: 2px solid #1B4D2E; outline-offset: 5px; border-radius: 28px; }
-
-.combo-carousel-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 18px;
-  padding: 4px 8px;
-}
-.combo-carousel-indicators {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.combo-carousel-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 100px;
-  border: 0;
-  padding: 0;
-  background: #cbd6c0;
-  cursor: pointer;
-  transition: width .3s cubic-bezier(.16, 1, .3, 1), background-color .3s;
-}
-.combo-carousel-dot.is-active {
-  width: 26px;
-  background: #1B4D2E;
-}
-.combo-carousel-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.combo-carousel-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1px solid #dbe2d4;
-  background: #ffffff;
-  color: #1B4D2E;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color .2s, border-color .2s, transform .2s;
-}
-.combo-carousel-btn:hover {
-  background: #edf2e6;
-  border-color: #c1ceb7;
-  transform: translateY(-1px);
-}
-.combo-carousel-btn:focus-visible {
-  outline: 2px solid #1B4D2E;
-  outline-offset: 2px;
-}
-.combo-carousel-btn--pause {
-  color: #56695b;
-}
 
 /* Promotional banner: a compact buying story */
 .store-offer--banner {
