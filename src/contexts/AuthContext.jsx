@@ -68,6 +68,18 @@ export function AuthProvider({ children }) {
   }
   const user = session?.user;
   const isAdmin = hasRole(user, 'ADMIN');
+  async function refreshUser() {
+    const current = getSession(), revision = profileRevision.current;
+    if (!current?.sessionId) return null;
+    const profile = unwrap(await api.get('/auth/session'));
+    const latest = getSession();
+    if (latest?.sessionId !== current.sessionId || revision !== profileRevision.current) return null;
+    if (!Array.isArray(profile?.roles) || profile.username !== current.user?.username) throw new Error('Chưa tải được quyền hiện tại. Vui lòng tải lại trang.');
+    profileRevision.current += 1;
+    const next = { ...latest, user: profile };
+    setSession(next); updateSession(next);
+    return profile;
+  }
   function updateProfile(profile) {
     profileRevision.current += 1;
     updateSession((old) => {
@@ -76,6 +88,6 @@ export function AuthProvider({ children }) {
       setSession(next); return next;
     });
   }
-  return <AuthContext.Provider value={{ user, isAdmin, isStaff: hasRole(user, ...STAFF_ROLES), login, finishLogin, logout, clearSession, updateProfile }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, isAdmin, isStaff: hasRole(user, ...STAFF_ROLES), login, finishLogin, logout, clearSession, updateProfile, refreshUser }}>{children}</AuthContext.Provider>;
 }
 export const useAuth = () => useContext(AuthContext);

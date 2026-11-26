@@ -1,27 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { getAdminNavigation, flattenAdminLinks, activeAdminGroup, adminGroupPath } from './adminNavigation';
+import { can } from '@/lib/permissions';
 const user = (...roles) => ({ roles });
 const groups = (...roles) => getAdminNavigation(user(...roles));
 describe('Role-based admin navigation', () => {
-  it('gives warehouse exactly four parent links and product management without category mutations', () => {
+  it('gives warehouse stock, preparation and product management without category mutations', () => {
     const nav = groups('WAREHOUSE_STAFF');
-    expect(nav.map((g) => g.id)).toEqual(['dashboard', 'transparency', 'catalog', 'supply-chain']);
-    expect(nav.find((g) => g.id === 'catalog').children.map((t) => t.path)).toEqual(['products']);
+    expect(nav.map((g) => g.id)).toEqual(['dashboard', 'transparency', 'catalog', 'sales', 'supply-chain']);
+    expect(nav.find((g) => g.id === 'catalog').children.map((t) => t.path)).toEqual(['products', 'categories']);
+    expect(can(user('WAREHOUSE_STAFF'), 'category.write')).toBe(false);
     expect(flattenAdminLinks(nav).some((t) => t.path === 'promotions')).toBe(false);
   });
-  it('gives sales only overview and sales, including authorized promotions', () => {
+  it('gives sales overview, reports and sales including purchase history', () => {
     const nav = groups('SALES_STAFF');
-    expect(nav.map((g) => g.id)).toEqual(['dashboard', 'sales']);
-    expect(nav[1].children.map((t) => t.path)).toEqual(['sales-orders', 'payment-review', 'promotions', 'customers', 'reviews', 'feedbacks', 'return-requests', 'return-receipts']);
+    expect(nav.map((g) => g.id)).toEqual(['dashboard', 'reports', 'sales']);
+    expect(nav.find(g => g.id === 'sales').children.map((t) => t.path)).toEqual(['sales-orders', 'payment-review', 'promotions', 'customers', 'reviews', 'feedbacks', 'purchase-orders', 'return-requests', 'return-receipts']);
   });
-  it('gives admin all six groups, four supply tabs and all existing support functions', () => {
+  it('gives admin all seven groups, liquidation lookup and system administration', () => {
     const nav = groups('ADMIN');
-    expect(nav).toHaveLength(6);
-    expect(nav.find((g) => g.id === 'supply-chain').children).toHaveLength(4);
+    expect(nav).toHaveLength(7);
+    expect(nav.find((g) => g.id === 'supply-chain').children.map(t => t.path)).toEqual(['suppliers', 'purchase-orders', 'goods-receipts', 'inventory', 'liquidations']);
     expect(flattenAdminLinks(nav).map((t) => t.path)).toEqual(expect.arrayContaining(['categories', 'notifications', 'business-forms', 'home']));
   });
   it('combines roles without duplicate groups and normalizes ROLE_ prefixes', () => {
-    expect(groups('ROLE_WAREHOUSE_STAFF', 'ROLE_SALES_STAFF').map((g) => g.id)).toEqual(['dashboard', 'transparency', 'catalog', 'sales', 'supply-chain']);
+    expect(groups('ROLE_WAREHOUSE_STAFF', 'ROLE_SALES_STAFF').map((g) => g.id)).toEqual(['dashboard', 'reports', 'transparency', 'catalog', 'sales', 'supply-chain']);
     for (const roles of [['WAREHOUSE_STAFF'], ['ADMIN', 'WAREHOUSE_STAFF'], ['WAREHOUSE_STAFF', 'SALES_STAFF']]) {
       expect(flattenAdminLinks(groups(...roles)).filter((item) => item.path === 'return-receipts')).toHaveLength(1);
     }

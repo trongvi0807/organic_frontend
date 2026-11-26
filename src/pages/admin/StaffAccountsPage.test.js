@@ -3,8 +3,10 @@ import { act, createElement as h } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
-const service = vi.hoisted(() => ({ list: vi.fn(), save: vi.fn() }));
+const service = vi.hoisted(() => ({ list: vi.fn(), save: vi.fn(), currentAdministrator: vi.fn() }));
+const auth = vi.hoisted(() => ({ user: { username: 'admin', roles: ['ADMIN'] }, refreshUser: vi.fn() }));
 vi.mock('@/services/admin/staffAccountService', () => ({ staffAccountService: service }));
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => auth }));
 vi.mock('@/components/ui/field', async original => ({ ...await original(), Select: props => h('select', props) }));
 import StaffAccountsPage from './StaffAccountsPage';
 
@@ -14,6 +16,8 @@ beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
   vi.clearAllMocks();
   service.list.mockResolvedValue({ items: [admin], totalPages: 1, totalElements: 1 });
+  service.currentAdministrator.mockResolvedValue(admin);
+  auth.refreshUser.mockResolvedValue(auth.user);
   service.save.mockResolvedValue({});
   host = document.createElement('div'); document.body.append(host); root = createRoot(host);
 });
@@ -59,4 +63,29 @@ it('does not offer promotion to ADMIN when editing another employee', async () =
   const dialog = await open('Chỉnh sửa');
   expect(role(dialog, 'Quản trị viên')).toBeUndefined();
   expect(dialog.querySelector('[aria-label="Trạng thái tài khoản"]').disabled).toBe(false);
+});
+
+it('pins the current admin even when the employee table is on a different page or filtered', async () => {
+  service.list.mockResolvedValue({ items: [], totalPages: 0, totalElements: 0 });
+  const dialog = await open('Gán thêm quyền');
+  expect(dialog.textContent).toContain('Phân quyền tài khoản Admin');
+  expect(role(dialog, 'Quản trị viên').disabled).toBe(true);
+  await act(async () => role(dialog, 'Trưởng nhóm thu mua').click());
+  await submit(dialog);
+  expect(service.save).toHaveBeenCalledWith('admin', expect.objectContaining({ roles: ['ADMIN', 'WAREHOUSE_STAFF', 'PROCUREMENT_MANAGER'], active: true }));
+  expect(auth.refreshUser).toHaveBeenCalledTimes(1);
+});
+
+it('keeps additional business roles editable without allowing the admin role to be removed', async () => {
+  const dialog = await open('Gán thêm quyền');
+  await act(async () => role(dialog, 'Nhân viên kho').click());
+  await submit(dialog);
+  expect(service.save).toHaveBeenCalledWith('admin', expect.objectContaining({ roles: ['ADMIN'], active: true }));
+});
+
+it('reports an admin lookup error without presenting a fabricated account to edit', async () => {
+  service.currentAdministrator.mockRejectedValue(new Error('Chưa tải được tài khoản Admin.'));
+  await act(async () => root.render(h(StaffAccountsPage)));
+  expect(host.textContent).toContain('Chưa tải được tài khoản Admin.');
+  expect(button(host, 'Gán thêm quyền')).toBeUndefined();
 });

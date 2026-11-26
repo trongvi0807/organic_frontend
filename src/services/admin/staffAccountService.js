@@ -3,6 +3,7 @@ import { normalizePage } from '@/lib/apiData';
 import { requireBackend } from '../backendGuard';
 
 export const staffAccountService = {
+  async currentAdministrator() { requireBackend(); return unwrap(await api.get('/admin/employees/me')); },
   async list(params) { requireBackend(); return normalizePage(unwrap(await api.get('/admin/employees', { params }))); },
   async save(id, values) {
     requireBackend();
